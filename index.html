@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DaloaDelivery — Livreurs fiables à Daloa | Livraison rapide par Moto, Vélo, Voiture</title>
+    <meta name="description" content="Trouvez un livreur fiable à Daloa en Côte d'Ivoire. Livraison rapide par moto, vélo, voiture ou triporteur. Annuaire de livreurs vérifiés avec avis et évaluations." />
+    <meta name="keywords" content="livraison Daloa, livreur Daloa, livraison Côte d'Ivoire, coursier Daloa, moto livraison, annuaire livreur" />
+    <meta name="author" content="DaloaDelivery" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://daloa-delivery.shop/" />
+
+    <!-- Open Graph / Social Link Previews (WhatsApp, Facebook, LinkedIn, iMessage) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://daloa-delivery.shop/" />
+    <meta property="og:title" content="DaloaDelivery — Livreurs fiables à Daloa" />
+    <meta property="og:description" content="Trouvez un livreur fiable à Daloa (Côte d'Ivoire). Livraison rapide par moto, vélo, voiture ou triporteur. Annuaire de livreurs vérifiés." />
+    <meta property="og:image" content="https://daloa-delivery.shop/og-image.png" />
+    <meta property="og:image:secure_url" content="https://daloa-delivery.shop/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Logo DaloaDelivery — Service de livraison à Daloa" />
+    <meta property="og:locale" content="fr_CI" />
+    <meta property="og:site_name" content="DaloaDelivery" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://daloa-delivery.shop/" />
+    <meta name="twitter:title" content="DaloaDelivery — Livreurs fiables à Daloa" />
+    <meta name="twitter:description" content="Trouvez un livreur fiable à Daloa (Côte d'Ivoire). Livraison rapide par moto, vélo, voiture ou triporteur." />
+    <meta name="twitter:image" content="https://daloa-delivery.shop/og-image.png" />
+
+    <!-- PWA -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#FF6B00" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DaloaDelivery" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Structured Data: WebApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "DaloaDelivery",
+      "url": "https://daloa-delivery.shop/",
+      "description": "Annuaire de livreurs à Daloa, Côte d'Ivoire. Trouvez un livreur fiable pour tous vos besoins de livraison.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web, Android, iOS",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "XOF"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "DaloaDelivery",
+        "url": "https://daloa-delivery.shop/"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DaloaDelivery",
+      "url": "https://daloa-delivery.shop/",
+      "description": "Plateforme de mise en relation entre clients et livreurs professionnels à Daloa, Côte d'Ivoire.",
+      "email": "support@daloamarket.shop",
+      "telephone": "+2250788000831",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Daloa",
+        "addressCountry": "CI"
+      },
+      "sameAs": []
+    }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((reg) => console.log('[PWA] Service Worker enregistré avec succès:', reg.scope))
+            .catch((err) => console.error('[PWA] Échec de l\'enregistrement du Service Worker:', err));
+        });
+      }
+    </script>
+  </body>
+</html>

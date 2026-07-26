@@ -1,0 +1,46 @@
+{
+  "id": "daloa-delivery-pwa",
+  "name": "DaloaDelivery — Service de Livraison à Daloa",
+  "short_name": "DaloaDelivery",
+  "description": "Trouvez un livreur fiable ou gérez vos courses de livraison à Daloa (Côte d'Ivoire).",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F9FAFB",
+  "theme_color": "#FF6B00",
+  "orientation": "portrait",
+  "categories": ["business", "food", "logistics"],
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Annuaire des livreurs",
+      "short_name": "Livreurs",
+      "description": "Voir la liste des livreurs disponibles à Daloa",
+      "url": "/annuaire"
+    },
+    {
+      "name": "Espace Livreur",
+      "short_name": "Dashboard",
+      "description": "Accéder à l'espace livreur et gérer vos courses",
+      "url": "/dashboard"
+    }
+  ]
+}

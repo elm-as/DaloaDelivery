@@ -1,0 +1,13 @@
+# DaloaDelivery — robots.txt
+# Permet à tous les crawlers d'indexer le site
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://daloa-delivery.shop/sitemap.xml
+
+# Pages à ne pas indexer (admin, dashboard privé)
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register

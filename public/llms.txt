@@ -1,0 +1,50 @@
+# DaloaDelivery — llms.txt
+
+> Plateforme de mise en relation entre clients et livreurs professionnels à Daloa, Côte d'Ivoire. Trouvez un livreur fiable (moto, vélo, voiture, triporteur) pour tous vos besoins de livraison.
+
+## Pages essentielles
+
+- [Accueil](https://daloa-delivery.shop/): Page d'accueil avec recherche, catégories de véhicules et livreurs disponibles.
+- [Annuaire des livreurs](https://daloa-delivery.shop/annuaire): Recherche et filtrage des livreurs par type de véhicule, zone et évaluations.
+- [Devenir livreur](https://daloa-delivery.shop/devenir-livreur): Formulaire d'inscription multi-étapes pour les livreurs (email, photo, CNI, véhicule, zones).
+- [Connexion](https://daloa-delivery.shop/login): Authentification par email/mot de passe.
+- [Inscription](https://daloa-delivery.shop/register): Création de compte utilisateur.
+
+## Pages légales
+
+- [Conditions Générales d'Utilisation](https://daloa-delivery.shop/terms): CGU — 12 sections.
+- [Politique de Confidentialité](https://daloa-delivery.shop/privacy): Privacy policy — 11 sections, droit ivoirien, ARTCI.
+- [Mentions Légales](https://daloa-delivery.shop/mentions-legales): Éditeur, hébergement (Netlify + Supabase), PI, cookies.
+
+## Stack technique
+
+- **Frontend**: React 18, TypeScript 5.9, Vite 6.4, TailwindCSS 3.4, Framer Motion 12.42
+- **Backend**: Supabase (auth, PostgreSQL, storage)
+- **Cartes**: Leaflet / React-Leaflet
+- **Hébergement**: Netlify (frontend), Supabase (backend)
+- **PWA**: Manifest, service worker, mode standalone, theme-color #FF6B00 (orange)
+
+## Architecture
+
+- `src/pages/` — Pages React (HomePage, AnnuairePage, InscriptionLivreur, DashboardLivreur, etc.)
+- `src/components/layout/` — AppBar, BottomNavBar, Layout
+- `src/components/livreur/` — LivreurCard, AvisLivreur
+- `src/services/` — deliveryPersonService, deliveryOrderService, reviewService, mapsService
+- `src/lib/supabase.ts` — Client Supabase
+- `src/constants/zones.ts` — Zones de couverture de Daloa
+- `supabase/migrations/` — Migrations SQL
+
+## Fonctionnalités
+
+- Annuaire de livreurs avec recherche, filtres et carte interactive (Leaflet)
+- Inscription livreur avec vérification CNI
+- Dashboard livreur (profil, commandes, disponibilité)
+- Système d'évaluation et avis (notes 1 à 5)
+- PWA mobile-first avec bottom navigation bar et notifications
+- Administration (validation des documents livreurs)
+
+## Contact
+
+- Email: support@daloamarket.shop
+- Téléphone: +225 07 88 00 08 31
+- Adresse: Daloa, Côte d'Ivoire
