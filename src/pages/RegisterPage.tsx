@@ -44,6 +44,10 @@ export default function RegisterPage() {
 
       if (error) throw error;
 
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'CompleteRegistration', { content_name: 'Register' });
+      }
+
       toast.success('Inscription réussie !');
       navigate('/dashboard');
     } catch (err: unknown) {

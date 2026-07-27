@@ -195,6 +195,10 @@ export default function InscriptionLivreur() {
         payout_number: formData.payout_number || null,
       });
 
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'CompleteRegistration', { content_name: 'LivreurProfile' });
+      }
+
       toast.success('Profil livreur créé avec succès ! 🎉');
       navigate('/dashboard');
     } catch (err: unknown) {
