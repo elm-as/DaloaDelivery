@@ -240,6 +240,8 @@ Voir le [README combiné](../README.md) pour l'architecture complète de l'écos
 
 ---
 
-## 📄 Licence
+## 📄 Licence & Propriété Intellectuelle
 
-Projet propriétaire — Tous droits réservés © 2025-2026 DaloaMarket / DaloaDelivery.
+**Projet propriétaire d'ElmasCore (Elmas) — Tous droits réservés © 2025-2026.**
+
+Ce code source, l'architecture et les composants de cet écosystème sont la propriété exclusive d'**ElmasCore**. Toute copie, reproduction, distribution ou réutilisation partielle ou totale est strictement interdite sans autorisation écrite préalable. Veuillez consulter le fichier [LICENSE](./LICENSE) pour les termes complets.
