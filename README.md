@@ -9,7 +9,7 @@
 
 ## 📖 Description
 
-DaloaDelivery est une application web progressive (PWA) dédiée aux livreurs de Daloa. Elle fait partie de l'écosystème [DaloaMarket](../DaloaMarket-v2/) et gère l'intégralité du cycle de livraison :
+DaloaDelivery est une application web progressive (PWA) dédiée aux livreurs de Daloa. Elle fait partie de l'écosystème [DaloaMarket](https://github.com/elm-as/DaloaMarket-v2) et gère l'intégralité du cycle de livraison :
 
 - **Annuaire de livreurs** : Consultez les livreurs disponibles avec avis, notes et véhicules
 - **Inscription livreur** : Processus complet avec vérification d'identité, choix du véhicule et zone de couverture
@@ -226,17 +226,15 @@ Le fichier `netlify.toml` est pré-configuré :
 
 ---
 
-## 🔗 Connexion avec DaloaMarket
+## 🔗 Connexion avec DaloaMarket & DaloaPay
 
-DaloaDelivery partage la même base Supabase que [DaloaMarket-v2](../DaloaMarket-v2/). Les commandes créées dans DaloaMarket apparaissent automatiquement dans le dashboard des livreurs.
+DaloaDelivery partage la même base Supabase que [DaloaMarket-v2](https://github.com/elm-as/DaloaMarket-v2) et communique avec le service de paiement [DaloaPay](https://github.com/elm-as/DaloaPay). Les commandes créées dans DaloaMarket apparaissent automatiquement dans le dashboard des livreurs.
 
 **Tables partagées clés** :
 - `delivery_assignments` — Table pivot centrale entre les deux apps
 - `orders` — Commandes clients (lecture seule côté livreur)
 - `delivery_persons` — Profils livreurs
 - `escrow_transactions` — Transactions escrow
-
-Voir le [README combiné](../README.md) pour l'architecture complète de l'écosystème.
 
 ---
 
