@@ -29,6 +29,9 @@ export default function App() {
   if (userProfile?.banned && !isBannedPath) {
     return <Navigate to="/banned" replace />;
   }
+  if (!userProfile?.banned && isBannedPath) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <Routes>

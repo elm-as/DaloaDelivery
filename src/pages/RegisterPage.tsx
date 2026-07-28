@@ -3,7 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { UserPlus, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import toast from 'react-hot-toast';
+declare global {
+  interface Window {
+    fbq?: any;
+  }
+}
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
