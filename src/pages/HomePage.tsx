@@ -181,19 +181,27 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── 3. POPULAR DISTRICTS FILTER ── */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-blue-600" />
-            <h2 className="text-xs font-black text-gray-700 uppercase tracking-wider">Quartiers populaires à Daloa</h2>
+        {/* ── 3. POPULAR DISTRICTS FILTER (Sleek Horizontal Scroll Bar) ── */}
+        <div className="bg-white rounded-2xl p-3 sm:p-3.5 border border-gray-100 shadow-2xs space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-blue-600" />
+              <h2 className="text-xs font-black text-gray-800 uppercase tracking-wider">Quartiers populaires à Daloa</h2>
+            </div>
+            <button
+              onClick={() => navigate('/annuaire')}
+              className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+            >
+              Tous
+            </button>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {POPULAR_DISTRICTS.map((district) => (
               <button
                 key={district}
                 onClick={() => navigate(`/annuaire?q=${encodeURIComponent(district)}`)}
-                className="px-3 py-1 rounded-xl bg-white hover:bg-blue-50 border border-gray-200/80 hover:border-blue-200 text-gray-700 hover:text-blue-700 text-xs font-bold active:scale-95 transition-all shadow-2xs"
+                className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-gray-200/60 hover:border-blue-200 text-gray-700 hover:text-blue-700 text-xs font-bold active:scale-95 transition-all shrink-0"
               >
                 {district}
               </button>
@@ -203,16 +211,19 @@ export default function HomePage() {
 
         {/* ── 4. LIVE AVAILABLE DELIVERERS (Compact List) ── */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-0.5">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <h2 className="text-sm font-black text-gray-900">Livreurs disponibles en ce moment</h2>
+              <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-black border border-emerald-200/60 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <span>En direct</span>
+              </div>
+              <h2 className="text-xs sm:text-sm font-black text-gray-900">Livreurs disponibles</h2>
             </div>
             <button
               onClick={() => navigate('/annuaire')}
               className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
             >
-              Voir l'annuaire ({topLivreurs.length}) <ChevronRight size={14} />
+              Voir tout l'annuaire ({topLivreurs.length}) <ChevronRight size={14} />
             </button>
           </div>
 
@@ -220,7 +231,7 @@ export default function HomePage() {
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-2xs animate-pulse flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gray-200" />
+                  <div style={{ width: '44px', height: '44px' }} className="rounded-xl bg-gray-200 shrink-0" />
                   <div className="flex-1 space-y-1.5">
                     <div className="h-3.5 bg-gray-200 rounded w-1/3" />
                     <div className="h-2.5 bg-gray-200 rounded w-1/2" />
@@ -245,54 +256,60 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* ── 5. SIMPLIFIED ACTION BANNERS (Compact & Sleek) ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-          {/* Banner 1: Espace Livreur */}
-          <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-gray-200/80 shadow-2xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        {/* ── 5. MODERN ECOSYSTEM CARDS (Livreurs & Vendeurs) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {/* Card 1: Livreur */}
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs">
                 <Bike className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-black text-gray-900">Vous êtes livreur ?</h3>
-                <p className="text-[11px] text-gray-500 font-medium">Rejoignez la flotte & gardez 100% de vos gains</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-black text-gray-900 leading-tight">Rejoindre la flotte</h3>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  Courses directes, affiliations boutiques & 100% des gains pour vous.
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 pt-0.5">
+
+            <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
               <button
                 onClick={() => navigate('/devenir-livreur')}
-                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center"
+                className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center"
               >
                 S'inscrire
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all"
+                className="py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all"
               >
                 Connexion
               </button>
             </div>
           </div>
 
-          {/* Banner 2: Commerçants DaloaMarket */}
-          <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-orange-200/70 shadow-2xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+          {/* Card 2: Vendeur */}
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 shadow-2xs">
                 <Store className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-black text-gray-900">Vendeurs DaloaMarket</h3>
-                <p className="text-[11px] text-gray-500 font-medium">Expédiez & affiliez vos coursiers en direct</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-black text-gray-900 leading-tight">Vendeurs DaloaMarket</h3>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  Affiliez vos livreurs favoris et gérez vos expéditions en direct.
+                </p>
               </div>
             </div>
-            <div className="pt-0.5">
+
+            <div className="pt-1 border-t border-gray-100">
               <a
                 href="https://daloamarket.com/mes-livreurs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center block"
+                className="w-full py-2 px-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center block"
               >
-                Gérer mes livreurs sur DaloaMarket ↗
+                Gérer mes affiliations ↗
               </a>
             </div>
           </div>
