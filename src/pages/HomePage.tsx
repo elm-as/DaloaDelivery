@@ -1,48 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  Search,
-  Bike,
-  Car,
-  Truck,
-  ChevronRight,
-  MapPin,
-  ShieldCheck,
-  Zap,
-  PhoneCall,
-  Store,
-  ArrowRight,
-  Clock,
-} from 'lucide-react';
+import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User } from 'lucide-react';
 import { deliveryPersonService } from '../services/deliveryPersonService';
 import type { DeliveryPerson } from '../types/livreur';
-import { LivreurCard } from '../components/livreur/LivreurCard';
 import { useSEO } from '../hooks/useSEO';
 
 const CATEGORIES = [
-  { id: 'Moto', label: 'Moto', icon: Bike, desc: 'Express & Colis', color: 'from-orange-500 to-amber-500' },
-  { id: 'Vélo', label: 'Vélo', icon: Bike, desc: 'Éco & Proximité', color: 'from-emerald-500 to-teal-500' },
-  { id: 'Voiture', label: 'Voiture', icon: Car, desc: 'Confort & Pluie', color: 'from-blue-500 to-indigo-500' },
-  { id: 'Triporteur', label: 'Triporteur', icon: Truck, desc: 'Gros Volumes', color: 'from-purple-500 to-pink-500' },
-];
-
-const POPULAR_DISTRICTS = [
-  'Tazibouo',
-  'Kennedy',
-  'Huberson',
-  'Commerce',
-  'Lobia',
-  'Marais',
-  'Soleil',
-  'Abattoir',
+  { id: 'Moto', label: 'Moto', icon: Bike, color: 'bg-primary-50 text-primary', delay: 0.1 },
+  { id: 'Vélo', label: 'Vélo', icon: Bike, color: 'bg-secondary-50 text-secondary', delay: 0.2 },
+  { id: 'Voiture', label: 'Voiture', icon: Car, color: 'bg-success-50 text-success', delay: 0.3 },
+  { id: 'Triporteur', label: 'Triporteur', icon: Truck, color: 'bg-warning-50 text-warning', delay: 0.4 },
 ];
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [topLivreurs, setTopLivreurs] = useState<DeliveryPerson[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const deliveryServiceSchema = {
     '@context': 'https://schema.org',
@@ -58,15 +32,12 @@ export default function HomePage() {
       name: 'Daloa',
       addressCountry: 'CI',
     },
-    description:
-      'Trouvez un livreur vérifié à Daloa (moto, vélo, voiture, triporteur) pour vos colis, repas et marchandises.',
+    description: 'Trouvez un livreur vérifié à Daloa (moto, vélo, voiture, triporteur) pour vos colis, repas et marchandises.',
   };
 
   useSEO('Livreurs fiables à Daloa — Service de Livraison Express', {
-    description:
-      "Trouvez rapidement un livreur disponible à Daloa (Côte d'Ivoire). Coursiers vérifiés par moto, vélo, voiture et triporteur avec suivi en temps réel.",
-    keywords:
-      'livreur Daloa, livraison moto Daloa, coursier Côte d\'Ivoire, livraison express DaloaDelivery',
+    description: 'Trouvez rapidement un livreur disponible à Daloa (Côte d\'Ivoire). Coursiers vérifiés par moto, vélo, voiture et triporteur avec suivi en temps réel.',
+    keywords: 'livreur Daloa, livraison moto Daloa, coursier Côte d\'Ivoire, livraison express DaloaDelivery',
     canonical: 'https://delivery.daloamarket.com/',
     jsonLd: deliveryServiceSchema,
   });
@@ -75,9 +46,9 @@ export default function HomePage() {
     const fetchTop = async () => {
       try {
         const data = await deliveryPersonService.searchDeliveryPersons({ available_only: true });
-        setTopLivreurs(data.slice(0, 6));
+        setTopLivreurs(data.slice(0, 3));
       } catch (error) {
-        console.error('Erreur chargement livreurs:', error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -85,232 +56,157 @@ export default function HomePage() {
     fetchTop();
   }, []);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/annuaire?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate('/annuaire');
-    }
-  };
-
   return (
-    <div className="pb-24 bg-slate-50 min-h-screen">
-      {/* ── 1. IMMERSIVE HERO SECTION (Bleu - Blanc - Orange) ── */}
-      <div className="relative bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 text-white px-4 pt-8 pb-18 rounded-b-[2.5rem] shadow-xl shadow-blue-900/15 overflow-hidden">
-        {/* Background ambient lighting */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-60 h-60 bg-black/20 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
-
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-3.5">
-          {/* Live Status Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-black text-white shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Service actif • Flotte vérifiée à Daloa 🇨🇮</span>
+    <div className="pb-8 bg-grey-50 min-h-screen">
+      {/* App-like Header Background */}
+      <div className="bg-primary px-4 pt-6 pb-24 rounded-b-3xl shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="relative z-10 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2">Que voulez-vous<br/>faire livrer ?</h1>
+            <p className="text-primary-100 text-sm">Trouvez le livreur idéal en un clic.</p>
           </div>
-
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
-            Vos livraisons à Daloa <br className="hidden sm:inline" />
-            <span className="text-orange-400">en un clin d'œil ⚡</span>
-          </h1>
-
-          <p className="text-blue-100 text-xs sm:text-sm max-w-lg mx-auto font-medium leading-relaxed">
-            Trouvez un coursier de confiance en direct pour vos colis, courses privées et livraisons e-commerce.
-          </p>
-
-          {/* Instant Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="max-w-lg mx-auto pt-2">
-            <div className="relative flex items-center bg-white rounded-2xl p-1.5 shadow-2xl shadow-black/20 border border-white/40">
-              <div className="pl-3 pr-2 text-gray-400">
-                <Search className="w-4 h-4" />
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Rechercher un livreur, quartier (Tazibouo, Kennedy...)"
-                className="w-full bg-transparent text-gray-900 text-xs sm:text-sm font-semibold placeholder:text-gray-400 focus:outline-none py-1.5"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1 shrink-0"
-              >
-                <span>Trouver</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </form>
+          <button 
+            onClick={() => navigate('/login')}
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-sm active:scale-95 transition-transform border border-white/10"
+          >
+            <User className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 -mt-8 relative z-20 space-y-6">
-        {/* ── 2. VEHICLE CATEGORIES (Clean & Compact) ── */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xl shadow-gray-200/50 border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-sm font-black text-gray-900">Types de Véhicules</h2>
-            </div>
-            <button
-              onClick={() => navigate('/annuaire')}
-              className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
-            >
-              Tous <ChevronRight size={14} />
-            </button>
-          </div>
+      <div className="px-4 -mt-16 relative z-20 space-y-6">
+        {/* Search Bar */}
+        <div 
+          onClick={() => navigate('/annuaire')}
+          className="bg-white rounded-2xl p-4 shadow-strong flex items-center gap-3 cursor-text"
+        >
+          <Search className="w-5 h-5 text-grey-400" />
+          <span className="text-grey-400 text-sm font-medium">Rechercher un livreur, un quartier...</span>
+        </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        {/* Categories */}
+        <div>
+          <h2 className="text-lg font-bold text-grey-900 mb-3">Catégories</h2>
+          <div className="grid grid-cols-4 gap-3">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               return (
                 <motion.div
                   key={cat.id}
-                  whileTap={{ scale: 0.96 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: cat.delay }}
                   onClick={() => navigate(`/annuaire?type=${cat.id}`)}
-                  className="bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 border border-gray-100 rounded-2xl p-3 text-center cursor-pointer transition-all shadow-2xs group"
+                  className="flex flex-col items-center gap-2 cursor-pointer"
                 >
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.color} text-white flex items-center justify-center mx-auto mb-1.5 shadow-xs group-hover:scale-105 transition-transform`}
-                  >
-                    <Icon className="w-5 h-5" />
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${cat.color}`}>
+                    <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xs font-black text-gray-900">{cat.label}</h3>
-                  <span className="text-[10px] text-gray-400 font-medium">{cat.desc}</span>
+                  <span className="text-xs font-semibold text-grey-700">{cat.label}</span>
                 </motion.div>
               );
             })}
           </div>
         </div>
 
-        {/* ── 3. POPULAR DISTRICTS FILTER (Sleek Horizontal Scroll Bar) ── */}
-        <div className="bg-white rounded-2xl p-3 sm:p-3.5 border border-gray-100 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              <h2 className="text-xs font-black text-gray-800 uppercase tracking-wider">Quartiers populaires à Daloa</h2>
-            </div>
-            <button
+        {/* Top Livreurs */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-grey-900">Livreurs disponibles</h2>
+            <button 
               onClick={() => navigate('/annuaire')}
-              className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+              className="text-sm font-semibold text-primary flex items-center"
             >
-              Tous
+              Voir tout <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {POPULAR_DISTRICTS.map((district) => (
-              <button
-                key={district}
-                onClick={() => navigate(`/annuaire?q=${encodeURIComponent(district)}`)}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-gray-200/60 hover:border-blue-200 text-gray-700 hover:text-blue-700 text-xs font-bold active:scale-95 transition-all shrink-0"
-              >
-                {district}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── 4. LIVE AVAILABLE DELIVERERS (Compact List) ── */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-0.5">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-black border border-emerald-200/60 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                <span>En direct</span>
-              </div>
-              <h2 className="text-xs sm:text-sm font-black text-gray-900">Livreurs disponibles</h2>
-            </div>
-            <button
-              onClick={() => navigate('/annuaire')}
-              className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
-            >
-              Voir tout l'annuaire ({topLivreurs.length}) <ChevronRight size={14} />
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-2xs animate-pulse flex items-center gap-3">
-                  <div style={{ width: '44px', height: '44px' }} className="rounded-xl bg-gray-200 shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3.5 bg-gray-200 rounded w-1/3" />
-                    <div className="h-2.5 bg-gray-200 rounded w-1/2" />
+          <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-4">
+            {loading ? (
+              [1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse flex gap-4">
+                  <div className="w-16 h-16 bg-grey-200 rounded-xl" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-4 bg-grey-200 rounded w-1/2" />
+                    <div className="h-3 bg-grey-200 rounded w-1/3" />
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : topLivreurs.length === 0 ? (
-            <div className="bg-white rounded-3xl p-6 text-center border border-gray-100 shadow-sm space-y-2">
-              <Clock className="w-8 h-8 text-gray-300 mx-auto" />
-              <p className="text-xs font-black text-gray-800">Aucun livreur en ligne pour le moment</p>
-              <p className="text-[11px] text-gray-400 max-w-xs mx-auto">
-                Consultez l'annuaire complet pour contacter directement nos coursiers répertoriés.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {topLivreurs.map((livreur, idx) => (
-                <LivreurCard key={livreur.id} livreur={livreur} index={idx} />
-              ))}
-            </div>
-          )}
+              ))
+            ) : topLivreurs.length === 0 ? (
+              <div className="bg-white rounded-2xl p-6 text-center shadow-sm">
+                <MapPin className="w-10 h-10 text-grey-300 mx-auto mb-2" />
+                <p className="text-sm text-grey-500 font-medium">Aucun livreur disponible pour le moment.</p>
+              </div>
+            ) : (
+              topLivreurs.map((livreur) => (
+                <motion.div
+                  key={livreur.id}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate(`/livreur/${livreur.id}`)}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-grey-100 flex items-center gap-4 cursor-pointer"
+                >
+                  <div className="w-16 h-16 bg-grey-100 rounded-xl overflow-hidden flex-shrink-0">
+                    {livreur.photo_url ? (
+                      <img src={livreur.photo_url} alt={livreur.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-primary-50 text-primary">
+                        <Bike className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-bold text-grey-900 truncate">{livreur.name}</h3>
+                      <div className="flex items-center gap-1 bg-warning-50 px-1.5 py-0.5 rounded text-xs font-bold text-warning-700">
+                        <Star className="w-3 h-3 fill-warning-700" />
+                        {livreur.rating.toFixed(1)}
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs font-medium text-primary mb-1">{livreur.vehicle_type}</p>
+                    
+                    <div className="flex flex-wrap gap-1">
+                      {livreur.coverage_zones.slice(0, 2).map((zone, idx) => (
+                        <span key={idx} className="text-[10px] bg-grey-100 text-grey-600 px-2 py-0.5 rounded-full truncate max-w-[80px]">
+                          {zone}
+                        </span>
+                      ))}
+                      {livreur.coverage_zones.length > 2 && (
+                        <span className="text-[10px] bg-grey-100 text-grey-600 px-1.5 py-0.5 rounded-full">
+                          +{livreur.coverage_zones.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
         </div>
-
-        {/* ── 5. MODERN ECOSYSTEM CARDS (Livreurs & Vendeurs) ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          {/* Card 1: Livreur */}
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs">
-                <Bike className="w-5 h-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-black text-gray-900 leading-tight">Rejoindre la flotte</h3>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                  Courses directes, affiliations boutiques & 100% des gains pour vous.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
-              <button
+        
+        {/* Banner call to action */}
+        <div className="bg-gradient-to-r from-secondary to-secondary-600 rounded-2xl p-5 shadow-sm text-white relative overflow-hidden mt-6">
+          <div className="absolute right-0 bottom-0 opacity-10">
+            <Truck className="w-32 h-32 -mb-8 -mr-8" />
+          </div>
+          <div className="relative z-10">
+            <h3 className="font-bold text-lg mb-1">Espace Livreur</h3>
+            <p className="text-secondary-100 text-sm mb-4">Gérez votre activité ou devenez livreur.</p>
+            <div className="flex gap-2">
+              <button 
                 onClick={() => navigate('/devenir-livreur')}
-                className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center"
+                className="flex-1 bg-white text-secondary py-2 rounded-xl text-sm font-bold active:scale-95 transition-transform text-center"
               >
                 S'inscrire
               </button>
-              <button
+              <button 
                 onClick={() => navigate('/login')}
-                className="py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all"
+                className="flex-1 bg-secondary-700 text-white py-2 rounded-xl text-sm font-bold active:scale-95 transition-transform text-center border border-secondary-500"
               >
-                Connexion
+                Se connecter
               </button>
-            </div>
-          </div>
-
-          {/* Card 2: Vendeur */}
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 shadow-2xs">
-                <Store className="w-5 h-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-black text-gray-900 leading-tight">Vendeurs DaloaMarket</h3>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                  Affiliez vos livreurs favoris et gérez vos expéditions en direct.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-1 border-t border-gray-100">
-              <a
-                href="https://daloamarket.com/mes-livreurs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2 px-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center block"
-              >
-                Gérer mes affiliations ↗
-              </a>
             </div>
           </div>
         </div>

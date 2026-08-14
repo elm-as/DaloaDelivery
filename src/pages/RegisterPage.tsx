@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { UserPlus, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
@@ -20,6 +20,8 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +57,7 @@ export default function RegisterPage() {
       }
 
       toast.success('Inscription réussie !');
-      navigate('/dashboard');
+      navigate(redirectTo);
     } catch (err: unknown) {
       let message = err instanceof Error ? err.message : "Erreur lors de l'inscription";
       if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('already registered')) {
@@ -221,7 +223,7 @@ export default function RegisterPage() {
               try {
                 const { error } = await supabase.auth.signInWithOAuth({
                   provider: 'google',
-                  options: { redirectTo: window.location.origin + '/dashboard' },
+                  options: { redirectTo: window.location.origin + redirectTo },
                 });
                 if (error) throw error;
               } catch (err: unknown) {
@@ -248,7 +250,10 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-sm font-medium text-grey-500">
             Vous avez déjà un compte ?{' '}
-            <Link to="/login" className="text-primary font-bold hover:underline">
+            <Link
+              to={`/login${redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
+              className="text-primary font-bold hover:underline"
+            >
               Se connecter
             </Link>
           </p>

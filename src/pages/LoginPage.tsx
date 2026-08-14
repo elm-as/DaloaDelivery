@@ -210,7 +210,10 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm font-medium text-grey-500">
             Nouveau sur DaloaDelivery ?{' '}
-            <Link to="/register" className="text-primary font-bold hover:underline">
+            <Link
+              to={`/register${redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
+              className="text-primary font-bold hover:underline"
+            >
               Créer un compte
             </Link>
           </p>

@@ -256,163 +256,150 @@ export default function DashboardLivreur() {
   const greeting = currentHour < 12 ? 'Bonjour' : currentHour < 18 ? 'Bon après-midi' : 'Bonsoir';
 
   return (
-    <div className="pb-28 bg-slate-50 min-h-screen">
-      {/* ── 1. COCKPIT HERO HEADER (Bleu - Blanc - Orange) ── */}
-      <div className="relative overflow-hidden px-4 pt-6 pb-12 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 rounded-b-[2.5rem] shadow-xl shadow-blue-900/15 text-white">
-        {/* Decorative background glows */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/20 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+    <div className="pb-24 bg-grey-50 min-h-screen">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden px-4 pt-6 pb-8 bg-gradient-to-br from-primary to-primary-700">
+        {/* Decorative blobs */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
 
-        <div className="relative z-10 max-w-4xl mx-auto space-y-4">
-          {/* Top Row: Avatar + Name + Fast Refresh */}
-          <div className="flex items-center justify-between">
+        <div className="relative z-10">
+          {/* Top Row: Avatar + Name + Refresh */}
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white/20 p-0.5 ring-2 ring-white/40 shadow-md flex items-center justify-center">
+              <div className="relative">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white/20 flex items-center justify-center border-2 border-white/30 shadow-lg">
                   {profile.photo_url ? (
                     <img
                       src={profile.photo_url}
                       alt={profile.name}
-                      className="w-full h-full object-cover rounded-xl"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=0066cc&size=128`;
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=ea580c&size=128`;
                       }}
                     />
                   ) : (
-                    <User className="w-6 h-6 text-white" />
+                    <User className="w-7 h-7 text-white/70" />
                   )}
                 </div>
-                <span
-                  className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${
-                    profile.is_available ? 'bg-emerald-400 ring-2 ring-emerald-200' : 'bg-gray-400'
-                  }`}
-                />
+                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 border-2 border-white rounded-full ${profile.is_available ? 'bg-success' : 'bg-grey-400'}`} />
               </div>
-
               <div>
-                <span className="text-blue-200 text-xs font-semibold">{greeting}</span>
-                <h1 className="text-lg font-black text-white leading-tight">{profile.name.split(' ')[0]} 👋</h1>
+                <p className="text-white/70 text-sm font-medium">{greeting}</p>
+                <h1 className="text-xl font-bold text-white leading-tight">{profile.name.split(' ')[0]} 👋</h1>
               </div>
             </div>
-
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md flex items-center justify-center text-white active:scale-90 transition-all border border-white/20 shadow-2xs"
-              title="Rafraîchir"
+              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform border border-white/10"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
-          {/* Big Interactive Availability Toggle */}
+          {/* Big Online/Offline Toggle */}
           <button
             onClick={handleToggleAvailability}
             disabled={toggling}
-            className={`w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl transition-all backdrop-blur-md border shadow-lg ${
-              profile.is_available
-                ? 'bg-white/20 border-white/30 shadow-blue-950/20'
-                : 'bg-black/20 border-white/15'
-            } active:scale-[0.99]`}
+            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all backdrop-blur-sm border ${profile.is_available
+                ? 'bg-white/20 border-white/30'
+                : 'bg-white/10 border-white/20'
+              }`}
           >
             <div className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-2xs transition-colors ${
-                  profile.is_available ? 'bg-emerald-500 text-white' : 'bg-white/20 text-white/70'
-                }`}
-              >
-                <Zap className="w-5 h-5 fill-current" />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${profile.is_available ? 'bg-success-500/80' : 'bg-white/10'
+                }`}>
+                <Zap className={`w-5 h-5 ${profile.is_available ? 'text-white' : 'text-white/60'}`} />
               </div>
               <div className="text-left">
-                <h2 className="font-black text-sm sm:text-base text-white leading-tight">
-                  {profile.is_available ? '🟢 En ligne — Prêt pour course' : '⚪ Hors ligne — En pause'}
+                <h2 className={`font-bold text-lg leading-tight ${profile.is_available ? 'text-white' : 'text-white/80'}`}>
+                  {profile.is_available ? 'En ligne' : 'Hors ligne'}
                 </h2>
-                <p className="text-xs text-blue-100 font-medium mt-0.5">
-                  {profile.is_available ? 'Vous recevez les alertes de courses' : 'Touchez pour passer en ligne'}
+                <p className={`text-sm ${profile.is_available ? 'text-white/90' : 'text-white/60'}`}>
+                  {profile.is_available ? 'Prêt à recevoir des courses' : 'Touchez pour passer en ligne'}
                 </p>
               </div>
             </div>
-
             {toggling ? (
-              <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
+              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : profile.is_available ? (
-              <ToggleRight className="w-10 h-10 text-emerald-400 shrink-0" />
+              <ToggleRight className="w-14 h-14 text-white flex-shrink-0" />
             ) : (
-              <ToggleLeft className="w-10 h-10 text-white/50 shrink-0" />
+              <ToggleLeft className="w-14 h-14 text-white/50 flex-shrink-0" />
             )}
           </button>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 -mt-6 relative z-20 space-y-4">
-        {/* Payout Warning Alert */}
+      <div className="px-4 -mt-4 relative z-20 space-y-4">
+        {/* Payout Warning */}
         {(!profile.payout_network || !profile.payout_number) && (
-          <div className="bg-amber-50 border border-amber-200/80 rounded-3xl p-4 flex gap-3 items-start shadow-sm">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-black text-amber-900 text-xs sm:text-sm">Numéro de retrait manquant</h3>
-              <p className="text-amber-800 text-xs mt-0.5 font-medium">
-                Configurez votre numéro Wave / Orange / MTN pour recevoir directement vos gains.
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-3 items-start shadow-sm mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-red-900 text-sm mb-1">Configuration paiement manquante</h3>
+              <p className="text-red-700 text-xs mb-3">
+                Vous devez configurer votre numéro de retrait pour recevoir vos gains de livraison.
               </p>
               <button
-                onClick={() => navigate('/dashboard/profil/payout')}
-                className="mt-2.5 px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black active:scale-95 transition-all shadow-xs"
+                onClick={() => navigate('/profil')}
+                className="px-4 py-2 bg-red-100 text-red-800 rounded-xl text-xs font-bold active:scale-95 transition-transform"
               >
-                Configurer mon compte de retrait
+                Configurer maintenant
               </button>
             </div>
           </div>
         )}
 
-        {/* ── 2. EARNINGS CARD ── */}
+        {/* Earnings Card */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-5 shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center justify-between"
+          className="bg-white rounded-2xl p-4 shadow-sm border border-grey-100 flex items-center justify-between"
         >
           <div>
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Gains du jour (net)</span>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{todayEarnings.toLocaleString('fr-FR')}</h2>
-              <span className="text-xs font-black text-orange-600">FCFA</span>
+            <p className="text-sm font-bold text-grey-500 mb-0.5">Gains du jour (net)</p>
+            <div className="flex items-baseline gap-1">
+              <h2 className="text-2xl font-black text-grey-900">{todayEarnings.toLocaleString('fr-FR')}</h2>
+              <span className="text-sm font-bold text-grey-500">FCFA</span>
             </div>
           </div>
           <button
             onClick={() => setShowEarningsModal(true)}
-            className="px-4 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200/60 rounded-2xl flex items-center gap-1.5 text-xs font-black active:scale-95 transition-all shadow-2xs"
+            className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary active:scale-95 transition-transform"
           >
-            <span>Détails</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </motion.div>
 
-        {/* ── 3. QUICK STATS ROW ── */}
-        <div className="grid grid-cols-3 gap-2.5">
+        {/* Quick Stats Row */}
+        <div className="grid grid-cols-3 gap-3">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 text-center"
+            className="bg-white rounded-2xl p-3.5 shadow-sm border border-grey-100 text-center"
           >
-            <div className="w-8 h-8 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <div className="w-9 h-9 bg-primary-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <Star className="w-4 h-4 text-primary fill-primary" />
             </div>
-            <p className="text-base sm:text-lg font-black text-gray-900">{(profile.rating || 5).toFixed(1)}</p>
-            <p className="text-[10px] text-gray-400 font-bold">{profile.total_reviews || 0} avis</p>
+            <p className="text-xl font-black text-grey-900">{profile.rating.toFixed(1)}</p>
+            <p className="text-[10px] text-grey-500 font-bold mt-0.5">{profile.total_reviews} avis</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 text-center"
+            className="bg-white rounded-2xl p-3.5 shadow-sm border border-grey-100 text-center"
           >
-            <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-              <VehicleIcon className="w-4 h-4 text-blue-600" />
+            <div className="w-9 h-9 bg-secondary-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <VehicleIcon className="w-4 h-4 text-secondary" />
             </div>
-            <p className="text-xs sm:text-sm font-black text-gray-900 truncate">{profile.vehicle_type}</p>
-            <p className="text-[10px] text-gray-400 font-bold">{profile.coverage_zones?.length || 1} zones</p>
+            <p className="text-sm font-bold text-grey-900">{profile.vehicle_type}</p>
+            <p className="text-[10px] text-grey-500 font-bold mt-0.5">{profile.coverage_zones.length} zones</p>
           </motion.div>
 
           <motion.div
@@ -420,29 +407,28 @@ export default function DashboardLivreur() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
             onClick={handleUpdateLocation}
-            className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 text-center cursor-pointer active:scale-95 transition-all hover:border-orange-200"
+            className="bg-white rounded-2xl p-3.5 shadow-sm border border-grey-100 text-center cursor-pointer active:scale-95 transition-transform"
           >
-            <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-1.5 ${
-                profile.current_location ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'
-              }`}
-            >
-              <Navigation className={`w-4 h-4 ${locating ? 'animate-pulse text-orange-500' : ''}`} />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2 ${profile.current_location ? 'bg-success-50' : 'bg-grey-50'
+              }`}>
+              <Navigation className={`w-4 h-4 ${locating ? 'animate-pulse' : ''} ${profile.current_location ? 'text-success' : 'text-grey-400'
+                }`} />
             </div>
-            <p className="text-xs sm:text-sm font-black text-gray-900">GPS</p>
-            <p className="text-[10px] text-gray-400 font-bold">
-              {locating ? 'En cours...' : profile.current_location ? 'Actif' : 'Positionner'}
+            <p className="text-sm font-bold text-grey-900">GPS</p>
+            <p className="text-[10px] text-grey-500 font-bold mt-0.5">
+              {locating ? 'En cours...' : profile.current_location ? 'À jour' : 'Activer'}
             </p>
           </motion.div>
         </div>
 
-        {/* ── 4. COURSES DISPONIBLES ── */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
+
+        {/* Courses Section */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-gray-900">Missions disponibles</h2>
+              <h2 className="text-base font-bold text-grey-900">Courses disponibles</h2>
               {!isCurfewActive() && pendingOrders.length > 0 && (
-                <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-2xs">
+                <span className="bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full">
                   {pendingOrders.length}
                 </span>
               )}
@@ -450,36 +436,42 @@ export default function DashboardLivreur() {
           </div>
 
           {isCurfewActive() ? (
-            <div className="bg-rose-50 rounded-3xl p-6 text-center border border-rose-200 shadow-sm">
-              <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <XCircle className="w-7 h-7 text-rose-600" />
+            <div className="bg-error-50 rounded-2xl p-6 text-center border-2 border-error-100 mt-4">
+              <div className="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <XCircle className="w-8 h-8 text-error" />
               </div>
-              <h3 className="text-base font-black text-rose-900 uppercase">Couvre-feu de sécurité (22h30 - 05h30)</h3>
-              <p className="text-xs text-rose-700 font-medium leading-relaxed mt-1 max-w-sm mx-auto">
-                Les livraisons nocturnes sont temporairement suspendues pour votre sécurité. Rentrez chez vous en toute sérénité.
+              <h3 className="text-lg font-black text-error-900 mb-2 uppercase">
+                Couvre-feu de sécurité (22h30 - 05h30)
+              </h3>
+              <p className="text-sm text-error-800 font-medium leading-relaxed mb-4">
+                Les courses sont suspendues durant la nuit pour votre sécurité.
+                Aucune commande ne peut être acceptée pendant cette période.
               </p>
+              <div className="bg-error-100/50 p-3 rounded-xl">
+                <p className="text-xs font-bold text-error-900">
+                  Rentrez chez vous en sécurité.
+                </p>
+              </div>
             </div>
           ) : (
             <>
-              {/* Tab Selector */}
-              <div className="bg-gray-200/70 p-1 rounded-2xl flex items-center">
+              {/* Tab Bar */}
+              <div className="bg-grey-100 p-1 rounded-2xl flex items-center mb-4">
                 <button
                   onClick={() => setActiveTab('commandes')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-black rounded-xl transition-all ${
-                    activeTab === 'commandes' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'commandes' ? 'bg-white text-primary shadow-sm' : 'text-grey-500'
+                    }`}
                 >
-                  <Package className="w-3.5 h-3.5" />
-                  <span>Liste des courses</span>
+                  <Package className="w-4 h-4" />
+                  Liste
                 </button>
                 <button
                   onClick={() => setActiveTab('map')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-black rounded-xl transition-all ${
-                    activeTab === 'map' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'map' ? 'bg-white text-primary shadow-sm' : 'text-grey-500'
+                    }`}
                 >
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>Carte radar</span>
+                  <MapPin className="w-4 h-4" />
+                  Carte
                 </button>
               </div>
 
@@ -491,9 +483,9 @@ export default function DashboardLivreur() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden"
+                    className="bg-white rounded-2xl shadow-sm border border-grey-100 overflow-hidden"
                   >
-                    <DeliveryMap livreurs={[profile]} orders={pendingOrders} className="h-[380px] w-full" />
+                    <DeliveryMap livreurs={[profile]} orders={pendingOrders} className="h-[400px] w-full" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -504,78 +496,91 @@ export default function DashboardLivreur() {
                     className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4"
                   >
                     {pendingOrders.length === 0 ? (
-                      <div className="bg-white rounded-3xl p-8 text-center border border-dashed border-gray-200 shadow-sm space-y-2">
-                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-gray-400">
-                          <Package className="w-7 h-7" />
+                      <div className="bg-white rounded-2xl p-10 text-center border border-dashed border-grey-200">
+                        <div className="w-20 h-20 bg-grey-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                          <Package className="w-10 h-10 text-grey-300" />
                         </div>
-                        <h3 className="font-black text-gray-900 text-sm">Aucune course en attente</h3>
-                        <p className="text-xs text-gray-400 max-w-xs mx-auto">
-                          Gardez votre statut en ligne 🟢. Dès qu'un client ou commerçant fait une demande, elle apparaîtra ici.
+                        <h3 className="font-bold text-grey-900 mb-1">Pas de courses pour le moment</h3>
+                        <p className="text-sm text-grey-500 max-w-xs mx-auto">
+                          Restez en ligne, les nouvelles courses dans vos zones apparaîtront ici automatiquement.
                         </p>
                         <button
                           onClick={handleRefresh}
-                          className="mt-3 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200/60 rounded-xl text-xs font-black active:scale-95 transition-all inline-flex items-center gap-1.5"
+                          className="mt-4 px-5 py-2.5 bg-grey-50 text-grey-700 rounded-xl text-sm font-bold active:scale-95 transition-transform inline-flex items-center gap-2"
                         >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          <span>Actualiser le radar</span>
+                          <RefreshCw className="w-4 h-4" />
+                          Actualiser
                         </button>
                       </div>
                     ) : (
                       pendingOrders.map((order, idx) => (
                         <motion.div
                           key={order.id}
-                          initial={{ opacity: 0, y: 12 }}
+                          initial={{ opacity: 0, y: 15 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.05 }}
+                          transition={{ delay: idx * 0.06 }}
                           onClick={() => navigate(`/course/${order.id}`)}
-                          className="bg-white rounded-3xl shadow-md shadow-gray-200/40 border border-gray-100 overflow-hidden cursor-pointer hover:border-orange-300 transition-all group"
+                          className="bg-white rounded-2xl shadow-sm border border-grey-100 overflow-hidden cursor-pointer hover:border-primary-200 transition-colors"
                         >
-                          <div className="p-4 sm:p-5 space-y-3.5">
-                            {/* Order Header */}
-                            <div className="flex items-center justify-between">
+                          {/* Order Top */}
+                          <div className="p-4 pb-3">
+                            <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center font-black">
-                                  <Package className="w-5 h-5" />
+                                <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
+                                  <Package className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                  <h4 className="font-black text-gray-900 text-xs sm:text-sm">Course #{order.id.slice(0, 6)}</h4>
-                                  <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
-                                    <Clock size={11} />
-                                    <span>Disponible</span>
+                                  <p className="font-bold text-grey-900 text-sm">Course #{order.id.slice(0, 6)}</p>
+                                  <div className="flex items-center gap-1 text-xs text-grey-500 mt-0.5">
+                                    <Clock className="w-3 h-3" />
+                                    <span>À l'instant</span>
                                   </div>
+                                  {profile.coverage_zones?.some(z =>
+                                    order.pickup_location?.toLowerCase().includes(z.toLowerCase()) ||
+                                    order.dropoff_location?.toLowerCase().includes(z.toLowerCase())
+                                  ) && (
+                                      <div className="mt-1 inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                        <MapPin className="w-3 h-3" />
+                                        Zone prioritaire
+                                      </div>
+                                    )}
+                                </div>
+                              </div>
+                              <div className="bg-primary text-white px-3 py-2 rounded-xl text-center">
+                                <span className="text-lg font-black leading-none block">{Math.round(order.proposed_price * 0.9)}</span>
+                                <span className="text-[9px] font-bold opacity-80 uppercase">FCFA net</span>
+                              </div>
+                            </div>
+
+                            {/* Route */}
+                            <div className="relative pl-4">
+                              <div className="absolute left-[7px] top-3 bottom-3 w-0.5 bg-grey-200" />
+
+                              <div className="flex items-start gap-3 mb-3.5 relative">
+                                <div className="w-3 h-3 rounded-full bg-grey-300 ring-4 ring-white relative z-10 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                  <p className="text-[10px] font-bold text-grey-400 uppercase tracking-wider">Récupération</p>
+                                  <p className="text-sm font-medium text-grey-900 mt-0.5">{order.pickup_location}</p>
                                 </div>
                               </div>
 
-                              {/* Price Badge */}
-                              <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white px-3 py-1.5 rounded-2xl text-center shadow-xs">
-                                <span className="text-base font-black leading-tight block">
-                                  {Math.round((order.proposed_price || 1000) * 0.9)}
-                                </span>
-                                <span className="text-[9px] font-bold uppercase opacity-90">FCFA net</span>
+                              <div className="flex items-start gap-3 relative">
+                                <div className="w-3 h-3 rounded-full bg-secondary ring-4 ring-white relative z-10 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                  <p className="text-[10px] font-bold text-grey-400 uppercase tracking-wider">Livraison</p>
+                                  <p className="text-sm font-medium text-grey-900 mt-0.5">{order.dropoff_location}</p>
+                                </div>
                               </div>
                             </div>
+                          </div>
 
-                            {/* Route Stepper */}
-                            <div className="relative pl-3.5 space-y-2 border-l-2 border-dashed border-gray-200 ml-2">
-                              <div>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Récupération</span>
-                                <p className="text-xs font-bold text-gray-800">{order.pickup_location}</p>
-                              </div>
-                              <div>
-                                <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider block">Livraison</span>
-                                <p className="text-xs font-bold text-gray-800">{order.dropoff_location}</p>
-                              </div>
-                            </div>
-
-                            {/* Action Button */}
+                          {/* Action Buttons */}
+                          <div className="px-4 pb-4 pt-2 border-t border-grey-50">
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAcceptOrder(order.id);
-                              }}
-                              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-black active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md"
+                              onClick={(e) => { e.stopPropagation(); handleAcceptOrder(order.id); }}
+                              className="w-full py-3.5 bg-primary text-white rounded-xl text-sm font-bold active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
                             >
-                              <span>Accepter la course</span>
+                              Accepter pour {Math.round(order.proposed_price * 0.9)} FCFA net
                               <ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
@@ -589,7 +594,6 @@ export default function DashboardLivreur() {
           )}
         </div>
       </div>
-
       {/* Modal Historique des gains */}
       <EarningsModal
         show={showEarningsModal}

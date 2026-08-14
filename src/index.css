@@ -3,54 +3,15 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --color-blue: #0066CC;
-    --color-blue-dark: #004C99;
-    --color-blue-light: #EBF3FC;
-    --color-orange: #FF7F00;
-    --color-orange-dark: #EA580C;
-    --color-emerald: #10B981;
-    --color-surface: #FFFFFF;
-    --color-bg: #F8FAFC;
-    --gradient-blue: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
-    --gradient-orange: linear-gradient(135deg, #FF7F00 0%, #EA580C 100%);
-    --gradient-dark: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-  }
-
   body {
-    @apply bg-slate-50 text-gray-900 font-sans antialiased selection:bg-blue-600 selection:text-white;
+    @apply bg-grey-50 text-grey-900 font-sans antialiased;
     margin: 0;
-    -webkit-tap-highlight-color: transparent;
   }
 }
 
 @layer components {
   .container-custom {
     @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  .glass-panel {
-    @apply bg-white/80 backdrop-blur-xl border border-white/60 shadow-xl shadow-gray-200/50;
-  }
-
-  .glass-header {
-    @apply bg-white/85 backdrop-blur-xl border-b border-gray-100/80;
-  }
-
-  .glass-dock {
-    @apply bg-white/90 backdrop-blur-2xl border-t border-gray-100 shadow-2xl;
-  }
-
-  .badge-emerald {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs;
-  }
-
-  .badge-orange {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-orange-50 text-orange-700 border border-orange-200/80 shadow-2xs;
-  }
-
-  .badge-amber {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs;
   }
 }
 
@@ -66,21 +27,5 @@
 }
 .mb-safe {
   margin-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.4);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.6);
 }
 

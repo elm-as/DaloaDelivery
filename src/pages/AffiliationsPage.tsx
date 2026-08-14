@@ -54,15 +54,15 @@ export default function AffiliationsPage() {
   const activeList = affiliations.filter((a) => a.status === 'active');
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28">
+    <div className="min-h-screen bg-grey-50 pb-28">
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-xl border-b border-gray-100 px-4 py-4 sticky top-14 z-30 shadow-2xs">
+      <div className="bg-white border-b border-grey-100 px-4 py-3.5">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-base font-black text-gray-900">Boutiques DaloaMarket Affiliées</h1>
-            <p className="text-xs text-gray-400 font-medium">Invitations de vendeurs & partenaires exclusifs</p>
+            <h1 className="text-base font-bold text-grey-900">Mes Vendeurs Affiliés</h1>
+            <p className="text-[11px] text-grey-500">Demandes d'affiliation & vendeurs partenaires</p>
           </div>
-          <span className="text-xs font-black px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200/80 shadow-2xs">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
             {activeList.length} Partenaire{activeList.length > 1 ? 's' : ''}
           </span>
         </div>
@@ -73,8 +73,8 @@ export default function AffiliationsPage() {
         {pendingList.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-500" />
-              <h2 className="text-sm font-black text-gray-900">
+              <Clock className="w-4 h-4 text-warning" />
+              <h2 className="text-sm font-bold text-grey-900">
                 Invitations en attente ({pendingList.length})
               </h2>
             </div>
@@ -88,55 +88,45 @@ export default function AffiliationsPage() {
                     key={item.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-3xl p-4 sm:p-5 border border-amber-200/80 shadow-md shadow-amber-500/5 space-y-3"
+                    className="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm space-y-3"
                   >
                     <div className="flex items-center gap-3">
                       {avatarUrl ? (
                         <img
                           src={avatarUrl}
                           alt={seller?.shop_name || seller?.full_name || 'Vendeur'}
-                          style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}
-                          className="rounded-2xl object-cover border border-amber-200 shrink-0 shadow-2xs"
+                          className="w-12 h-12 rounded-xl object-cover border border-amber-200 flex-shrink-0"
                         />
                       ) : (
-                        <div
-                          style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}
-                          className="rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-2xs"
-                        >
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-bold text-lg flex items-center justify-center flex-shrink-0 shadow-sm">
                           {(seller?.shop_name || seller?.full_name || 'V')[0].toUpperCase()}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="font-black text-sm sm:text-base text-gray-900 truncate">
-                            {seller?.shop_name || seller?.full_name || 'Vendeur Pro'}
-                          </h3>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800 shrink-0">
-                            ★ PRO
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 font-semibold mt-0.5">
-                          {seller?.phone}
+                        <h3 className="font-bold text-grey-900 truncate">
+                          {seller?.shop_name || seller?.full_name || 'Vendeur Pro'}
+                        </h3>
+                        <p className="text-xs text-grey-500">
+                          Vendeur Pro • {seller?.phone}
                         </p>
                       </div>
                     </div>
 
-                    <p className="text-xs text-amber-900 bg-amber-50/70 p-3 rounded-2xl border border-amber-200/60 leading-relaxed font-medium">
-                      Ce Vendeur Pro souhaite vous ajouter à sa flotte privée. Vous recevrez ses courses e-commerce et paiements à la livraison en direct.
+                    <p className="text-xs text-grey-600 bg-amber-50/50 p-2.5 rounded-xl border border-amber-100 leading-relaxed">
+                      Ce Vendeur Pro souhaite vous ajouter à son réseau privé de livreurs affiliés. Vous recevrez ses commandes d'espèces à la livraison (COD) en exclusivité.
                     </p>
 
                     <div className="flex items-center gap-2 pt-1">
                       <button
                         onClick={() => handleRespond(item.id, 'active')}
                         disabled={updatingId === item.id}
-                        className="flex-1 h-10 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-success text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm"
                       >
                         {updatingId === item.id ? (
                           <LoadingSpinner size="sm" />
                         ) : (
                           <>
-                            <Check className="w-4 h-4" />
-                            <span>Accepter l'affiliation</span>
+                            <Check className="w-4 h-4" /> Accepter
                           </>
                         )}
                       </button>
@@ -144,10 +134,9 @@ export default function AffiliationsPage() {
                       <button
                         onClick={() => handleRespond(item.id, 'rejected')}
                         disabled={updatingId === item.id}
-                        className="h-10 px-4 rounded-2xl bg-gray-100 hover:bg-rose-50 text-gray-700 hover:text-rose-600 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                        className="py-2.5 px-4 rounded-xl bg-grey-100 text-grey-700 font-semibold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all hover:bg-red-50 hover:text-red-600"
                       >
-                        <X className="w-4 h-4" />
-                        <span>Refuser</span>
+                        <X className="w-4 h-4" /> Refuser
                       </button>
                     </div>
                   </motion.div>
@@ -160,20 +149,18 @@ export default function AffiliationsPage() {
         {/* Liste des vendeurs affiliés */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-orange-500" />
-            <h2 className="text-sm font-black text-gray-900">
-              Mes Boutiques Partenaires ({activeList.length})
+            <Shield className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-bold text-grey-900">
+              Mes Vendeurs partenaires ({activeList.length})
             </h2>
           </div>
 
           {activeList.length === 0 ? (
-            <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm space-y-2">
-              <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto text-gray-400">
-                <Store className="w-7 h-7" />
-              </div>
-              <h3 className="text-sm font-black text-gray-900">Aucune boutique affiliée</h3>
-              <p className="text-xs text-gray-400 max-w-xs mx-auto leading-relaxed">
-                Transmettez votre numéro de téléphone aux vendeurs DaloaMarket pour qu'ils vous invitent directement depuis leur profil boutique.
+            <div className="bg-white rounded-2xl p-8 text-center border border-grey-100 shadow-sm">
+              <Store className="w-12 h-12 text-grey-300 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-grey-700">Aucune affiliation active</p>
+              <p className="text-xs text-grey-500 mt-1 max-w-xs mx-auto">
+                Communiquez votre numéro de téléphone aux Vendeurs Pro pour qu'ils vous ajoutent dans leur liste de livreurs affiliés.
               </p>
             </div>
           ) : (
@@ -181,56 +168,51 @@ export default function AffiliationsPage() {
               {activeList.map((item) => {
                 const seller = item.seller;
                 const avatarUrl = seller?.avatar_url || (seller as any)?.shop_logo_url;
-                const phoneClean = (seller?.phone || '').replace(/\D/g, '');
                 return (
                   <motion.div
                     key={item.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3"
+                    className="bg-white rounded-2xl p-4 border border-grey-100 shadow-sm flex items-center justify-between gap-3"
                   >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex items-center gap-3">
                       {avatarUrl ? (
                         <img
                           src={avatarUrl}
                           alt={seller?.shop_name || seller?.full_name || 'Vendeur'}
-                          style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px' }}
-                          className="rounded-2xl object-cover border border-gray-100 shrink-0 shadow-2xs"
+                          className="w-12 h-12 rounded-xl object-cover border border-grey-200 flex-shrink-0 shadow-xs"
                         />
                       ) : (
-                        <div
-                          style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px' }}
-                          className="rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white font-black flex items-center justify-center text-sm shrink-0 shadow-2xs"
-                        >
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-bold flex items-center justify-center text-lg flex-shrink-0 shadow-xs">
                           {(seller?.shop_name || seller?.full_name || 'V')[0].toUpperCase()}
                         </div>
                       )}
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-black text-gray-900 text-xs sm:text-sm truncate">
-                          {seller?.shop_name || seller?.full_name || 'Boutique Partenaire'}
+                      <div>
+                        <h3 className="font-bold text-grey-900 text-sm">
+                          {seller?.shop_name || seller?.full_name || 'Vendeur Pro'}
                         </h3>
-                        <p className="text-xs text-gray-500 font-semibold mt-0.5">{seller?.phone}</p>
-                        <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        <p className="text-xs text-grey-500 mt-0.5">{seller?.phone}</p>
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800">
                           ✓ Partenaire affilié
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1">
                       {seller?.phone && (
                         <>
                           <a
                             href={`tel:${seller.phone}`}
-                            className="w-9 h-9 rounded-2xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-blue-600 active:scale-95 transition-all shadow-2xs"
-                            title="Appeler"
+                            className="w-9 h-9 rounded-xl bg-grey-50 flex items-center justify-center text-primary hover:bg-grey-100 transition-colors"
+                            title="Appeler le vendeur"
                           >
                             <Phone className="w-4 h-4" />
                           </a>
                           <a
-                            href={`https://wa.me/225${phoneClean}`}
+                            href={`https://wa.me/225${seller.phone.replace(/\D/g, '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-9 h-9 rounded-2xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 active:scale-95 transition-all border border-emerald-200/60 shadow-2xs"
+                            className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-success hover:bg-green-100 transition-colors"
                             title="WhatsApp"
                           >
                             <MessageCircle className="w-4 h-4" />

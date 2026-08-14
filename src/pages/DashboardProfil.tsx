@@ -225,33 +225,31 @@ export default function DashboardProfil() {
   ];
 
   return (
-    <div className="pb-28 max-w-4xl mx-auto bg-slate-50 min-h-screen">
+    <div className="pb-8 max-w-4xl mx-auto">
       {/* Profile Header */}
-      <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 px-4 pt-6 pb-16 rounded-b-[2.5rem] relative overflow-hidden shadow-xl shadow-blue-900/15 text-white">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-36 h-36 bg-black/20 rounded-full blur-xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+      <div className="bg-gradient-to-br from-primary to-primary-700 px-4 pt-6 pb-16 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         
-        <div className="flex items-center gap-4 relative z-10 max-w-2xl mx-auto">
-          <div className="relative shrink-0">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white p-0.5 ring-4 ring-white/30 shadow-xl flex items-center justify-center">
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white/20 flex items-center justify-center border-2 border-white/30 shadow-lg">
               {profile.photo_url ? (
                 <img 
                   src={profile.photo_url} 
                   alt={profile.name} 
-                  className="w-full h-full object-cover rounded-xl"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=0066cc&size=128`;
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=ea580c&size=128`;
                   }}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-xl flex items-center justify-center rounded-xl">
-                  {profile.name.charAt(0).toUpperCase()}
-                </div>
+                <User className="w-10 h-10 text-white/70" />
               )}
             </div>
-            <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer text-blue-600">
-              <Camera className="w-3.5 h-3.5" />
+            <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer">
+              <Camera className="w-3.5 h-3.5 text-primary" />
               <input 
                 type="file" 
                 accept="image/*" 
@@ -260,21 +258,21 @@ export default function DashboardProfil() {
               />
             </label>
           </div>
-
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-black text-white truncate tracking-tight">{profile.name}</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full text-xs font-black">
-                <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
-                <span>{(profile.rating || 5).toFixed(1)}</span>
+            <h2 className="text-xl font-bold text-white truncate">{profile.name}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-warning fill-warning" />
+                <span className="text-sm font-semibold text-white">{profile.rating.toFixed(1)}</span>
               </div>
-              <span className="text-blue-100 text-xs font-semibold">{profile.total_reviews || 0} avis clients</span>
+              <span className="text-white/50">·</span>
+              <span className="text-sm text-white/80">{profile.total_reviews} avis</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-blue-100 font-bold">
-              <VehicleIcon className="w-3.5 h-3.5 text-orange-400" />
-              <span>{profile.vehicle_type}</span>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <VehicleIcon className="w-4 h-4 text-white/70" />
+              <span className="text-sm text-white/70">{profile.vehicle_type}</span>
               {profile.vehicle_details && (
-                <span className="opacity-80 truncate"> — {profile.vehicle_details}</span>
+                <span className="text-sm text-white/50 truncate"> — {profile.vehicle_details}</span>
               )}
             </div>
           </div>
@@ -282,42 +280,42 @@ export default function DashboardProfil() {
       </div>
 
       {/* Stats Cards - overlapping the gradient */}
-      <div className="max-w-2xl mx-auto px-4 -mt-8 relative z-20">
-        <div className="grid grid-cols-3 gap-2.5">
+      <div className="px-4 -mt-10 relative z-10">
+        <div className="grid grid-cols-3 gap-3">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-3xl p-4 text-center shadow-xl shadow-gray-200/50 border border-gray-100"
+            className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
           >
-            <p className="text-xl font-black text-amber-600">{(profile.rating || 5).toFixed(1)}</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Note</p>
+            <p className="text-2xl font-black text-primary">{profile.rating.toFixed(1)}</p>
+            <p className="text-[11px] text-grey-500 font-medium mt-1">Note</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white rounded-3xl p-4 text-center shadow-xl shadow-gray-200/50 border border-gray-100"
+            className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
           >
-            <p className="text-xl font-black text-blue-600">{profile.total_reviews || 0}</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Avis</p>
+            <p className="text-2xl font-black text-secondary">{profile.total_reviews}</p>
+            <p className="text-[11px] text-grey-500 font-medium mt-1">Avis</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-3xl p-4 text-center shadow-xl shadow-gray-200/50 border border-gray-100"
+            className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
           >
-            <p className="text-xl font-black text-orange-600">{profile.coverage_zones?.length || 0}</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Zones</p>
+            <p className="text-2xl font-black text-success">{profile.coverage_zones.length}</p>
+            <p className="text-[11px] text-grey-500 font-medium mt-1">Zones</p>
           </motion.div>
         </div>
       </div>
 
       {/* Menu Items */}
-      <div className="max-w-2xl mx-auto px-4 mt-6">
-        <p className="text-xs font-black text-gray-400 uppercase tracking-wider px-1 mb-3">Paramètres du compte</p>
-        <div className="space-y-2.5">
+      <div className="px-4 mt-6">
+        <p className="text-xs font-bold text-grey-400 uppercase tracking-wider px-1 mb-3">Paramètres</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {menuItems.map((item, idx) => {
             const Icon = item.icon;
             return (
@@ -325,18 +323,18 @@ export default function DashboardProfil() {
                 key={idx}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.05 + idx * 0.04 }}
+                transition={{ delay: 0.1 + idx * 0.05 }}
                 onClick={item.action}
-                className="flex items-center gap-3.5 w-full p-4 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 active:scale-[0.99] transition-all text-left group"
+                className="flex items-center gap-4 w-full p-4 bg-white rounded-2xl border border-grey-100 shadow-sm hover:bg-grey-50/80 active:bg-grey-50 transition-colors text-left"
               >
-                <div className="w-10 h-10 bg-orange-50 group-hover:bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors">
-                  <Icon className="w-5 h-5" />
+                <div className="w-10 h-10 bg-grey-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-5 h-5 text-grey-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-gray-900">{item.label}</p>
-                  <p className="text-xs text-gray-500 truncate mt-0.5 font-medium">{item.subtitle}</p>
+                  <p className="text-sm font-semibold text-grey-900">{item.label}</p>
+                  <p className="text-xs text-grey-500 truncate mt-0.5">{item.subtitle}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-grey-300 flex-shrink-0" />
               </motion.button>
             );
           })}

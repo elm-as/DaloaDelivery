@@ -7,16 +7,12 @@ import {
 import { useSupabase } from '../hooks/useSupabase';
 import { deliveryPersonService } from '../services/deliveryPersonService';
 import { supabase } from '../lib/supabase';
-import { AuthStep } from '../components/registration/AuthStep';
 import { PersonalInfoStep } from '../components/registration/PersonalInfoStep';
 import { ServiceInfoStep } from '../components/registration/ServiceInfoStep';
 import { RegistrationZonesModal } from '../components/registration/RegistrationZonesModal';
 import toast from 'react-hot-toast';
 
 interface FormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
   name: string;
   phone: string;
   photo: File | null;
@@ -33,35 +29,40 @@ interface FormData {
 
 export default function InscriptionLivreur() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useSupabase();
+  const { user, userProfile, loading: authLoading } = useSupabase();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [existingProfile, setExistingProfile] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   
   // Zones Bottom Sheet State
   const [showZonesModal, setShowZonesModal] = useState(false);
   const [zoneSearch, setZoneSearch] = useState('');
 
   const [formData, setFormData] = useState<FormData>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    phone: '',
+    name: userProfile?.full_name || '',
+    phone: userProfile?.phone || '',
     photo: null,
-    photoPreview: '',
+    photoPreview: userProfile?.avatar_url || '',
     vehicle_type: '',
     vehicle_details: '',
     coverage_zones: [],
     pricing_description: '',
     description: '',
     terms_accepted: false,
+    payout_network: 'wave',
+    payout_number: userProfile?.phone || '',
   });
 
-  const isLoggedIn = !!user;
-  const totalSteps = isLoggedIn ? 2 : 3;
+  const totalSteps = 2;
 
+  // 1. Rediriger vers l'inscription/connexion si non connecté
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/register?redirect=/devenir-livreur', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
+
+  // 2. Vérifier si le livreur possède déjà un profil
   useEffect(() => {
     if (!authLoading && user) {
       deliveryPersonService.getDeliveryPersonByUserId(user.id).then((profile) => {
@@ -72,6 +73,19 @@ export default function InscriptionLivreur() {
       }).catch(() => {});
     }
   }, [user, authLoading]);
+
+  // 3. Préremplir si les données utilisateur se chargent après l'init
+  useEffect(() => {
+    if (userProfile) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || userProfile.full_name || '',
+        phone: prev.phone || userProfile.phone || '',
+        photoPreview: prev.photoPreview || userProfile.avatar_url || '',
+        payout_number: prev.payout_number || userProfile.phone || '',
+      }));
+    }
+  }, [userProfile]);
 
   const updateField = (field: keyof FormData, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -89,8 +103,6 @@ export default function InscriptionLivreur() {
     updateField('photoPreview', preview);
   };
 
-
-
   const toggleZone = (zone: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -100,55 +112,18 @@ export default function InscriptionLivreur() {
     }));
   };
 
-  const getActualStep = (displayStep: number) => isLoggedIn ? displayStep : displayStep - 1;
-
   const canGoNext = () => {
-    if (!isLoggedIn && step === 1) {
-      return (
-        formData.email.trim() !== '' &&
-        formData.password.length >= 6 &&
-        formData.password === formData.confirmPassword
-      );
-    }
-    const actual = getActualStep(step);
-    switch (actual) {
-      case 1: return formData.name.trim() !== '' && formData.phone.trim() !== '' && !!formData.payout_network && !!formData.payout_number;
-      case 2: return formData.vehicle_type !== '' && formData.coverage_zones.length > 0 && formData.terms_accepted;
-      default: return false;
+    switch (step) {
+      case 1:
+        return formData.name.trim() !== '' && formData.phone.trim() !== '' && !!formData.payout_network && !!formData.payout_number;
+      case 2:
+        return formData.vehicle_type !== '' && formData.coverage_zones.length > 0 && formData.terms_accepted;
+      default:
+        return false;
     }
   };
 
-  const handleNext = async () => {
-    if (!isLoggedIn && step === 1) {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Les mots de passe ne correspondent pas');
-        return;
-      }
-      const domain = formData.email.split('@')[1]?.toLowerCase().trim();
-      const disposableDomains = ['kierko.com', 'aganseo.com', 'tempmail.com', 'yopmail.com', 'guerrillamail.com'];
-      if (domain && disposableDomains.includes(domain)) {
-        toast.error('Les adresses email temporaires ou jetables ne sont pas autorisées');
-        return;
-      }
-      setSubmitting(true);
-      try {
-        const { error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-        });
-        if (error) throw error;
-        setStep(2);
-      } catch (err: unknown) {
-        let msg = err instanceof Error ? err.message : 'Erreur lors de la création du compte';
-        if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('already registered')) {
-          msg = "Un compte avec cet e-mail existe déjà sur DaloaMarket/DaloaDelivery. Veuillez utiliser la page de connexion pour vous connecter.";
-        }
-        toast.error(msg);
-      } finally {
-        setSubmitting(false);
-      }
-      return;
-    }
+  const handleNext = () => {
     setStep((s) => s + 1);
   };
 
@@ -156,13 +131,14 @@ export default function InscriptionLivreur() {
     const currentUser = user || (await supabase.auth.getUser()).data.user;
     if (!currentUser) {
       toast.error('Vous devez être connecté');
+      navigate('/login?redirect=/devenir-livreur');
       return;
     }
 
     setSubmitting(true);
 
     try {
-      let photoUrl: string | null = null;
+      let photoUrl: string | null = formData.photoPreview.startsWith('http') ? formData.photoPreview : null;
       if (formData.photo) {
         const fileExt = formData.photo.name.split('.').pop();
         const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
@@ -176,12 +152,13 @@ export default function InscriptionLivreur() {
         photoUrl = urlData.publicUrl;
       }
 
-      // Sync name & phone to the main users table to prevent N/A in Admin list
+      // Synchroniser le nom et le téléphone dans la table users
       await supabase
         .from('users')
         .update({
           full_name: formData.name,
-          phone: formData.phone
+          phone: formData.phone,
+          avatar_url: photoUrl || userProfile?.avatar_url || null,
         })
         .eq('id', currentUser.id);
 
@@ -217,7 +194,7 @@ export default function InscriptionLivreur() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-grey-50">
         <div className="w-8 h-8 border-4 border-grey-200 border-t-primary rounded-full animate-spin" />
       </div>
     );
@@ -241,41 +218,27 @@ export default function InscriptionLivreur() {
     );
   }
 
-  
-
   return (
-    <div className="min-h-screen bg-slate-50 pb-28 max-w-3xl mx-auto lg:pt-6">
-      {/* Modern Header Banner */}
-      <div className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600 px-6 pt-8 pb-20 rounded-b-[2.5rem] shadow-xl shadow-orange-500/20 relative overflow-hidden text-white">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-36 h-36 bg-black/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-
+    <div className="min-h-screen bg-grey-50 pb-20 max-w-3xl mx-auto lg:pt-6">
+      {/* App-like Header Background */}
+      <div className="bg-primary px-6 pt-6 pb-20 rounded-3xl shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Devenir Livreur Partenaire</h1>
-            <p className="text-xs text-orange-100 font-medium mt-0.5">Rejoignez la flotte DaloaDelivery & commencez à livrer</p>
+            <h1 className="text-2xl font-bold text-white">Devenir livreur partenaire</h1>
+            <p className="text-xs text-white/80 mt-0.5">Complétez vos informations pour commencer vos livraisons</p>
           </div>
-          <div className="bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-black text-white border border-white/20 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Étape {step}/{totalSteps}</span>
+          <div className="bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1 text-sm font-bold text-white shrink-0">
+            <span className="w-2 h-2 rounded-full bg-success" />
+            Étape {step}/{totalSteps}
           </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-12 relative z-20 space-y-4">
+      <div className="px-4 -mt-12 relative z-20">
         <AnimatePresence mode="wait">
-          {/* Step 1 (no user): Account creation */}
-          {!isLoggedIn && step === 1 && (
-            <AuthStep 
-              formData={formData} 
-              updateField={updateField} 
-              showPassword={showPassword} 
-              setShowPassword={setShowPassword} 
-            />
-          )}
-
-          {/* Infos personnelles step */}
-          {((isLoggedIn && step === 1) || (!isLoggedIn && step === 2)) && (
+          {/* Étape 1 : Infos personnelles & Payout */}
+          {step === 1 && (
             <PersonalInfoStep 
               formData={formData} 
               updateField={updateField} 
@@ -283,8 +246,8 @@ export default function InscriptionLivreur() {
             />
           )}
 
-          {/* Service step */}
-          {((isLoggedIn && step === 2) || (!isLoggedIn && step === 3)) && (
+          {/* Étape 2 : Service, Véhicule & Zones */}
+          {step === 2 && (
             <ServiceInfoStep 
               formData={formData} 
               updateField={updateField} 
@@ -294,33 +257,34 @@ export default function InscriptionLivreur() {
         </AnimatePresence>
 
         {/* Navigation Buttons */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-3 mt-6">
           {step > 1 && (
             <button
+              type="button"
               onClick={() => setStep(step - 1)}
               disabled={submitting}
-              className="flex-1 py-3.5 bg-white text-gray-800 rounded-2xl font-black text-xs shadow-sm border border-gray-200/80 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              className="flex-1 py-4 bg-white text-grey-900 rounded-2xl font-bold shadow-sm border border-grey-100 flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Retour</span>
+              <ChevronLeft className="w-5 h-5" /> Retour
             </button>
           )}
           {step < totalSteps ? (
             <button
+              type="button"
               onClick={handleNext}
               disabled={!canGoNext() || submitting}
-              className="flex-[2] py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 text-white rounded-2xl font-black text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all disabled:opacity-50"
+              className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >
-              <span>Suivant</span>
-              <ChevronRight className="w-4 h-4" />
+              Suivant <ChevronRight className="w-5 h-5" />
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={!canGoNext() || submitting}
-              className="flex-[2] py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all disabled:opacity-50"
+              className="flex-[2] py-4 bg-success text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >
-              {submitting ? 'Validation en cours...' : 'Finaliser mon inscription 🎉'}
+              {submitting ? 'Création du profil...' : 'Terminer l\'inscription'}
             </button>
           )}
         </div>
