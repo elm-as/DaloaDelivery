@@ -158,7 +158,18 @@ export default function TermsPage() {
                   <h4 className="font-semibold text-grey-800 mt-3">5.4 Rémunération des prestations et validation par code OTP</h4>
                   <p>Le paiement des prestations de livraison s'effectue en toute transparence. La libération des fonds vers le compte Mobile Money du livreur est déclenchée dès la validation conforme du <strong>Code OTP de livraison</strong> transmis par l'acheteur lors de la réception du colis. <strong>Une commission de service de 10% est retenue par la plateforme</strong> sur le montant de chaque course pour couvrir les frais de fonctionnement, d'assurance et de paiement Mobile Money. Le livreur reçoit ainsi 90% du prix de livraison convenu.</p>
 
-                  <h4 className="font-semibold text-grey-800 mt-3">5.5 Perte, vol, casse et responsabilité des marchandises</h4>
+                  <h4 className="font-semibold text-grey-800 mt-3">5.5 Couvre-feu nocturne de sécurité (22h30 — 05h30)</h4>
+                  <p>Pour préserver l'intégrité physique des coursiers et la sécurité des biens transportés à Daloa, <strong>l'attribution de nouvelles courses est strictement suspendue entre 22h30 et 05h30</strong>. Seules les courses déjà acceptées avant 22h30 peuvent être finalisées. Aucun livreur ne peut être contraint ou sollicité pour démarrer une nouvelle livraison durant cette plage horaire.</p>
+
+                  <h4 className="font-semibold text-grey-800 mt-3">5.6 Gestion des Destinataires Absents ou Refus Injustifié</h4>
+                  <p>Si le livreur se présente à l'adresse convenue et que le client destinataire est injoignable ou refuse de réceptionner le colis sans motif légitime :</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Le livreur signale l'incident via l'application (« Client Absent »).</li>
+                    <li>L'équipe d'administration contacte le client pour vérification. Si l'absence est avérée, <strong>la prestation de transport est réputée accomplie : le livreur perçoit 100% de ses frais de livraison dus (90% net)</strong>.</li>
+                    <li>L'acheteur est remboursé de la valeur du produit (hors frais de livraison non remboursables), et la marchandise est restituée au vendeur.</li>
+                  </ul>
+
+                  <h4 className="font-semibold text-grey-800 mt-3">5.7 Perte, vol, casse et responsabilité des marchandises</h4>
                   <p>Le livreur indépendant assume la garde juridique et matérielle complète des marchandises à compter de leur enlèvement chez le vendeur jusqu'à leur remise effective à l'acheteur.</p>
                   <p>En cas de <strong>vol, perte, casse ou dégradation des marchandises</strong> durant le trajet :</p>
                   <ul className="list-disc pl-5 space-y-1">
@@ -167,7 +178,7 @@ export default function TermsPage() {
                     <li>En cas de vol qualifié ou de faute lourde, le compte du livreur est immédiatement suspendu et ses coordonnées d'identité pourront être transmises aux autorités compétentes pour poursuites.</li>
                   </ul>
 
-                  <h4 className="font-semibold text-grey-800 mt-3">5.6 Statut de Livreur Affilié & Encaissement d'espèces (COD)</h4>
+                  <h4 className="font-semibold text-grey-800 mt-3">5.8 Statut de Livreur Affilié & Encaissement d'espèces (COD)</h4>
                   <p>Un livreur indépendant peut conclure un partenariat d'affiliation volontaire avec un Vendeur Pro abonné sur DaloaMarket.</p>
                   <ul className="list-disc pl-5 space-y-1">
                     <li><strong className="text-grey-800">Partenariat Privilégié :</strong> L'affiliation accorde au livreur une priorité d'accès aux commandes privées émanant de ce Vendeur Pro, sans modifier son statut de prestataire indépendant.</li>

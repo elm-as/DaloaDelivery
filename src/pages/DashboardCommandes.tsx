@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, RefreshCw, XCircle, Inbox } from 'lucide-react';
+import { Package, RefreshCw, XCircle, Inbox, Moon } from 'lucide-react';
 import { OrderCard } from '../components/dashboard/OrderCard';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { deliveryPersonService } from '../services/deliveryPersonService';
@@ -178,16 +178,28 @@ export default function DashboardCommandes() {
         {/* Orders List */}
         <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4">
           {isCurfewActive() && activeTab !== 'accepted' ? (
-            <div className="bg-gradient-to-br from-red-50 to-rose-100/60 rounded-3xl p-6 text-center border border-red-200 lg:col-span-2">
-              <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-red-600">
-                <XCircle className="w-7 h-7" />
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-gray-900 rounded-3xl p-6 text-center border border-indigo-800/40 shadow-xl text-white lg:col-span-2">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-xl pointer-events-none" />
+              
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 text-amber-400 border border-white/15 shadow-inner">
+                  <Moon className="w-7 h-7" />
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-[10px] font-black uppercase tracking-wider mb-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  Sécurité Nocturne Active
+                </div>
+                <h3 className="text-base font-black text-white mb-1 tracking-tight">
+                  Couvre-feu de sécurité (22h30 — 05h30)
+                </h3>
+                <p className="text-xs text-gray-300 font-medium leading-relaxed max-w-md mx-auto">
+                  Les nouvelles livraisons sont suspendues durant la nuit pour votre sécurité. Vous pouvez toujours clôturer vos courses en cours.
+                </p>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-center gap-2 text-[11px] text-amber-200/90 font-bold">
+                  <span>✨ Rentrez en sécurité et reprenez dès 05h30.</span>
+                </div>
               </div>
-              <h3 className="text-base font-black text-red-950 mb-1.5 uppercase tracking-wide">
-                Couvre-feu de sécurité (22h30 - 05h30)
-              </h3>
-              <p className="text-xs text-red-800 font-medium leading-relaxed max-w-md mx-auto">
-                Les courses sont suspendues durant la nuit pour votre sécurité. 
-              </p>
             </div>
           ) : (
             <AnimatePresence mode="wait">

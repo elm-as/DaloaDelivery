@@ -1,61 +1,61 @@
-import { FileText, Globe, Shield, Mail, MapPin, User } from 'lucide-react';
+import { FileText, Globe, Shield, Mail, MapPin, User, Phone, Server } from 'lucide-react';
 
 export default function MentionsLegalesPage() {
   return (
-    <div className="container-custom py-8 pb-20">
-      <div className="max-w-3xl mx-auto bg-white rounded-card shadow-soft p-6 lg:p-10">
+    <div className="container-custom py-8 pb-24 max-w-4xl mx-auto px-4">
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 lg:p-10">
         {/* Header */}
-        <div className="text-center mb-8 pb-8 border-b border-grey-200">
+        <div className="text-center mb-8 pb-8 border-b border-gray-100">
           <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-4">
             <FileText className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-grey-900 mb-2">
+          <h1 className="text-2xl lg:text-3xl font-black text-gray-900 mb-2">
             Mentions Légales
           </h1>
-          <p className="text-sm text-grey-500 max-w-lg mx-auto">
-            Conformément à la législation ivoirienne en vigueur, vous trouverez ci-dessous les informations légales relatives à la plateforme DaloaDelivery.
+          <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto font-medium">
+            Informations légales et techniques relatives à la plateforme DaloaDelivery et à son réseau de coursiers de proximité.
           </p>
         </div>
 
-        <div className="space-y-8 lg:space-y-10 text-grey-800">
+        <div className="space-y-8 lg:space-y-10 text-gray-800">
           {/* Section 1 */}
           <section>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Globe className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center flex-shrink-0 mt-0.5 text-primary">
+                <Globe className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold mb-3 text-grey-900">1. Informations générales</h2>
-                <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
-                  <p>Le site internet accessible à l'adresse <strong>delivery.daloamarket.com</strong> (ci-après le « Site ») est édité par ELMAS, entreprise individuelle de droit ivoirien, dans le cadre de sa plateforme de mise en relation entre clients et livreurs professionnels indépendants à Daloa, en République de Côte d'Ivoire.</p>
+                <h2 className="text-base font-black mb-3 text-gray-900 uppercase tracking-wider">1. Informations Générales & Éditeur</h2>
+                <div className="space-y-2 text-xs sm:text-sm text-gray-600 leading-relaxed font-medium">
+                  <p>La plateforme accessible à l'adresse <strong>delivery.daloamarket.com</strong> (ci-après « DaloaDelivery ») est un service technologique de mise en relation entre commerçants, clients et livreurs professionnels indépendants à Daloa (Côte d'Ivoire), édité par <strong>OULOBO Elmas Tresor</strong>.</p>
                   
-                  <div className="mt-4 space-y-3">
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-grey-50">
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
                       <User className="w-5 h-5 text-primary flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm text-grey-800">Éditeur du Site</p>
-                        <p className="text-xs text-grey-500">ELMAS</p>
+                        <p className="font-bold text-xs text-gray-900">Fondateur & Direction</p>
+                        <p className="text-xs text-gray-600">OULOBO Elmas Tresor</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-grey-50">
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
                       <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm text-grey-800">Siège social</p>
-                        <p className="text-xs text-grey-500">Daloa, République de Côte d'Ivoire</p>
+                        <p className="font-bold text-xs text-gray-900">Implantation & Activité</p>
+                        <p className="text-xs text-gray-600">Daloa / Abidjan, Côte d'Ivoire</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-grey-50">
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
                       <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm text-grey-800">Contact</p>
-                        <p className="text-xs text-grey-500">support@daloamarket.com</p>
+                        <p className="font-bold text-xs text-gray-900">E-mails Officiels</p>
+                        <p className="text-xs text-gray-600">contact@daloamarket.com / support@daloamarket.com</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-grey-50">
-                      <PhoneIcon className="w-5 h-5 text-primary flex-shrink-0" />
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
+                      <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm text-grey-800">Téléphone</p>
-                        <p className="text-xs text-grey-500">+225 07 88 00 08 31</p>
+                        <p className="font-bold text-xs text-gray-900">Ligne Directe / WhatsApp</p>
+                        <p className="text-xs text-gray-600">+225 07 88 00 08 31</p>
                       </div>
                     </div>
                   </div>
@@ -67,23 +67,35 @@ export default function MentionsLegalesPage() {
           {/* Section 2 */}
           <section>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Shield className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center flex-shrink-0 mt-0.5 text-primary">
+                <Server className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold mb-3 text-grey-900">2. Hébergement</h2>
-                <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
-                  <p>Le Site est hébergé par :</p>
-                  <div className="p-3 rounded-xl bg-grey-50 mt-2">
-                    <p className="text-sm"><strong className="text-grey-800">Netlify, Inc.</strong></p>
-                    <p className="text-xs text-grey-500 mt-1">2325 3rd Street, Suite 296, San Francisco, California 94107, États-Unis</p>
-                    <p className="text-xs text-grey-500">Site web : https://www.netlify.com</p>
-                  </div>
-                  <p className="mt-2">La base de données et le stockage des fichiers sont assurés par :</p>
-                  <div className="p-3 rounded-xl bg-grey-50 mt-2">
-                    <p className="text-sm"><strong className="text-grey-800">Supabase, Inc.</strong></p>
-                    <p className="text-xs text-grey-500 mt-1">525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis</p>
-                    <p className="text-xs text-grey-500">Site web : https://supabase.com</p>
+                <h2 className="text-base font-black mb-3 text-gray-900 uppercase tracking-wider">2. Hébergement & Infrastructure Technique</h2>
+                <div className="space-y-3 text-xs sm:text-sm text-gray-600 leading-relaxed font-medium">
+                  <p>L'infrastructure de DaloaDelivery s'appuie sur des standards modernes de haute disponibilité :</p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                    <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
+                      <p className="text-xs font-bold text-gray-900">Hébergement Frontend & CDN</p>
+                      <p className="text-xs text-gray-600 mt-0.5">Netlify, Inc. (San Francisco, CA, USA)</p>
+                      <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline">www.netlify.com</a>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
+                      <p className="text-xs font-bold text-gray-900">Base de Données & Authentification</p>
+                      <p className="text-xs text-gray-600 mt-0.5">Supabase, Inc. (PostgreSQL chiffré)</p>
+                      <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline">supabase.com</a>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
+                      <p className="text-xs font-bold text-gray-900">Backend Paiements & Webhooks</p>
+                      <p className="text-xs text-gray-600 mt-0.5">Render Services (Node.js Escrow Engine)</p>
+                      <a href="https://render.com" target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline">render.com</a>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
+                      <p className="text-xs font-bold text-gray-900">Bureau d'Enregistrement Domaine</p>
+                      <p className="text-xs text-gray-600 mt-0.5">LWS (Ligne Web Services)</p>
+                      <a href="https://www.lws.fr" target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline">www.lws.fr</a>
+                    </div>
                   </div>
                 </div>
               </div>

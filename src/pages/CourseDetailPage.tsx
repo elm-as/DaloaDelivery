@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, Navigation, XCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Navigation, XCircle, AlertTriangle, Moon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { deliveryOrderService, type DeliveryRequest } from '../services/deliveryOrderService';
 import { useSupabase } from '../hooks/useSupabase';
@@ -299,14 +299,13 @@ export default function CourseDetailPage() {
           <div className="pt-2 space-y-3">
             {order.status === 'awaiting_pickup' && (
               isCurfewActive() ? (
-                <div className="bg-error-50 rounded-2xl p-4 text-center border border-error-100">
-                  <div className="flex items-center justify-center gap-2 mb-2 text-error-900">
-                    <XCircle className="w-5 h-5" />
-                    <span className="font-black text-sm uppercase">Couvre-feu Actif</span>
+                <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-gray-900 rounded-3xl p-5 text-center border border-indigo-800/40 text-white shadow-xl">
+                  <div className="flex items-center justify-center gap-2 mb-2 text-amber-400">
+                    <Moon className="w-5 h-5" />
+                    <span className="font-black text-xs uppercase tracking-wider">Couvre-feu Actif (22h30 — 05h30)</span>
                   </div>
-                  <p className="text-xs text-error-800 font-medium">
-                    L'acceptation des courses est suspendue de 22h30 à 05h30 pour votre sécurité.
-                    La vie vaut plus que l'argent.
+                  <p className="text-xs text-gray-300 font-medium leading-relaxed">
+                    L'acceptation des nouvelles courses est suspendue la nuit pour votre sécurité. Reprise dès 05h30.
                   </p>
                 </div>
               ) : (

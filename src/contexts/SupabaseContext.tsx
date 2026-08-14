@@ -62,6 +62,32 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
             }
           }
           setUserProfile(data);
+        } else if (active && (!data || error)) {
+          // Auto-create initial profile for Google / OAuth user if not found in public.users
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser && currentUser.id === userId) {
+            const meta = currentUser.user_metadata;
+            const googleName = (meta?.full_name || meta?.name || null) as string | null;
+            const googleAvatar = (meta?.avatar_url || meta?.picture || null) as string | null;
+            try {
+              const { data: created, error: createErr } = await supabase
+                .from('users')
+                .upsert({
+                  id: userId,
+                  email: currentUser.email || null,
+                  full_name: googleName,
+                  avatar_url: googleAvatar,
+                }, { onConflict: 'id' })
+                .select('*')
+                .maybeSingle();
+
+              if (!createErr && created) {
+                setUserProfile(created);
+              }
+            } catch (err) {
+              console.error('Error auto-creating user profile in DaloaDelivery:', err);
+            }
+          }
         }
       } catch (err) {
         console.error('Error loading user profile:', err);
