@@ -42,9 +42,12 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
         to={`/livreur/${livreur.id}`}
         className="flex items-center gap-2.5 min-w-0 flex-1 group-hover:opacity-95"
       >
-        {/* Compact Avatar (42px) */}
+        {/* Compact Avatar (44px) */}
         <div className="relative shrink-0">
-          <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center border border-gray-200/80 shadow-2xs">
+          <div
+            style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px' }}
+            className="rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center border border-gray-200/80 shadow-2xs"
+          >
             {livreur.photo_url ? (
               <img
                 src={getOptimizedImageUrl(livreur.photo_url, 120, 70)}

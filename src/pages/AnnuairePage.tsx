@@ -138,7 +138,7 @@ export default function AnnuairePage() {
 
           {/* Row 2: Vehicle Type Horizontal Filter & View Toggle */}
           <div className="flex items-center justify-between gap-2 pt-0.5">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 pl-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 pl-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <button
                 onClick={() => handleQuickVehicleSelect(undefined)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all shrink-0 ${

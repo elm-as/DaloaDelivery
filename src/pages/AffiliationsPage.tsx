@@ -95,10 +95,14 @@ export default function AffiliationsPage() {
                         <img
                           src={avatarUrl}
                           alt={seller?.shop_name || seller?.full_name || 'Vendeur'}
-                          className="w-13 h-13 rounded-2xl object-cover border border-amber-200 shrink-0 shadow-2xs"
+                          style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}
+                          className="rounded-2xl object-cover border border-amber-200 shrink-0 shadow-2xs"
                         />
                       ) : (
-                        <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-lg flex items-center justify-center shrink-0 shadow-2xs">
+                        <div
+                          style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}
+                          className="rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-2xs"
+                        >
                           {(seller?.shop_name || seller?.full_name || 'V')[0].toUpperCase()}
                         </div>
                       )}
@@ -107,7 +111,7 @@ export default function AffiliationsPage() {
                           <h3 className="font-black text-sm sm:text-base text-gray-900 truncate">
                             {seller?.shop_name || seller?.full_name || 'Vendeur Pro'}
                           </h3>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800 shrink-0">
                             ★ PRO
                           </span>
                         </div>
@@ -190,15 +194,19 @@ export default function AffiliationsPage() {
                         <img
                           src={avatarUrl}
                           alt={seller?.shop_name || seller?.full_name || 'Vendeur'}
-                          className="w-12 h-12 rounded-2xl object-cover border border-gray-100 shrink-0 shadow-2xs"
+                          style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px' }}
+                          className="rounded-2xl object-cover border border-gray-100 shrink-0 shadow-2xs"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white font-black flex items-center justify-center text-base shrink-0 shadow-2xs">
+                        <div
+                          style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px' }}
+                          className="rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white font-black flex items-center justify-center text-sm shrink-0 shadow-2xs"
+                        >
                           {(seller?.shop_name || seller?.full_name || 'V')[0].toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-black text-gray-900 text-sm truncate">
+                        <h3 className="font-black text-gray-900 text-xs sm:text-sm truncate">
                           {seller?.shop_name || seller?.full_name || 'Boutique Partenaire'}
                         </h3>
                         <p className="text-xs text-gray-500 font-semibold mt-0.5">{seller?.phone}</p>

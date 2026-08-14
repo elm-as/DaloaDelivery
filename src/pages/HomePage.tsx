@@ -248,26 +248,26 @@ export default function HomePage() {
         {/* ── 5. SIMPLIFIED ACTION BANNERS (Compact & Sleek) ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           {/* Banner 1: Espace Livreur */}
-          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 shadow-2xs flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-gray-200/80 shadow-2xs space-y-3">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                 <Bike className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-xs font-black text-gray-900 truncate">Vous êtes livreur ?</h3>
-                <p className="text-[11px] text-gray-500 truncate font-medium">Rejoignez la flotte & gardez 100% de vos gains</p>
+                <h3 className="text-xs sm:text-sm font-black text-gray-900">Vous êtes livreur ?</h3>
+                <p className="text-[11px] text-gray-500 font-medium">Rejoignez la flotte & gardez 100% de vos gains</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-2 pt-0.5">
               <button
                 onClick={() => navigate('/devenir-livreur')}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all"
+                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center"
               >
                 S'inscrire
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all"
+                className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all"
               >
                 Connexion
               </button>
@@ -275,24 +275,26 @@ export default function HomePage() {
           </div>
 
           {/* Banner 2: Commerçants DaloaMarket */}
-          <div className="bg-white rounded-2xl p-4 border border-orange-200/70 shadow-2xs flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-orange-200/70 shadow-2xs space-y-3">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
                 <Store className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-xs font-black text-gray-900 truncate">Vendeurs DaloaMarket</h3>
-                <p className="text-[11px] text-gray-500 truncate font-medium">Expédiez & gérez vos livraisons facilement</p>
+                <h3 className="text-xs sm:text-sm font-black text-gray-900">Vendeurs DaloaMarket</h3>
+                <p className="text-[11px] text-gray-500 font-medium">Expédiez & affiliez vos coursiers en direct</p>
               </div>
             </div>
-            <a
-              href="https://daloamarket.com/mes-livreurs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all shrink-0"
-            >
-              Affilier ↗
-            </a>
+            <div className="pt-0.5">
+              <a
+                href="https://daloamarket.com/mes-livreurs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all text-center block"
+              >
+                Gérer mes livreurs sur DaloaMarket ↗
+              </a>
+            </div>
           </div>
         </div>
       </div>
