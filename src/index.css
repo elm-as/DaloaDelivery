@@ -4,20 +4,21 @@
 
 @layer base {
   :root {
-    --color-primary: #FF7F00;
-    --color-primary-dark: #EA580C;
-    --color-primary-light: #FFA040;
-    --color-accent: #0066CC;
+    --color-blue: #0066CC;
+    --color-blue-dark: #004C99;
+    --color-blue-light: #EBF3FC;
+    --color-orange: #FF7F00;
+    --color-orange-dark: #EA580C;
     --color-emerald: #10B981;
     --color-surface: #FFFFFF;
     --color-bg: #F8FAFC;
-    --gradient-primary: linear-gradient(135deg, #FF7F00 0%, #EA580C 100%);
-    --gradient-emerald: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    --gradient-blue: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
+    --gradient-orange: linear-gradient(135deg, #FF7F00 0%, #EA580C 100%);
     --gradient-dark: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
   }
 
   body {
-    @apply bg-slate-50 text-gray-900 font-sans antialiased selection:bg-orange-500 selection:text-white;
+    @apply bg-slate-50 text-gray-900 font-sans antialiased selection:bg-blue-600 selection:text-white;
     margin: 0;
     -webkit-tap-highlight-color: transparent;
   }

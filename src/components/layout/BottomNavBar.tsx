@@ -45,20 +45,20 @@ export function BottomNavBar() {
               key={item.path}
               to={item.path}
               className={`flex flex-col items-center justify-center w-full h-full gap-0.5 transition-colors active:scale-95 ${
-                active ? 'text-orange-600' : 'text-gray-400 hover:text-gray-600'
+                active ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               <div className="relative">
                 {active && (
                   <motion.div
                     layoutId="delivery-bottom-nav-bg"
-                    className="absolute -inset-2 bg-orange-50 rounded-2xl border border-orange-200/50"
+                    className="absolute -inset-2 bg-blue-50 rounded-2xl border border-blue-200/50"
                     transition={{ type: 'spring', stiffness: 450, damping: 30 }}
                   />
                 )}
                 <Icon className={`w-5 h-5 relative z-10 transition-transform ${active ? 'scale-110 stroke-[2.4]' : 'stroke-[1.8]'}`} />
               </div>
-              <span className={`text-[10px] font-black mt-0.5 relative z-10 ${active ? 'text-orange-600' : 'text-gray-400'}`}>
+              <span className={`text-[10px] font-black mt-0.5 relative z-10 ${active ? 'text-blue-600' : 'text-gray-400'}`}>
                 {item.label}
               </span>
             </Link>

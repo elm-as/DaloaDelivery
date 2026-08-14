@@ -189,13 +189,21 @@ export function AppBar() {
               </button>
             ) : null}
             
-            <Link to="/" className="flex items-center gap-2 text-gray-900 hover:opacity-90 transition-opacity">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 p-1 flex items-center justify-center shadow-xs">
-                <img src="/logo.png" alt="DaloaDelivery" className="w-full h-full object-contain" />
-              </div>
+            <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <img
+                src="/logo.png"
+                alt="DaloaDelivery"
+                className="h-8 w-8 object-contain shrink-0"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src.indexOf('sans fond') === -1) {
+                    target.src = '/DaloaDelivery sans fond.png';
+                  }
+                }}
+              />
               {isHome || !title ? (
-                <span className="text-base font-black tracking-tight text-gray-900">
-                  Daloa<span className="text-orange-500">Delivery</span>
+                <span className="text-base font-black tracking-tight">
+                  <span className="text-blue-600">Daloa</span><span className="text-orange-500">Delivery</span>
                 </span>
               ) : (
                 <h1 className="text-sm font-black text-gray-900 truncate">{title}</h1>
@@ -205,9 +213,9 @@ export function AppBar() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-5 text-xs font-black text-gray-600">
-            <Link to="/" className="hover:text-orange-500 transition-colors">Accueil</Link>
-            <Link to="/annuaire" className="hover:text-orange-500 transition-colors">Annuaire livreurs</Link>
-            <Link to={user ? "/dashboard" : "/devenir-livreur"} className="px-3.5 py-1.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 hover:bg-orange-100 transition-all">
+            <Link to="/" className="hover:text-blue-600 transition-colors">Accueil</Link>
+            <Link to="/annuaire" className="hover:text-blue-600 transition-colors">Annuaire livreurs</Link>
+            <Link to={user ? "/dashboard" : "/devenir-livreur"} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/60 hover:bg-blue-100 transition-all">
               {user ? "Cockpit Livreur" : "Devenir Livreur"}
             </Link>
           </nav>

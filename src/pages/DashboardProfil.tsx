@@ -227,30 +227,30 @@ export default function DashboardProfil() {
   return (
     <div className="pb-28 max-w-4xl mx-auto bg-slate-50 min-h-screen">
       {/* Profile Header */}
-      <div className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600 px-4 pt-6 pb-16 rounded-b-[2.5rem] relative overflow-hidden shadow-xl shadow-orange-500/20 text-white">
+      <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 px-4 pt-6 pb-16 rounded-b-[2.5rem] relative overflow-hidden shadow-xl shadow-blue-900/15 text-white">
         <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-36 h-36 bg-black/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-36 h-36 bg-black/20 rounded-full blur-xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
         
         <div className="flex items-center gap-4 relative z-10 max-w-2xl mx-auto">
           <div className="relative shrink-0">
-            <div className="w-20 h-20 rounded-3xl overflow-hidden bg-white p-1 ring-4 ring-white/30 shadow-2xl flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white p-0.5 ring-4 ring-white/30 shadow-xl flex items-center justify-center">
               {profile.photo_url ? (
                 <img 
                   src={profile.photo_url} 
                   alt={profile.name} 
-                  className="w-full h-full object-cover rounded-2xl"
+                  className="w-full h-full object-cover rounded-xl"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=ea580c&size=128`;
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=0066cc&size=128`;
                   }}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-orange-400 to-amber-500 text-white font-black text-2xl flex items-center justify-center rounded-2xl">
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-xl flex items-center justify-center rounded-xl">
                   {profile.name.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
-            <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer text-orange-600">
+            <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer text-blue-600">
               <Camera className="w-3.5 h-3.5" />
               <input 
                 type="file" 
@@ -262,16 +262,16 @@ export default function DashboardProfil() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-black text-white truncate tracking-tight">{profile.name}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-xs font-black">
-                <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+            <h2 className="text-lg sm:text-xl font-black text-white truncate tracking-tight">{profile.name}</h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full text-xs font-black">
+                <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
                 <span>{(profile.rating || 5).toFixed(1)}</span>
               </div>
-              <span className="text-orange-100 text-xs font-semibold">{profile.total_reviews || 0} avis clients</span>
+              <span className="text-blue-100 text-xs font-semibold">{profile.total_reviews || 0} avis clients</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-1.5 text-xs text-orange-100 font-bold">
-              <VehicleIcon className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-blue-100 font-bold">
+              <VehicleIcon className="w-3.5 h-3.5 text-orange-400" />
               <span>{profile.vehicle_type}</span>
               {profile.vehicle_details && (
                 <span className="opacity-80 truncate"> — {profile.vehicle_details}</span>

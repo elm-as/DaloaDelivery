@@ -96,70 +96,69 @@ export default function HomePage() {
 
   return (
     <div className="pb-24 bg-slate-50 min-h-screen">
-      {/* ── 1. IMMERSIVE HERO SECTION ── */}
-      <div className="relative bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600 text-white px-4 pt-8 pb-20 rounded-b-[2.5rem] shadow-xl shadow-orange-500/20 overflow-hidden">
+      {/* ── 1. IMMERSIVE HERO SECTION (Bleu - Blanc - Orange) ── */}
+      <div className="relative bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 text-white px-4 pt-8 pb-18 rounded-b-[2.5rem] shadow-xl shadow-blue-900/15 overflow-hidden">
         {/* Background ambient lighting */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-60 h-60 bg-black/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-60 h-60 bg-black/20 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-4">
+        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-3.5">
           {/* Live Status Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-xs font-black text-white shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-black text-white shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Service actif • Flotte vérifiée à Daloa 🇨🇮</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
             Vos livraisons à Daloa <br className="hidden sm:inline" />
-            <span className="text-amber-200">en un éclair ⚡</span>
+            <span className="text-orange-400">en un clin d'œil ⚡</span>
           </h1>
 
-          <p className="text-orange-100 text-xs sm:text-base max-w-xl mx-auto font-medium leading-relaxed">
-            Trouvez un coursier de confiance en direct pour vos colis, courses privées et commandes e-commerce.
+          <p className="text-blue-100 text-xs sm:text-sm max-w-lg mx-auto font-medium leading-relaxed">
+            Trouvez un coursier de confiance en direct pour vos colis, courses privées et livraisons e-commerce.
           </p>
 
           {/* Instant Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="max-w-xl mx-auto pt-2">
-            <div className="relative flex items-center bg-white rounded-2xl p-1.5 shadow-2xl shadow-black/15 border border-white/40">
+          <form onSubmit={handleSearchSubmit} className="max-w-lg mx-auto pt-2">
+            <div className="relative flex items-center bg-white rounded-2xl p-1.5 shadow-2xl shadow-black/20 border border-white/40">
               <div className="pl-3 pr-2 text-gray-400">
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4" />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Rechercher par livreur, quartier (ex: Tazibouo)..."
-                className="w-full bg-transparent text-gray-900 text-sm font-semibold placeholder:text-gray-400 focus:outline-none py-2"
+                placeholder="Rechercher un livreur, quartier (Tazibouo, Kennedy...)"
+                className="w-full bg-transparent text-gray-900 text-xs sm:text-sm font-semibold placeholder:text-gray-400 focus:outline-none py-1.5"
               />
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1 shrink-0"
               >
                 <span>Trouver</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </form>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 -mt-10 relative z-20 space-y-8">
-        {/* ── 2. VEHICLE CATEGORIES ── */}
-        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-xl shadow-gray-200/50 border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
+      <div className="max-w-5xl mx-auto px-4 -mt-8 relative z-20 space-y-6">
+        {/* ── 2. VEHICLE CATEGORIES (Clean & Compact) ── */}
+        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xl shadow-gray-200/50 border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-base font-black text-gray-900">Types de Véhicules</h2>
-              <p className="text-xs text-gray-400 font-medium">Choisissez le transport adapté à votre colis</p>
+              <h2 className="text-sm font-black text-gray-900">Types de Véhicules</h2>
             </div>
             <button
               onClick={() => navigate('/annuaire')}
-              className="text-xs font-black text-orange-600 hover:text-orange-700 flex items-center gap-1"
+              className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
             >
               Tous <ChevronRight size={14} />
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               return (
@@ -167,12 +166,12 @@ export default function HomePage() {
                   key={cat.id}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => navigate(`/annuaire?type=${cat.id}`)}
-                  className="bg-gray-50/80 hover:bg-white hover:border-orange-200 border border-gray-100 rounded-2xl p-3.5 text-center cursor-pointer transition-all shadow-2xs hover:shadow-md group"
+                  className="bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 border border-gray-100 rounded-2xl p-3 text-center cursor-pointer transition-all shadow-2xs group"
                 >
                   <div
-                    className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${cat.color} text-white flex items-center justify-center mx-auto mb-2 shadow-xs group-hover:scale-110 transition-transform`}
+                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.color} text-white flex items-center justify-center mx-auto mb-1.5 shadow-xs group-hover:scale-105 transition-transform`}
                   >
-                    <Icon className="w-6 h-6" />
+                    <Icon className="w-5 h-5" />
                   </div>
                   <h3 className="text-xs font-black text-gray-900">{cat.label}</h3>
                   <span className="text-[10px] text-gray-400 font-medium">{cat.desc}</span>
@@ -183,18 +182,18 @@ export default function HomePage() {
         </div>
 
         {/* ── 3. POPULAR DISTRICTS FILTER ── */}
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-orange-500" />
-            <h2 className="text-sm font-black text-gray-900">Quartiers populaires à Daloa</h2>
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <h2 className="text-xs font-black text-gray-700 uppercase tracking-wider">Quartiers populaires à Daloa</h2>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {POPULAR_DISTRICTS.map((district) => (
               <button
                 key={district}
                 onClick={() => navigate(`/annuaire?q=${encodeURIComponent(district)}`)}
-                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-orange-50 border border-gray-200/80 text-gray-700 hover:text-orange-700 text-xs font-bold active:scale-95 transition-all shadow-2xs"
+                className="px-3 py-1 rounded-xl bg-white hover:bg-blue-50 border border-gray-200/80 hover:border-blue-200 text-gray-700 hover:text-blue-700 text-xs font-bold active:scale-95 transition-all shadow-2xs"
               >
                 {district}
               </button>
@@ -202,52 +201,43 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── 4. LIVE AVAILABLE DELIVERERS ── */}
-        <div className="space-y-4">
+        {/* ── 4. LIVE AVAILABLE DELIVERERS (Compact List) ── */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <h2 className="text-base font-black text-gray-900">Livreurs en ligne en ce moment</h2>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <h2 className="text-sm font-black text-gray-900">Livreurs disponibles en ce moment</h2>
             </div>
             <button
               onClick={() => navigate('/annuaire')}
-              className="text-xs font-black text-orange-600 hover:text-orange-700 flex items-center gap-0.5"
+              className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
             >
-              Voir tout l'annuaire <ChevronRight size={14} />
+              Voir l'annuaire ({topLivreurs.length}) <ChevronRight size={14} />
             </button>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm animate-pulse space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-13 h-13 rounded-2xl bg-gray-200" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-1/2" />
-                      <div className="h-3 bg-gray-200 rounded w-1/3" />
-                    </div>
+                <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-2xs animate-pulse flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-gray-200" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3.5 bg-gray-200 rounded w-1/3" />
+                    <div className="h-2.5 bg-gray-200 rounded w-1/2" />
                   </div>
-                  <div className="h-8 bg-gray-100 rounded-xl" />
                 </div>
               ))}
             </div>
           ) : topLivreurs.length === 0 ? (
-            <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm space-y-2">
-              <Clock className="w-10 h-10 text-gray-300 mx-auto" />
-              <p className="text-sm font-black text-gray-800">Aucun livreur en ligne pour le moment</p>
-              <p className="text-xs text-gray-400 max-w-sm mx-auto">
+            <div className="bg-white rounded-3xl p-6 text-center border border-gray-100 shadow-sm space-y-2">
+              <Clock className="w-8 h-8 text-gray-300 mx-auto" />
+              <p className="text-xs font-black text-gray-800">Aucun livreur en ligne pour le moment</p>
+              <p className="text-[11px] text-gray-400 max-w-xs mx-auto">
                 Consultez l'annuaire complet pour contacter directement nos coursiers répertoriés.
               </p>
-              <button
-                onClick={() => navigate('/annuaire')}
-                className="mt-2 px-5 py-2 rounded-xl bg-orange-50 text-orange-600 font-black text-xs border border-orange-200/60"
-              >
-                Ouvrir l'annuaire
-              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {topLivreurs.map((livreur, idx) => (
                 <LivreurCard key={livreur.id} livreur={livreur} index={idx} />
               ))}
@@ -255,58 +245,54 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* ── 5. DUAL BENTO ACTION CARDS ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          {/* Card 1: Espace Livreur */}
-          <div className="bg-gradient-to-br from-slate-900 to-gray-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="space-y-2 relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-orange-400 text-[11px] font-black border border-white/10">
-                <Zap size={12} /> Espace Livreur
-              </span>
-              <h3 className="text-lg font-black tracking-tight">Vous avez un moyen de transport ?</h3>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Rejoignez la 1ère flotte de Daloa. Recevez des courses privées, affiliez-vous à des boutiques et gardez 100% de vos gains directs.
-              </p>
+        {/* ── 5. SIMPLIFIED ACTION BANNERS (Compact & Sleek) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          {/* Banner 1: Espace Livreur */}
+          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 shadow-2xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Bike className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-black text-gray-900 truncate">Vous êtes livreur ?</h3>
+                <p className="text-[11px] text-gray-500 truncate font-medium">Rejoignez la flotte & gardez 100% de vos gains</p>
+              </div>
             </div>
-
-            <div className="flex items-center gap-2 pt-2 relative z-10">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => navigate('/devenir-livreur')}
-                className="flex-1 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-md active:scale-95 transition-all text-center"
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all"
               >
-                S'inscrire comme Livreur
+                S'inscrire
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white font-black text-xs rounded-xl border border-white/15 active:scale-95 transition-all"
+                className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all"
               >
                 Connexion
               </button>
             </div>
           </div>
 
-          {/* Card 2: Commerçants DaloaMarket */}
-          <div className="bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="space-y-2 relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-black border border-white/20">
-                <Store size={12} /> Vendeurs DaloaMarket
-              </span>
-              <h3 className="text-lg font-black tracking-tight">Expédiez les commandes de vos clients</h3>
-              <p className="text-xs text-orange-100 leading-relaxed">
-                Affiliez vos livreurs favoris depuis votre boutique DaloaMarket pour gérer automatiquement vos livraisons et le Cash on Delivery.
-              </p>
+          {/* Banner 2: Commerçants DaloaMarket */}
+          <div className="bg-white rounded-2xl p-4 border border-orange-200/70 shadow-2xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                <Store className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-black text-gray-900 truncate">Vendeurs DaloaMarket</h3>
+                <p className="text-[11px] text-gray-500 truncate font-medium">Expédiez & gérez vos livraisons facilement</p>
+              </div>
             </div>
-
-            <div className="pt-2 relative z-10">
-              <a
-                href="https://daloamarket.com/mes-livreurs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 bg-white hover:bg-orange-50 text-orange-700 font-black text-xs rounded-xl shadow-md active:scale-95 transition-all text-center block"
-              >
-                Gérer mes livreurs sur DaloaMarket ↗
-              </a>
-            </div>
+            <a
+              href="https://daloamarket.com/mes-livreurs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-2xs active:scale-95 transition-all shrink-0"
+            >
+              Affilier ↗
+            </a>
           </div>
         </div>
       </div>

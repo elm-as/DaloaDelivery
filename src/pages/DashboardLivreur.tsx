@@ -257,18 +257,18 @@ export default function DashboardLivreur() {
 
   return (
     <div className="pb-28 bg-slate-50 min-h-screen">
-      {/* ── 1. COCKPIT HERO HEADER ── */}
-      <div className="relative overflow-hidden px-4 pt-6 pb-12 bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600 rounded-b-[2.5rem] shadow-xl shadow-orange-500/20 text-white">
+      {/* ── 1. COCKPIT HERO HEADER (Bleu - Blanc - Orange) ── */}
+      <div className="relative overflow-hidden px-4 pt-6 pb-12 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 rounded-b-[2.5rem] shadow-xl shadow-blue-900/15 text-white">
         {/* Decorative background glows */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/20 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
-        <div className="relative z-10 max-w-4xl mx-auto space-y-5">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-4">
           {/* Top Row: Avatar + Name + Fast Refresh */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-13 h-13 rounded-2xl overflow-hidden bg-white/20 p-0.5 ring-2 ring-white/40 shadow-lg flex items-center justify-center">
+              <div className="relative shrink-0">
+                <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white/20 p-0.5 ring-2 ring-white/40 shadow-md flex items-center justify-center">
                   {profile.photo_url ? (
                     <img
                       src={profile.photo_url}
@@ -276,7 +276,7 @@ export default function DashboardLivreur() {
                       className="w-full h-full object-cover rounded-xl"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=ea580c&size=128`;
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=ffffff&color=0066cc&size=128`;
                       }}
                     />
                   ) : (
@@ -291,7 +291,7 @@ export default function DashboardLivreur() {
               </div>
 
               <div>
-                <span className="text-orange-100 text-xs font-semibold">{greeting}</span>
+                <span className="text-blue-200 text-xs font-semibold">{greeting}</span>
                 <h1 className="text-lg font-black text-white leading-tight">{profile.name.split(' ')[0]} 👋</h1>
               </div>
             </div>
@@ -310,36 +310,36 @@ export default function DashboardLivreur() {
           <button
             onClick={handleToggleAvailability}
             disabled={toggling}
-            className={`w-full flex items-center justify-between p-4 rounded-3xl transition-all backdrop-blur-md border shadow-lg ${
+            className={`w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl transition-all backdrop-blur-md border shadow-lg ${
               profile.is_available
-                ? 'bg-white/25 border-white/40 shadow-orange-950/10'
+                ? 'bg-white/20 border-white/30 shadow-blue-950/20'
                 : 'bg-black/20 border-white/15'
             } active:scale-[0.99]`}
           >
-            <div className="flex items-center gap-3.5">
+            <div className="flex items-center gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-xs transition-colors ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-2xs transition-colors ${
                   profile.is_available ? 'bg-emerald-500 text-white' : 'bg-white/20 text-white/70'
                 }`}
               >
                 <Zap className="w-5 h-5 fill-current" />
               </div>
               <div className="text-left">
-                <h2 className="font-black text-base sm:text-lg text-white leading-tight">
+                <h2 className="font-black text-sm sm:text-base text-white leading-tight">
                   {profile.is_available ? '🟢 En ligne — Prêt pour course' : '⚪ Hors ligne — En pause'}
                 </h2>
-                <p className="text-xs text-orange-100 font-medium mt-0.5">
-                  {profile.is_available ? 'Vous recevez les alertes de commandes' : 'Touchez pour activer votre disponibilité'}
+                <p className="text-xs text-blue-100 font-medium mt-0.5">
+                  {profile.is_available ? 'Vous recevez les alertes de courses' : 'Touchez pour passer en ligne'}
                 </p>
               </div>
             </div>
 
             {toggling ? (
-              <div className="w-7 h-7 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
+              <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" />
             ) : profile.is_available ? (
-              <ToggleRight className="w-12 h-12 text-white shrink-0" />
+              <ToggleRight className="w-10 h-10 text-emerald-400 shrink-0" />
             ) : (
-              <ToggleLeft className="w-12 h-12 text-white/60 shrink-0" />
+              <ToggleLeft className="w-10 h-10 text-white/50 shrink-0" />
             )}
           </button>
         </div>

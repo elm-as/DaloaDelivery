@@ -90,8 +90,9 @@ export default function AnnuairePage() {
   return (
     <div className="bg-slate-50 min-h-screen pb-24 flex flex-col">
       {/* Sticky Modern Search & Control Header */}
-      <div className="bg-white/90 backdrop-blur-xl px-4 py-3.5 sticky top-14 z-30 shadow-sm border-b border-gray-100 space-y-3">
-        <div className="max-w-6xl mx-auto flex flex-col gap-2.5">
+      <div className="bg-white/95 backdrop-blur-xl px-4 py-3 sticky top-14 z-30 shadow-2xs border-b border-gray-100">
+        <div className="max-w-6xl mx-auto space-y-2.5">
+          {/* Row 1: Search input + Action buttons */}
           <div className="flex items-center gap-2">
             <div className="flex-1 relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -100,39 +101,50 @@ export default function AnnuairePage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Rechercher un livreur, quartier (Tazibouo, Kennedy...)"
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200/80 rounded-2xl text-xs sm:text-sm font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+                placeholder="Rechercher par livreur, quartier (Tazibouo...)"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
+              {search && (
+                <button
+                  onClick={() => {
+                    setSearch('');
+                    setFilters((prev) => ({ ...prev, search: undefined }));
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            
+
             <button
               onClick={handleSearch}
-              className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl text-xs font-black shadow-xs active:scale-95 transition-all shrink-0"
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-2xs active:scale-95 transition-all shrink-0"
             >
-              Filtrer
+              Chercher
             </button>
 
             <button
               onClick={openFilters}
-              className="w-10 h-10 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200/60 rounded-2xl flex items-center justify-center flex-shrink-0 relative active:scale-95 transition-all"
+              className="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-gray-700 rounded-xl flex items-center justify-center shrink-0 relative active:scale-95 transition-all border border-gray-200/80"
               title="Filtres avancés"
             >
               <SlidersHorizontal className="w-4 h-4" />
               {Object.keys(filters).filter(k => k !== 'search' && filters[k as keyof DeliveryPersonSearchFilters] !== undefined).length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-orange-600 rounded-full ring-2 ring-orange-50" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full ring-2 ring-white" />
               )}
             </button>
           </div>
 
-          {/* Quick Vehicle Type Horizontal Filter & Mode Toggle */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-0.5">
-            <div className="flex items-center gap-1.5 shrink-0">
+          {/* Row 2: Vehicle Type Horizontal Filter & View Toggle */}
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 pl-0.5">
               <button
                 onClick={() => handleQuickVehicleSelect(undefined)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all shrink-0 ${
                   !filters.vehicle_type
-                    ? 'bg-orange-500 text-white shadow-xs'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'bg-slate-100 text-gray-600 hover:bg-slate-200'
                 }`}
               >
                 Tous
@@ -141,10 +153,10 @@ export default function AnnuairePage() {
                 <button
                   key={type}
                   onClick={() => handleQuickVehicleSelect(type)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
                     filters.vehicle_type === type
-                      ? 'bg-orange-500 text-white shadow-xs'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-blue-600 text-white shadow-2xs'
+                      : 'bg-slate-100 text-gray-600 hover:bg-slate-200'
                   }`}
                 >
                   {type}
@@ -153,11 +165,11 @@ export default function AnnuairePage() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex p-0.5 bg-gray-100 rounded-xl shrink-0">
+            <div className="flex p-0.5 bg-slate-100 rounded-xl shrink-0 border border-gray-200/60">
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  viewMode === 'list' ? 'bg-white text-orange-600 shadow-xs' : 'text-gray-500 hover:text-gray-700'
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'list' ? 'bg-white text-blue-600 shadow-2xs' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <List className="w-3.5 h-3.5" />
@@ -165,8 +177,8 @@ export default function AnnuairePage() {
               </button>
               <button
                 onClick={() => setViewMode('map')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  viewMode === 'map' ? 'bg-white text-orange-600 shadow-xs' : 'text-gray-500 hover:text-gray-700'
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'map' ? 'bg-white text-blue-600 shadow-2xs' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <MapIcon className="w-3.5 h-3.5" />
