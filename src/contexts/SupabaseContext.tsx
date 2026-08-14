@@ -2,10 +2,21 @@ import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
+export interface UserProfile {
+  id: string;
+  email?: string | null;
+  full_name?: string | null;
+  phone?: string | null;
+  avatar_url?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  [key: string]: unknown;
+}
+
 export interface SupabaseContextType {
   user: User | null;
   session: Session | null;
-  userProfile: Record<string, unknown> | null;
+  userProfile: UserProfile | null;
   loading: boolean;
 }
 

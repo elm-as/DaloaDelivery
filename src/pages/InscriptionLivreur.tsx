@@ -38,19 +38,41 @@ export default function InscriptionLivreur() {
   const [showZonesModal, setShowZonesModal] = useState(false);
   const [zoneSearch, setZoneSearch] = useState('');
 
+  // Extraction intelligente des métadonnées (Google OAuth + Profil Supabase)
+  const getInitialName = (): string => {
+    if (typeof userProfile?.full_name === 'string' && userProfile.full_name.trim()) return userProfile.full_name;
+    const gName = user?.user_metadata?.full_name || user?.user_metadata?.name;
+    if (typeof gName === 'string') return gName;
+    return '';
+  };
+
+  const getInitialPhone = (): string => {
+    if (typeof userProfile?.phone === 'string' && userProfile.phone.trim()) return userProfile.phone;
+    const gPhone = user?.user_metadata?.phone || user?.phone;
+    if (typeof gPhone === 'string') return gPhone;
+    return '';
+  };
+
+  const getInitialPhoto = (): string => {
+    if (typeof userProfile?.avatar_url === 'string' && userProfile.avatar_url.trim()) return userProfile.avatar_url;
+    const gPhoto = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+    if (typeof gPhoto === 'string') return gPhoto;
+    return '';
+  };
+
   const [formData, setFormData] = useState<FormData>({
-    name: userProfile?.full_name || '',
-    phone: userProfile?.phone || '',
+    name: getInitialName(),
+    phone: getInitialPhone(),
     photo: null,
-    photoPreview: userProfile?.avatar_url || '',
+    photoPreview: getInitialPhoto(),
     vehicle_type: '',
     vehicle_details: '',
     coverage_zones: [],
     pricing_description: '',
     description: '',
     terms_accepted: false,
-    payout_network: 'wave',
-    payout_number: userProfile?.phone || '',
+    payout_network: 'wave-ci',
+    payout_number: getInitialPhone(),
   });
 
   const totalSteps = 2;
@@ -74,18 +96,33 @@ export default function InscriptionLivreur() {
     }
   }, [user, authLoading]);
 
-  // 3. Préremplir si les données utilisateur se chargent après l'init
+  // 3. Préremplir automatiquement dès que les infos Google OAuth ou Supabase sont chargées
   useEffect(() => {
-    if (userProfile) {
+    if (user || userProfile) {
+      const gName = (typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : '') ||
+                    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : '');
+      const gAvatar = (typeof user?.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : '') ||
+                      (typeof user?.user_metadata?.picture === 'string' ? user.user_metadata.picture : '');
+      const gPhone = (typeof user?.user_metadata?.phone === 'string' ? user.user_metadata.phone : '') ||
+                     (typeof user?.phone === 'string' ? user.phone : '');
+
+      const pName = typeof userProfile?.full_name === 'string' ? userProfile.full_name : '';
+      const pPhone = typeof userProfile?.phone === 'string' ? userProfile.phone : '';
+      const pAvatar = typeof userProfile?.avatar_url === 'string' ? userProfile.avatar_url : '';
+
+      const detectedName = pName || gName;
+      const detectedPhone = pPhone || gPhone;
+      const detectedAvatar = pAvatar || gAvatar;
+
       setFormData((prev) => ({
         ...prev,
-        name: prev.name || userProfile.full_name || '',
-        phone: prev.phone || userProfile.phone || '',
-        photoPreview: prev.photoPreview || userProfile.avatar_url || '',
-        payout_number: prev.payout_number || userProfile.phone || '',
+        name: prev.name || detectedName || '',
+        phone: prev.phone || detectedPhone || '',
+        photoPreview: prev.photoPreview || detectedAvatar || '',
+        payout_number: prev.payout_number || detectedPhone || '',
       }));
     }
-  }, [userProfile]);
+  }, [user, userProfile]);
 
   const updateField = (field: keyof FormData, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
