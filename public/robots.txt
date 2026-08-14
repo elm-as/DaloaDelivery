@@ -4,7 +4,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://daloa-delivery.shop/sitemap.xml
+Sitemap: https://delivery.daloamarket.com/sitemap.xml
 
 # Pages à ne pas indexer (admin, dashboard privé)
 Disallow: /admin

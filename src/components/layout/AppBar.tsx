@@ -176,7 +176,7 @@ export function AppBar() {
   return (
     <>
       <header className="bg-white sticky top-0 z-40 border-b border-grey-100">
-        <div className="flex items-center justify-between h-14 px-4">
+        <div className="flex items-center justify-between h-14 px-4 max-w-6xl mx-auto">
           {/* Left side */}
           <div className="flex items-center gap-3 min-w-0">
             {canGoBack && !isHome ? (
@@ -197,6 +197,13 @@ export function AppBar() {
               )}
             </Link>
           </div>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-grey-700">
+            <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
+            <Link to="/annuaire" className="hover:text-primary transition-colors">Annuaire livreurs</Link>
+            <Link to={user ? "/dashboard" : "/devenir-livreur"} className="hover:text-primary transition-colors">Espace Livreur</Link>
+          </nav>
 
           {/* Right side */}
           <div className="flex items-center gap-1">

@@ -27,7 +27,7 @@ export default function MentionsLegalesPage() {
               <div>
                 <h2 className="text-lg font-bold mb-3 text-grey-900">1. Informations générales</h2>
                 <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
-                  <p>Le site internet accessible à l'adresse <strong>daloa-delivery.shop</strong> (ci-après le « Site ») est édité par ELMAS, entreprise individuelle de droit ivoirien, dans le cadre de sa plateforme de mise en relation entre clients et livreurs professionnels indépendants à Daloa, en République de Côte d'Ivoire.</p>
+                  <p>Le site internet accessible à l'adresse <strong>delivery.daloamarket.com</strong> (ci-après le « Site ») est édité par ELMAS, entreprise individuelle de droit ivoirien, dans le cadre de sa plateforme de mise en relation entre clients et livreurs professionnels indépendants à Daloa, en République de Côte d'Ivoire.</p>
                   
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-grey-50">
@@ -48,7 +48,7 @@ export default function MentionsLegalesPage() {
                       <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                       <div>
                         <p className="font-semibold text-sm text-grey-800">Contact</p>
-                        <p className="text-xs text-grey-500">support@daloamarket.shop</p>
+                        <p className="text-xs text-grey-500">support@daloamarket.com</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-grey-50">
@@ -118,7 +118,7 @@ export default function MentionsLegalesPage() {
                 <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
                   <p>DaloaDelivery s'engage à protéger les données personnelles de ses utilisateurs conformément à la législation ivoirienne en vigueur, notamment la loi relative à la protection des données à caractère personnel.</p>
                   <p>Pour plus d'informations sur la collecte et le traitement de vos données, veuillez consulter notre <a href="/privacy" className="text-primary hover:underline font-medium">Politique de Confidentialité</a>.</p>
-                  <p>Conformément à la réglementation en vigueur, vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition et de portabilité de vos données personnelles. Pour exercer ces droits, contactez-nous à <strong>support@daloamarket.shop</strong>.</p>
+                  <p>Conformément à la réglementation en vigueur, vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition et de portabilité de vos données personnelles. Pour exercer ces droits, contactez-nous à <strong>support@daloamarket.com</strong>.</p>
                 </div>
               </div>
             </div>

@@ -225,7 +225,7 @@ export default function DashboardProfil() {
   ];
 
   return (
-    <div className="pb-8">
+    <div className="pb-8 max-w-4xl mx-auto">
       {/* Profile Header */}
       <div className="bg-gradient-to-br from-primary to-primary-700 px-4 pt-6 pb-16 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -313,9 +313,9 @@ export default function DashboardProfil() {
       </div>
 
       {/* Menu Items */}
-      <div className="px-4 mt-6 space-y-2">
+      <div className="px-4 mt-6">
         <p className="text-xs font-bold text-grey-400 uppercase tracking-wider px-1 mb-3">Paramètres</p>
-        <div className="bg-white rounded-2xl border border-grey-100 shadow-sm overflow-hidden divide-y divide-grey-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {menuItems.map((item, idx) => {
             const Icon = item.icon;
             return (
@@ -325,7 +325,7 @@ export default function DashboardProfil() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 + idx * 0.05 }}
                 onClick={item.action}
-                className="flex items-center gap-4 w-full p-4 active:bg-grey-50 transition-colors text-left"
+                className="flex items-center gap-4 w-full p-4 bg-white rounded-2xl border border-grey-100 shadow-sm hover:bg-grey-50/80 active:bg-grey-50 transition-colors text-left"
               >
                 <div className="w-10 h-10 bg-grey-50 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Icon className="w-5 h-5 text-grey-600" />

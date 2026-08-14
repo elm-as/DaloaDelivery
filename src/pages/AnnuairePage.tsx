@@ -18,7 +18,7 @@ export default function AnnuairePage() {
   useSEO('Annuaire des Livreurs à Daloa', {
     description: "Consultez l'annuaire complet des livreurs professionnels vérifiés à Daloa. Moto, vélo, voiture et triporteur avec avis et notations.",
     keywords: "livreur Daloa, annuaire livreurs Daloa, coursier moto Daloa, livraison rapide Côte d'Ivoire",
-    canonical: 'https://daloa-delivery.shop/annuaire',
+    canonical: 'https://delivery.daloamarket.com/annuaire',
   });
 
   const [searchParams] = useSearchParams();
@@ -159,7 +159,7 @@ export default function AnnuairePage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {paginatedLivreurs.map((livreur, index) => (
                     <LivreurCard key={livreur.id} livreur={livreur} index={index} />
                   ))}

@@ -628,7 +628,7 @@ export default function AdminPage() {
                   key="list"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="space-y-3"
+                  className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4"
                 >
                   {filteredDrivers.map((driver, idx) => {
                     const VehicleIcon = VEHICLE_ICONS[driver.vehicle_type] || Bike;

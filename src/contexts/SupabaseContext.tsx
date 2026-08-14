@@ -28,6 +28,28 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
           .eq('id', userId)
           .single();
         if (active && !error && data) {
+          // Auto-fill full_name and avatar_url from Google OAuth metadata if missing
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          const meta = currentUser?.user_metadata;
+          if (meta) {
+            const googleName = meta.full_name || meta.name || null;
+            const googleAvatar = meta.avatar_url || meta.picture || null;
+            const needsName = !data.full_name && googleName;
+            const needsAvatar = !data.avatar_url && googleAvatar;
+            if (needsName || needsAvatar) {
+              const patch: Record<string, string> = {};
+              if (needsName) patch.full_name = googleName;
+              if (needsAvatar) patch.avatar_url = googleAvatar;
+              try {
+                const { data: patched, error: patchErr } = await supabase
+                  .from('users').update(patch).eq('id', userId).select('*').single();
+                if (!patchErr && patched) {
+                  setUserProfile(patched);
+                  return;
+                }
+              } catch (err) { console.error('Error auto-filling Google profile:', err); }
+            }
+          }
           setUserProfile(data);
         }
       } catch (err) {

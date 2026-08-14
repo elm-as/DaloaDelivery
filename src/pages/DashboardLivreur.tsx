@@ -128,7 +128,7 @@ export default function DashboardLivreur() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const earnings = delivered
-        .filter(o => new Date(o.created_at) >= today)
+        .filter(o => new Date(o.delivered_at || o.created_at) >= today)
         .reduce((sum, o) => sum + (o.proposed_price || 0) * 0.9, 0); // 10% de commission de la plateforme déduite
       setTodayEarnings(Math.round(earnings));
     } catch {
@@ -493,7 +493,7 @@ export default function DashboardLivreur() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="space-y-3"
+                    className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4"
                   >
                     {pendingOrders.length === 0 ? (
                       <div className="bg-white rounded-2xl p-10 text-center border border-dashed border-grey-200">

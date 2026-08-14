@@ -14,6 +14,7 @@ import type { DeliveryPerson, Review } from '../types/livreur';
 import toast from 'react-hot-toast';
 
 import { useSEO } from '../hooks/useSEO';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Moto: Bike,
@@ -38,8 +39,8 @@ export default function LivreurDetailPage() {
   useSEO(title, {
     description: desc,
     keywords: livreur ? `${livreur.name}, livreur ${livreur.vehicle_type} Daloa, coursier Daloa` : 'livreur Daloa, livraison Côte d\'Ivoire',
-    ogImage: livreur?.avatar_url || 'https://daloa-delivery.shop/og-image.png',
-    canonical: `https://daloa-delivery.shop/livreur/${id || ''}`,
+    ogImage: livreur?.avatar_url || 'https://delivery.daloamarket.com/og-image.png',
+    canonical: `https://delivery.daloamarket.com/livreur/${id || ''}`,
   });
   const [reviews, setReviews] = useState<Review[]>([]);
   const [totalReviews, setTotalReviews] = useState(0);
@@ -132,41 +133,58 @@ export default function LivreurDetailPage() {
   const whatsappNumber = livreur.phone.replace(/[^0-9]/g, '');
 
   return (
-    <div className="pb-24">
-      {/* Profile Header (Similar to DashboardProfil but with background color indicating availability) */}
-      <div className={`px-4 pt-6 pb-16 relative overflow-hidden transition-colors ${livreur.is_available ? 'bg-primary' : 'bg-grey-600'}`}>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white flex items-center justify-center border-2 border-white/30 shadow-lg">
-              {livreur.photo_url ? (
-                <img src={livreur.photo_url} alt={livreur.name} className="w-full h-full object-cover" />
-              ) : (
-                <User className="w-10 h-10 text-grey-300" />
-              )}
-            </div>
-            <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${livreur.is_available ? 'bg-success' : 'bg-grey-400'}`}>
-              <div className="w-2 h-2 bg-white rounded-full" />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-white truncate">{livreur.name}</h2>
-              {livreur.is_verified && <CheckCircle className="w-4 h-4 text-white fill-white/20" />}
-            </div>
-            <p className="text-white/80 text-sm mt-0.5">{livreur.is_available ? 'En ligne et prêt' : 'Actuellement indisponible'}</p>
+    <div className="pb-24 max-w-6xl mx-auto lg:px-6 lg:pt-6">
+      <div className="lg:grid lg:grid-cols-[340px_1fr] lg:gap-8 lg:items-start">
+        {/* LEFT SIDEBAR: Header Card & Quick Actions */}
+        <div className="lg:sticky lg:top-20 space-y-4">
+          <div className={`px-4 pt-6 pb-6 rounded-3xl relative overflow-hidden transition-colors ${livreur.is_available ? 'bg-primary' : 'bg-grey-600'}`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
             
-            <div className="flex items-center gap-1.5 mt-2">
-              <div className="bg-white/20 px-2 py-0.5 rounded-full flex items-center gap-1 backdrop-blur-sm">
-                <VehicleIcon className="w-3 h-3 text-white" />
-                <span className="text-xs font-semibold text-white">{livreur.vehicle_type}</span>
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div className="relative mb-3">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden bg-white flex items-center justify-center border-4 border-white/30 shadow-lg">
+                  {livreur.photo_url ? (
+                    <img 
+                      src={getOptimizedImageUrl(livreur.photo_url, 300, 80)} 
+                      alt={livreur.name} 
+                      width={96}
+                      height={96}
+                      loading="eager"
+                      {...({ fetchpriority: 'high' } as any)}
+                      decoding="async"
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        // Fallback vers l'image brute originale sans transformation si besoin
+                        const target = e.currentTarget as HTMLImageElement;
+                        if (livreur.photo_url && target.src !== livreur.photo_url) {
+                          target.src = livreur.photo_url;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <User className="w-12 h-12 text-grey-300" />
+                  )}
+                </div>
+                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${livreur.is_available ? 'bg-success' : 'bg-grey-400'}`}>
+                  <div className="w-2.5 h-2.5 bg-white rounded-full" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-white">{livreur.name}</h2>
+                {livreur.is_verified && <CheckCircle className="w-5 h-5 text-white fill-white/20" />}
+              </div>
+              <p className="text-white/80 text-sm mt-0.5">{livreur.is_available ? 'En ligne et disponible' : 'Actuellement indisponible'}</p>
+              
+              <div className="flex items-center gap-1.5 mt-3">
+                <div className="bg-white/20 px-3 py-1 rounded-full flex items-center gap-1.5 backdrop-blur-sm">
+                  <VehicleIcon className="w-4 h-4 text-white" />
+                  <span className="text-xs font-semibold text-white">{livreur.vehicle_type}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
       {/* Stats Cards - overlapping the gradient */}
       <div className="px-4 -mt-10 relative z-10">
@@ -197,13 +215,35 @@ export default function LivreurDetailPage() {
             transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
           >
-            <p className="text-2xl font-black text-success">{livreur.coverage_zones.length}</p>
-            <p className="text-[11px] text-grey-500 font-medium mt-1">Zones</p>
+            <p className="text-2xl font-black text-primary">{livreur.completed_deliveries || 0}</p>
+            <p className="text-[11px] text-grey-500 font-medium mt-1">Livraisons</p>
           </motion.div>
         </div>
       </div>
 
-      <div className="px-4 mt-6 space-y-6">
+      {/* Desktop Contact Buttons */}
+      <div className="hidden lg:flex flex-col gap-2.5 pt-2">
+        <a
+          href={`https://wa.me/225${whatsappNumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3 bg-[#25D366] text-white rounded-2xl font-bold text-sm shadow-md flex items-center justify-center gap-2 hover:brightness-105 transition-all"
+        >
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png" alt="WhatsApp" className="w-5 h-5 brightness-0 invert" />
+          Contacter sur WhatsApp
+        </a>
+        <a
+          href={`tel:${livreur.phone}`}
+          className="w-full py-3 bg-primary text-white rounded-2xl font-bold text-sm shadow-md flex items-center justify-center gap-2 hover:bg-primary-600 transition-all"
+        >
+          <Phone className="w-5 h-5" />
+          Appeler {livreur.phone}
+        </a>
+      </div>
+    </div>{/* End LEFT SIDEBAR */}
+
+        {/* RIGHT COLUMN: Info, Zones & Reviews */}
+        <div className="flex-1 min-w-0 space-y-6">
         {/* Info Box */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-grey-100 space-y-4">
           {livreur.description && (
@@ -369,5 +409,6 @@ export default function LivreurDetailPage() {
         </a>
       </div>
     </div>
-  );
+  </div>
+);
 }

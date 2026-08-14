@@ -2,6 +2,7 @@ import { type DeliveryPerson } from '../../types/livreur';
 import { Star, MapPin, Bike, Car, Truck, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { getOptimizedImageUrl } from '../../utils/imageOptimizer';
 
 const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Moto: Bike,
@@ -39,7 +40,22 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
         <div className="relative flex-shrink-0">
           <div className="w-14 h-14 rounded-full overflow-hidden bg-grey-200 flex items-center justify-center border border-grey-100">
             {livreur.photo_url ? (
-              <img src={livreur.photo_url} alt={livreur.name} className="w-full h-full object-cover" />
+              <img 
+                src={getOptimizedImageUrl(livreur.photo_url, 160, 75)} 
+                alt={livreur.name} 
+                width={56}
+                height={56}
+                loading={index < 3 ? 'eager' : 'lazy'}
+                {...({ fetchpriority: index === 0 ? 'high' : undefined } as any)}
+                decoding="async"
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (livreur.photo_url && target.src !== livreur.photo_url) {
+                    target.src = livreur.photo_url;
+                  }
+                }}
+              />
             ) : (
               <span className="text-xl font-bold text-grey-400">
                 {livreur.name.charAt(0).toUpperCase()}

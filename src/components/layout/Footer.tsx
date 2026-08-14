@@ -47,14 +47,14 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2 text-grey-400 text-sm">
                 <Mail className="w-4 h-4 text-primary" />
-                support@daloamarket.shop
+                support@daloamarket.com
               </div>
             </div>
           </div>
         </div>
 
         <div className="border-t border-grey-800 mt-8 pt-8 text-center text-grey-500 text-sm">
-          &copy; {new Date().getFullYear()} DaloaDelivery. Tous droits réservés.
+          &copy; {new Date().getFullYear()} DaloaDelivery (ElmasCore) — Fondé par Elmas. Tous droits réservés.
         </div>
       </div>
     </footer>

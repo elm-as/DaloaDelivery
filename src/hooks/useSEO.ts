@@ -1,77 +1,111 @@
 import { useEffect } from 'react';
 
-interface SEOOptions {
+export interface SEOOptions {
   description?: string;
   keywords?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  ogUrl?: string;
   canonical?: string;
-  jsonLd?: object | object[];
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 export function useSEO(title: string, options: SEOOptions = {}) {
-  useEffect(() => {
-    // 1. Title
-    const fullTitle = title.includes('DaloaDelivery') ? title : `${title} | DaloaDelivery`;
-    document.title = fullTitle;
+  const {
+    description,
+    keywords,
+    ogTitle,
+    ogDescription,
+    ogImage,
+    ogUrl,
+    canonical,
+    jsonLd,
+  } = options;
 
-    // Helper for meta tags
-    const setMetaTag = (nameAttr: string, keyName: string, content: string) => {
-      let element = document.querySelector(`meta[${nameAttr}="${keyName}"]`);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute(nameAttr, keyName);
-        document.head.appendChild(element);
+  useEffect(() => {
+    // 1. Update Title
+    const prevTitle = document.title;
+    document.title = title ? `${title} | DaloaDelivery` : 'DaloaDelivery — Livreurs fiables à Daloa';
+
+    // Helper to update or create meta tags
+    const updateMetaTag = (nameOrProperty: string, content: string | undefined, isProperty = false) => {
+      if (content === undefined) return;
+      const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`;
+      let tag = document.querySelector(selector) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement('meta');
+        if (isProperty) {
+          tag.setAttribute('property', nameOrProperty);
+        } else {
+          tag.setAttribute('name', nameOrProperty);
+        }
+        document.head.appendChild(tag);
       }
-      element.setAttribute('content', content);
+      tag.setAttribute('content', content);
     };
 
-    // 2. Description & Keywords
-    if (options.description) {
-      setMetaTag('name', 'description', options.description);
-    }
-    if (options.keywords) {
-      setMetaTag('name', 'keywords', options.keywords);
-    }
-
-    // 3. OpenGraph
-    const ogTitle = options.ogTitle || fullTitle;
-    const ogDescription = options.ogDescription || options.description || "Trouvez un livreur de confiance à Daloa sur DaloaDelivery.";
-    const ogImage = options.ogImage || 'https://daloa-delivery.shop/og-image.png';
-
-    setMetaTag('property', 'og:title', ogTitle);
-    setMetaTag('property', 'og:description', ogDescription);
-    setMetaTag('property', 'og:image', ogImage);
-
-    // 4. Twitter
-    setMetaTag('name', 'twitter:title', ogTitle);
-    setMetaTag('name', 'twitter:description', ogDescription);
-    setMetaTag('name', 'twitter:image', ogImage);
-
-    // 5. Canonical
-    if (options.canonical) {
-      let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    // Helper to update canonical link
+    const updateCanonical = (href: string | undefined) => {
+      if (href === undefined) return;
+      let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
       if (!link) {
         link = document.createElement('link');
         link.setAttribute('rel', 'canonical');
         document.head.appendChild(link);
       }
-      link.setAttribute('href', options.canonical);
+      if (href === null || href === '') {
+        link.remove();
+      } else {
+        link.setAttribute('href', href);
+      }
+    };
+
+    // 2. Update Description & Keywords
+    updateMetaTag('description', description);
+    updateMetaTag('keywords', keywords);
+
+    // 3. Update Open Graph Meta Tags
+    const currentPath = window.location.pathname;
+    const defaultCanonical = `https://delivery.daloamarket.com${currentPath === '/' ? '' : currentPath}`;
+
+    updateMetaTag('og:title', ogTitle || title, true);
+    updateMetaTag('og:description', ogDescription || description, true);
+    updateMetaTag('og:image', ogImage || 'https://delivery.daloamarket.com/og-image.png', true);
+    updateMetaTag('og:url', ogUrl || defaultCanonical, true);
+    updateMetaTag('og:site_name', 'DaloaDelivery', true);
+    updateMetaTag('og:locale', 'fr_CI', true);
+
+    // 4. Update Twitter Card Tags
+    updateMetaTag('twitter:card', ogImage ? 'summary_large_image' : 'summary');
+    updateMetaTag('twitter:title', ogTitle || title);
+    updateMetaTag('twitter:description', ogDescription || description);
+    updateMetaTag('twitter:image', ogImage || 'https://delivery.daloamarket.com/og-image.png');
+
+    // 5. Update Canonical Link
+    updateCanonical(canonical || defaultCanonical);
+
+    // 6. Inject Schema.org JSON-LD
+    let jsonLdScripts: HTMLScriptElement[] = [];
+    if (jsonLd) {
+      const ldItems = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+      ldItems.forEach((item) => {
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.setAttribute('data-seo-jsonld', 'true');
+        script.text = JSON.stringify(item);
+        document.head.appendChild(script);
+        jsonLdScripts.push(script);
+      });
     }
 
-    // 6. JSON-LD
-    let script = document.querySelector<HTMLScriptElement>('script[id="dynamic-jsonld"]');
-    if (options.jsonLd) {
-      if (!script) {
-        script = document.createElement('script');
-        script.setAttribute('id', 'dynamic-jsonld');
-        script.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify(options.jsonLd);
-    } else if (script) {
-      script.remove();
-    }
-  }, [title, options]);
+    return () => {
+      document.title = prevTitle;
+      jsonLdScripts.forEach((script) => {
+        if (document.head.contains(script)) {
+          document.head.removeChild(script);
+        }
+      });
+    };
+  }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogUrl, canonical, jsonLd]);
 }

@@ -74,7 +74,7 @@ export default function TermsPage() {
                   <p>Pour utiliser les fonctionnalités de la Plateforme, vous devez créer un compte. Lors de l'inscription, vous vous engagez à fournir des informations exactes, complètes et à jour. Toute fausse déclaration peut entraîner la suspension ou la suppression de votre compte.</p>
                   
                   <h4 className="font-semibold text-grey-800 mt-3">3.2 Sécurité du compte</h4>
-                  <p>Vous êtes entièrement responsable de la confidentialité de vos identifiants de connexion (email et mot de passe). Toute activité effectuée depuis votre compte est présumée être de votre fait. Vous devez immédiatement nous signaler toute utilisation non autorisée de votre compte à support@daloamarket.shop.</p>
+                  <p>Vous êtes entièrement responsable de la confidentialité de vos identifiants de connexion (email et mot de passe). Toute activité effectuée depuis votre compte est présumée être de votre fait. Vous devez immédiatement nous signaler toute utilisation non autorisée de votre compte à support@daloamarket.com.</p>
                   
                   <h4 className="font-semibold text-grey-800 mt-3">3.3 Suppression du compte</h4>
                   <p>Vous pouvez demander la suppression de votre compte à tout moment. DaloaDelivery se réserve également le droit de suspendre ou supprimer un compte en cas de violation des présentes CGU, de comportement frauduleux, ou de tout autre motif légitime, sans préavis ni indemnité.</p>
@@ -286,7 +286,7 @@ export default function TermsPage() {
               <div>
                 <h2 className="text-lg font-bold mb-3 text-grey-900">11. Signalement et modération</h2>
                 <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
-                  <p>Les utilisateurs peuvent signaler tout profil, avis ou comportement problématique à l'adresse support@daloamarket.shop. Nous examinons chaque signalement dans les meilleurs délais.</p>
+                  <p>Les utilisateurs peuvent signaler tout profil, avis ou comportement problématique à l'adresse support@daloamarket.com. Nous examinons chaque signalement dans les meilleurs délais.</p>
                   <p>DaloaDelivery dispose d'une équipe de modération qui peut :</p>
                   <ul className="list-disc pl-5 space-y-1">
                     <li>Masquer ou supprimer un profil non conforme</li>
@@ -314,7 +314,7 @@ export default function TermsPage() {
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">
                         <Mail className="w-3 h-3 text-primary" />
                       </span>
-                      <span><strong className="text-grey-800">Email :</strong> support@daloamarket.shop</span>
+                      <span><strong className="text-grey-800">Email :</strong> support@daloamarket.com</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">

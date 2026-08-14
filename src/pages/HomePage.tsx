@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User } from 'lucide-react';
 import { deliveryPersonService } from '../services/deliveryPersonService';
 import type { DeliveryPerson } from '../types/livreur';
+import { useSEO } from '../hooks/useSEO';
 
 const CATEGORIES = [
   { id: 'Moto', label: 'Moto', icon: Bike, color: 'bg-primary-50 text-primary', delay: 0.1 },
@@ -16,6 +17,30 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [topLivreurs, setTopLivreurs] = useState<DeliveryPerson[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const deliveryServiceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Livraison express et coursier de proximité',
+    provider: {
+      '@type': 'Organization',
+      name: 'DaloaDelivery',
+      url: 'https://delivery.daloamarket.com',
+    },
+    areaServed: {
+      '@type': 'City',
+      name: 'Daloa',
+      addressCountry: 'CI',
+    },
+    description: 'Trouvez un livreur vérifié à Daloa (moto, vélo, voiture, triporteur) pour vos colis, repas et marchandises.',
+  };
+
+  useSEO('Livreurs fiables à Daloa — Service de Livraison Express', {
+    description: 'Trouvez rapidement un livreur disponible à Daloa (Côte d\'Ivoire). Coursiers vérifiés par moto, vélo, voiture et triporteur avec suivi en temps réel.',
+    keywords: 'livreur Daloa, livraison moto Daloa, coursier Côte d\'Ivoire, livraison express DaloaDelivery',
+    canonical: 'https://delivery.daloamarket.com/',
+    jsonLd: deliveryServiceSchema,
+  });
 
   useEffect(() => {
     const fetchTop = async () => {
@@ -97,7 +122,7 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-4">
             {loading ? (
               [1, 2, 3].map((i) => (
                 <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse flex gap-4">

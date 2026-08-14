@@ -168,7 +168,7 @@ export default function DashboardCommandes() {
       </div>
 
       {/* Orders List */}
-      <div className="px-4 mt-4 space-y-3">
+      <div className="px-4 mt-4 space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4">
         {isCurfewActive() && activeTab !== 'accepted' ? (
           <div className="bg-error-50 rounded-2xl p-6 text-center border-2 border-error-100 mt-4">
             <div className="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">

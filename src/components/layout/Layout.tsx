@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AppBar } from './AppBar';
 import { BottomNavBar } from './BottomNavBar';
 import { InstallPrompt } from '../InstallPrompt';
+import { FooterDelivery } from './FooterDelivery';
 
 export function Layout() {
   const location = useLocation();
@@ -23,9 +24,10 @@ export function Layout() {
   return (
     <div className="flex flex-col min-h-screen bg-grey-50">
       {!hideAppBar && <AppBar />}
-      <main className={`flex-1 ${hideBottomNav ? '' : 'pb-20 md:pb-4'}`}>
+      <main className={`flex-1 w-full max-w-6xl mx-auto ${hideBottomNav ? '' : 'pb-20 md:pb-4'}`}>
         <Outlet />
       </main>
+      <FooterDelivery />
       {!hideBottomNav && <BottomNavBar />}
       <InstallPrompt />
     </div>

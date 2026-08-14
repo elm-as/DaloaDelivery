@@ -3,7 +3,7 @@
 > **Plateforme de livreurs** pour la ville de Daloa, Côte d'Ivoire.  
 > Trouvez un livreur fiable ou inscrivez-vous pour générer des revenus grâce à la livraison.
 
-🌐 **Production** : [daloa-delivery.shop](https://daloa-delivery.shop)
+🌐 **Production** : [delivery.daloamarket.com](https://delivery.daloamarket.com)
 
 ---
 

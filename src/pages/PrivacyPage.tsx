@@ -28,7 +28,7 @@ export default function PrivacyPage() {
                 <h2 className="text-lg font-bold mb-3 text-grey-900">1. Introduction et principes généraux</h2>
                 <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
                   <p>La protection de vos données personnelles est une priorité pour DaloaDelivery. La présente Politique de Confidentialité explique quelles données nous collectons, comment nous les utilisons, avec qui nous les partageons, et quels sont vos droits.</p>
-                  <p>Cette politique s'applique à tous les services fournis par DaloaDelivery via notre plateforme web accessible à l'adresse <strong>daloa-delivery.shop</strong>.</p>
+                  <p>Cette politique s'applique à tous les services fournis par DaloaDelivery via notre plateforme web accessible à l'adresse <strong>delivery.daloamarket.com</strong>.</p>
                   <p>Nous traitons vos données conformément à la loi ivoirienne relative à la protection des données à caractère personnel et aux principes de minimisation, transparence et sécurité.</p>
                   <p>En utilisant DaloaDelivery, vous acceptez les pratiques décrites dans la présente politique. Si vous n'êtes pas d'accord, veuillez ne pas utiliser nos services.</p>
                 </div>
@@ -257,7 +257,7 @@ export default function PrivacyPage() {
                     </div>
                   </div>
 
-                  <p className="mt-3">Pour exercer ces droits, contactez-nous à <strong>support@daloamarket.shop</strong>. Nous répondrons à votre demande dans un délai de 30 jours maximum. Une preuve d'identité pourra vous être demandée.</p>
+                  <p className="mt-3">Pour exercer ces droits, contactez-nous à <strong>support@daloamarket.com</strong>. Nous répondrons à votre demande dans un délai de 30 jours maximum. Une preuve d'identité pourra vous être demandée.</p>
                 </div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function PrivacyPage() {
                 <h2 className="text-lg font-bold mb-3 text-grey-900">9. Mineurs</h2>
                 <div className="space-y-2 text-sm text-grey-600 leading-relaxed">
                   <p>La Plateforme DaloaDelivery n'est pas destinée aux personnes de moins de 16 ans. Nous ne collectons pas sciemment des données personnelles auprès de mineurs de moins de 16 ans.</p>
-                  <p>Si vous êtes parent ou tuteur et que vous apprenez que votre enfant nous a fourni des données personnelles sans votre consentement, contactez-nous à <strong>support@daloamarket.shop</strong>. Nous prendrons les mesures nécessaires pour supprimer ces informations.</p>
+                  <p>Si vous êtes parent ou tuteur et que vous apprenez que votre enfant nous a fourni des données personnelles sans votre consentement, contactez-nous à <strong>support@daloamarket.com</strong>. Nous prendrons les mesures nécessaires pour supprimer ces informations.</p>
                 </div>
               </div>
             </div>
@@ -311,13 +311,13 @@ export default function PrivacyPage() {
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">
                         <Mail className="w-3 h-3 text-primary" />
                       </span>
-                      <span><strong className="text-grey-800">Email :</strong> support@daloamarket.shop</span>
+                      <span><strong className="text-grey-800">Email :</strong> support@daloamarket.com</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">
                         <Globe className="w-3 h-3 text-primary" />
                       </span>
-                      <span><strong className="text-grey-800">Site :</strong> daloa-delivery.shop</span>
+                      <span><strong className="text-grey-800">Site :</strong> delivery.daloamarket.com</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">

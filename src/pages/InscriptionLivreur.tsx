@@ -124,6 +124,12 @@ export default function InscriptionLivreur() {
         toast.error('Les mots de passe ne correspondent pas');
         return;
       }
+      const domain = formData.email.split('@')[1]?.toLowerCase().trim();
+      const disposableDomains = ['kierko.com', 'aganseo.com', 'tempmail.com', 'yopmail.com', 'guerrillamail.com'];
+      if (domain && disposableDomains.includes(domain)) {
+        toast.error('Les adresses email temporaires ou jetables ne sont pas autorisées');
+        return;
+      }
       setSubmitting(true);
       try {
         const { error } = await supabase.auth.signUp({
@@ -238,12 +244,12 @@ export default function InscriptionLivreur() {
   
 
   return (
-    <div className="min-h-screen bg-grey-50 pb-20">
+    <div className="min-h-screen bg-grey-50 pb-20 max-w-3xl mx-auto lg:pt-6">
       {/* App-like Header Background */}
-      <div className="bg-primary px-4 pt-6 pb-20 rounded-b-[40px] shadow-sm relative overflow-hidden">
+      <div className="bg-primary px-6 pt-6 pb-20 rounded-3xl shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Devenir livreur</h1>
+          <h1 className="text-2xl font-bold text-white">Devenir livreur partenaire</h1>
           <div className="bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1 text-sm font-bold text-white">
             <span className="w-2 h-2 rounded-full bg-success" />
             Étape {step}/{totalSteps}
