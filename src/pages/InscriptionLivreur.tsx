@@ -244,20 +244,25 @@ export default function InscriptionLivreur() {
   
 
   return (
-    <div className="min-h-screen bg-grey-50 pb-20 max-w-3xl mx-auto lg:pt-6">
-      {/* App-like Header Background */}
-      <div className="bg-primary px-6 pt-6 pb-20 rounded-3xl shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+    <div className="min-h-screen bg-slate-50 pb-28 max-w-3xl mx-auto lg:pt-6">
+      {/* Modern Header Banner */}
+      <div className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600 px-6 pt-8 pb-20 rounded-b-[2.5rem] shadow-xl shadow-orange-500/20 relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-36 h-36 bg-black/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+
         <div className="relative z-10 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Devenir livreur partenaire</h1>
-          <div className="bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1 text-sm font-bold text-white">
-            <span className="w-2 h-2 rounded-full bg-success" />
-            Étape {step}/{totalSteps}
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Devenir Livreur Partenaire</h1>
+            <p className="text-xs text-orange-100 font-medium mt-0.5">Rejoignez la flotte DaloaDelivery & commencez à livrer</p>
+          </div>
+          <div className="bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-black text-white border border-white/20 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Étape {step}/{totalSteps}</span>
           </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-12 relative z-20">
+      <div className="px-4 -mt-12 relative z-20 space-y-4">
         <AnimatePresence mode="wait">
           {/* Step 1 (no user): Account creation */}
           {!isLoggedIn && step === 1 && (
@@ -289,31 +294,33 @@ export default function InscriptionLivreur() {
         </AnimatePresence>
 
         {/* Navigation Buttons */}
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-3 pt-2">
           {step > 1 && (
             <button
               onClick={() => setStep(step - 1)}
               disabled={submitting}
-              className="flex-1 py-4 bg-white text-grey-900 rounded-2xl font-bold shadow-sm border border-grey-100 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              className="flex-1 py-3.5 bg-white text-gray-800 rounded-2xl font-black text-xs shadow-sm border border-gray-200/80 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
             >
-              <ChevronLeft className="w-5 h-5" /> Retour
+              <ChevronLeft className="w-4 h-4" />
+              <span>Retour</span>
             </button>
           )}
           {step < totalSteps ? (
             <button
               onClick={handleNext}
               disabled={!canGoNext() || submitting}
-              className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="flex-[2] py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 text-white rounded-2xl font-black text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all disabled:opacity-50"
             >
-              Suivant <ChevronRight className="w-5 h-5" />
+              <span>Suivant</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={!canGoNext() || submitting}
-              className="flex-[2] py-4 bg-success text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="flex-[2] py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all disabled:opacity-50"
             >
-              {submitting ? 'Validation...' : 'Terminer'}
+              {submitting ? 'Validation en cours...' : 'Finaliser mon inscription 🎉'}
             </button>
           )}
         </div>

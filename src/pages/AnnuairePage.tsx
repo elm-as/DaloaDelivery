@@ -25,15 +25,19 @@ export default function AnnuairePage() {
   const [livreurs, setLivreurs] = useState<DeliveryPerson[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [search, setSearch] = useState('');
   
-  // Read ?type= from URL if present
+  // Read ?type= and ?q= from URL if present
   const initialType = searchParams.get('type') || undefined;
+  const initialQuery = searchParams.get('q') || '';
+  const [search, setSearch] = useState(initialQuery);
+  
   const [filters, setFilters] = useState<DeliveryPersonSearchFilters>({
-    vehicle_type: initialType
+    vehicle_type: initialType,
+    search: initialQuery || undefined,
   });
   const [localFilters, setLocalFilters] = useState<DeliveryPersonSearchFilters>({
-    vehicle_type: initialType
+    vehicle_type: initialType,
+    search: initialQuery || undefined,
   });
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -55,7 +59,13 @@ export default function AnnuairePage() {
   }, [fetchLivreurs]);
 
   const handleSearch = () => {
-    setFilters((prev) => ({ ...prev, search }));
+    setFilters((prev) => ({ ...prev, search: search.trim() || undefined }));
+    setPage(1);
+  };
+
+  const handleQuickVehicleSelect = (type?: string) => {
+    setFilters((prev) => ({ ...prev, vehicle_type: type }));
+    setLocalFilters((prev) => ({ ...prev, vehicle_type: type }));
     setPage(1);
   };
 
@@ -78,51 +88,91 @@ export default function AnnuairePage() {
   const paginatedLivreurs = livreurs.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   return (
-    <div className="bg-grey-50 min-h-screen pb-6 flex flex-col">
-      {/* Sticky Search Header */}
-      <div className="bg-white px-4 py-3 sticky top-14 z-30 shadow-sm border-b border-grey-100">
-        <div className="flex flex-col gap-3">
+    <div className="bg-slate-50 min-h-screen pb-24 flex flex-col">
+      {/* Sticky Modern Search & Control Header */}
+      <div className="bg-white/90 backdrop-blur-xl px-4 py-3.5 sticky top-14 z-30 shadow-sm border-b border-gray-100 space-y-3">
+        <div className="max-w-6xl mx-auto flex flex-col gap-2.5">
           <div className="flex items-center gap-2">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-grey-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Chercher un livreur..."
-                className="w-full pl-9 pr-4 py-2.5 bg-grey-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="Rechercher un livreur, quartier (Tazibouo, Kennedy...)"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200/80 rounded-2xl text-xs sm:text-sm font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
               />
             </div>
+            
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl text-xs font-black shadow-xs active:scale-95 transition-all shrink-0"
+            >
+              Filtrer
+            </button>
+
             <button
               onClick={openFilters}
-              className="w-10 h-10 bg-primary-50 text-primary rounded-xl flex items-center justify-center flex-shrink-0 relative"
+              className="w-10 h-10 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200/60 rounded-2xl flex items-center justify-center flex-shrink-0 relative active:scale-95 transition-all"
+              title="Filtres avancés"
             >
-              <SlidersHorizontal className="w-5 h-5" />
+              <SlidersHorizontal className="w-4 h-4" />
               {Object.keys(filters).filter(k => k !== 'search' && filters[k as keyof DeliveryPersonSearchFilters] !== undefined).length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-primary-50" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-orange-600 rounded-full ring-2 ring-orange-50" />
               )}
             </button>
           </div>
-          
-          {/* View Mode Toggle */}
-          <div className="flex p-1 bg-grey-100 rounded-xl">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
-                viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-grey-500'
-              }`}
-            >
-              <List className="w-4 h-4" /> Liste
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
-                viewMode === 'map' ? 'bg-white text-primary shadow-sm' : 'text-grey-500'
-              }`}
-            >
-              <MapIcon className="w-4 h-4" /> Carte
-            </button>
+
+          {/* Quick Vehicle Type Horizontal Filter & Mode Toggle */}
+          <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => handleQuickVehicleSelect(undefined)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  !filters.vehicle_type
+                    ? 'bg-orange-500 text-white shadow-xs'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Tous
+              </button>
+              {VEHICLE_TYPES.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => handleQuickVehicleSelect(type)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    filters.vehicle_type === type
+                      ? 'bg-orange-500 text-white shadow-xs'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex p-0.5 bg-gray-100 rounded-xl shrink-0">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'list' ? 'bg-white text-orange-600 shadow-xs' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Liste</span>
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'map' ? 'bg-white text-orange-600 shadow-xs' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <MapIcon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Carte</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

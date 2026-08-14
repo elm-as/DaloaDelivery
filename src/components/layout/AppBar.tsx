@@ -175,51 +175,59 @@ export function AppBar() {
 
   return (
     <>
-      <header className="bg-white sticky top-0 z-40 border-b border-grey-100">
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-gray-100/90 shadow-2xs pt-safe">
         <div className="flex items-center justify-between h-14 px-4 max-w-6xl mx-auto">
           {/* Left side */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             {canGoBack && !isHome ? (
               <button
                 onClick={() => navigate(-1)}
-                className="w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
+                className="w-9 h-9 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-700 active:scale-95 transition-all shadow-2xs flex-shrink-0"
+                aria-label="Retour"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </button>
             ) : null}
             
-            <Link to="/" className="flex items-center gap-2 text-primary hover:text-primary-600 transition-colors">
-              <img src="/logo.png" alt="DaloaDelivery" className="w-6 h-6 object-contain" />
+            <Link to="/" className="flex items-center gap-2 text-gray-900 hover:opacity-90 transition-opacity">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 p-1 flex items-center justify-center shadow-xs">
+                <img src="/logo.png" alt="DaloaDelivery" className="w-full h-full object-contain" />
+              </div>
               {isHome || !title ? (
-                <span className="text-lg font-bold">DaloaDelivery</span>
+                <span className="text-base font-black tracking-tight text-gray-900">
+                  Daloa<span className="text-orange-500">Delivery</span>
+                </span>
               ) : (
-                <h1 className="text-[15px] font-bold text-grey-900 truncate">{title}</h1>
+                <h1 className="text-sm font-black text-gray-900 truncate">{title}</h1>
               )}
             </Link>
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-grey-700">
-            <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
-            <Link to="/annuaire" className="hover:text-primary transition-colors">Annuaire livreurs</Link>
-            <Link to={user ? "/dashboard" : "/devenir-livreur"} className="hover:text-primary transition-colors">Espace Livreur</Link>
+          <nav className="hidden lg:flex items-center gap-5 text-xs font-black text-gray-600">
+            <Link to="/" className="hover:text-orange-500 transition-colors">Accueil</Link>
+            <Link to="/annuaire" className="hover:text-orange-500 transition-colors">Annuaire livreurs</Link>
+            <Link to={user ? "/dashboard" : "/devenir-livreur"} className="px-3.5 py-1.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 hover:bg-orange-100 transition-all">
+              {user ? "Cockpit Livreur" : "Devenir Livreur"}
+            </Link>
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button 
               onClick={() => setShowLegal(true)}
-              className="w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
-              title="Informations légales"
+              className="w-9 h-9 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 active:scale-95 transition-all shadow-2xs flex-shrink-0"
+              title="Informations et statut"
             >
-              <MoreVertical className="w-5 h-5" />
+              <MoreVertical className="w-4 h-4" />
             </button>
             <button 
               onClick={() => setShowNotifs(true)}
-              className="relative w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
+              className="relative w-9 h-9 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 active:scale-95 transition-all shadow-2xs flex-shrink-0"
+              title="Notifications"
             >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-white" />
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white" />
             </button>
           </div>
         </div>
