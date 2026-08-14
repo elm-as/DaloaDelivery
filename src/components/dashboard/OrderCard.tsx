@@ -56,43 +56,47 @@ export const OrderCard = ({ order, idx, handleAcceptOrder, handlePickupVerificat
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.05 }}
       onClick={() => navigate(`/course/${order.id}`)}
-      className="bg-white rounded-2xl shadow-sm border border-grey-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+      className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:border-primary-200 hover:shadow-md active:scale-[0.99] transition-all group"
     >
       <div className="p-4 pb-3">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${statusColor}`}>
-              <StatusIcon className="w-4 h-4" />
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${statusColor} group-hover:scale-105 transition-transform`}>
+              <StatusIcon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-grey-900">Course #{order.id.slice(0, 6)}</p>
-              <div className="flex items-center gap-2">
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor}`}>
+              <p className="text-sm font-black text-gray-900 leading-tight">Course #{order.id.slice(0, 6)}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${statusColor}`}>
                   {statusLabel}
                 </span>
-                <span className="text-[11px] text-grey-500 flex items-center gap-1">
+                <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {formatRelativeDate(order.created_at)}
                 </span>
               </div>
             </div>
           </div>
-          <div className="bg-primary text-white px-3 py-1.5 rounded-xl text-center flex flex-col items-center justify-center">
-            <span className="text-base font-black">{formatPrice(Math.round(order.delivery_price * 0.9))}</span>
+          <div className="bg-gradient-to-br from-primary to-primary-600 text-white px-3.5 py-1.5 rounded-2xl text-center shadow-sm">
+            <span className="text-base font-black leading-none block">{formatPrice(Math.round(order.delivery_price * 0.9))}</span>
             <span className="text-[9px] font-bold opacity-90 mt-0.5 uppercase tracking-wider leading-none">Net</span>
           </div>
         </div>
 
-        <div className="relative pl-3">
-          <div className="absolute left-[5px] top-3 bottom-3 w-0.5 bg-grey-200" />
+        <div className="relative pl-3 space-y-3">
+          <div className="absolute left-[5px] top-3 bottom-3 w-0.5 bg-gray-200" />
           
-          <div className="flex items-start gap-3 mb-3 relative">
-            <div className="w-3 h-3 rounded-full bg-grey-300 ring-3 ring-white relative z-10 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[10px] font-bold text-grey-400 uppercase tracking-wider">Récupération</p>
-              <p className="text-sm font-medium text-grey-900 mt-0.5">{order.pickup_location}</p>
+          <div className="flex items-start gap-3 relative">
+            <div className="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-50 relative z-10 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Récupération</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate mt-0.5">{order.pickup_location}</p>
               {isPrePickup && order.seller_phone && (
-                <a href={`tel:${order.seller_phone}`} className="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold text-green-600 hover:text-green-800 hover:underline">
+                <a 
+                  href={`tel:${order.seller_phone}`} 
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-800 hover:underline"
+                >
                   <Phone className="w-3 h-3" />
                   {order.seller_phone}
                 </a>
@@ -101,12 +105,16 @@ export const OrderCard = ({ order, idx, handleAcceptOrder, handlePickupVerificat
           </div>
           
           <div className="flex items-start gap-3 relative">
-            <div className="w-3 h-3 rounded-full bg-secondary ring-3 ring-white relative z-10 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[10px] font-bold text-grey-400 uppercase tracking-wider">Livraison</p>
-              <p className="text-sm font-medium text-grey-900 mt-0.5">{order.dropoff_location}</p>
+            <div className="w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-emerald-50 relative z-10 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Livraison</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate mt-0.5">{order.dropoff_location}</p>
               {isPostPickup && order.buyer_phone && (
-                <a href={`tel:${order.buyer_phone}`} className="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+                <a 
+                  href={`tel:${order.buyer_phone}`} 
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
+                >
                   <Phone className="w-3 h-3" />
                   {order.buyer_phone}
                 </a>
@@ -116,40 +124,40 @@ export const OrderCard = ({ order, idx, handleAcceptOrder, handlePickupVerificat
         </div>
       </div>
 
-      <div className="px-4 pb-4 pt-2 border-t border-grey-50">
+      <div className="px-4 pb-4 pt-2 border-t border-gray-50">
         {!isTerminal && action && action.action !== 'none' ? (
           <div className="flex items-center gap-2">
             {isActive && (
               <button
                 type="button"
                 onClick={handleOpenNavigation}
-                className="py-3 px-4 bg-grey-900 text-white rounded-xl text-xs font-black active:scale-[0.97] transition-transform flex items-center justify-center gap-1.5 shadow-sm hover:bg-black"
-                title="Lancer le GPS Google Maps"
+                className="py-3 px-4 bg-gray-900 text-white rounded-2xl text-xs font-black active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 shadow-sm hover:bg-black"
+                title="Lancer l'itinéraire Google Maps"
               >
                 <Navigation className="w-4 h-4 text-amber-400" />
-                Naviguer (GPS)
+                <span>GPS</span>
               </button>
             )}
             <button
               onClick={handleAction}
-              className={`flex-1 py-3 text-white rounded-xl text-xs font-bold active:scale-[0.97] transition-transform flex items-center justify-center gap-1.5 ${
-                action.variant === 'secondary' ? 'bg-secondary' : 'bg-primary'
+              className={`flex-1 py-3 text-white rounded-2xl text-xs sm:text-sm font-black active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                action.variant === 'secondary' ? 'bg-secondary hover:bg-secondary-600' : 'bg-primary hover:bg-primary-600'
               }`}
             >
-              {action.label}
+              <span>{action.label}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         ) : isTerminal ? (
-          <div className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${statusColor}`}>
+          <div className={`w-full py-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 ${statusColor}`}>
             {status === 'delivered' || status === 'completed' ? (
-              <><CheckCircle2 className="w-4 h-4" />Course terminée</>
+              <><CheckCircle2 className="w-4 h-4" />Course terminée avec succès</>
             ) : (
               <><StatusIcon className="w-4 h-4" />{statusLabel}</>
             )}
           </div>
         ) : (
-          <div className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 opacity-60 ${statusColor}`}>
+          <div className={`w-full py-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 opacity-60 ${statusColor}`}>
             <StatusIcon className="w-4 h-4" />
             {statusLabel}
           </div>

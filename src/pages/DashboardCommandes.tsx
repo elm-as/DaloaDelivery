@@ -113,51 +113,60 @@ export default function DashboardCommandes() {
   const filteredOrders = activeTab === 'accepted' ? inProgressOrders : deliveredOrders;
 
   return (
-    <div className="pb-24 bg-grey-50 min-h-screen">
+    <div className="pb-24 bg-gray-50 min-h-screen">
       {/* Header with Stats */}
-      <div className="bg-white px-4 pt-4 pb-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-bold text-grey-900">Mes commandes</h1>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="w-9 h-9 rounded-xl bg-grey-50 flex items-center justify-center text-grey-600 active:scale-90 transition-transform"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-warning-50 to-warning-100/50 rounded-2xl p-3.5 text-center">
-            <p className="text-2xl font-black text-warning-600">{inProgressOrders.length}</p>
-            <p className="text-[10px] font-bold text-warning-700 uppercase mt-0.5">En cours</p>
+      <div className="bg-white px-4 pt-5 pb-6 border-b border-gray-100 shadow-sm">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-black text-gray-900 tracking-tight">Mes livraisons</h1>
+              <p className="text-xs text-gray-500 font-medium mt-0.5">Suivez vos courses en temps réel et validez les OTP</p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              aria-label="Actualiser les commandes"
+              className="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-700 active:scale-90 transition-all border border-gray-200/70 shadow-sm"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-          <div className="bg-gradient-to-br from-success-50 to-success-100/50 rounded-2xl p-3.5 text-center">
-            <p className="text-2xl font-black text-success">{deliveredOrders.length}</p>
-            <p className="text-[10px] font-bold text-success-600 uppercase mt-0.5">Livrées</p>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 rounded-3xl p-4 text-center shadow-sm">
+              <p className="text-3xl font-black text-amber-600 leading-none">{inProgressOrders.length}</p>
+              <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mt-1.5">En cours de livraison</p>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/60 rounded-3xl p-4 text-center shadow-sm">
+              <p className="text-3xl font-black text-emerald-600 leading-none">{deliveredOrders.length}</p>
+              <p className="text-[10px] font-black text-emerald-800 uppercase tracking-wider mt-1.5">Courses terminées</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Tab Filter */}
-      <div className="px-4 pt-4">
-        <div className="bg-grey-100 p-1 rounded-2xl flex items-center">
+      <div className="px-4 pt-4 max-w-4xl mx-auto">
+        <div className="bg-gray-200/70 p-1 rounded-2xl flex items-center mb-4">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const isCurrent = activeTab === tab.key;
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-bold rounded-xl transition-all ${
-                  activeTab === tab.key 
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-xl transition-all ${
+                  isCurrent 
                     ? 'bg-white text-primary shadow-sm' 
-                    : 'text-grey-500'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {tab.label}
-                {tab.count > 0 && activeTab !== tab.key && (
-                  <span className="bg-grey-300 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span className={`text-[10px] font-black px-2 py-0.2 rounded-full ${
+                    isCurrent ? 'bg-primary text-white' : 'bg-gray-300 text-gray-700'
+                  }`}>
                     {tab.count}
                   </span>
                 )}
@@ -165,83 +174,77 @@ export default function DashboardCommandes() {
             );
           })}
         </div>
-      </div>
 
-      {/* Orders List */}
-      <div className="px-4 mt-4 space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4">
-        {isCurfewActive() && activeTab !== 'accepted' ? (
-          <div className="bg-error-50 rounded-2xl p-6 text-center border-2 border-error-100 mt-4">
-            <div className="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-error" />
-            </div>
-            <h3 className="text-lg font-black text-error-900 mb-2 uppercase">
-              Couvre-feu de sécurité (22h30 - 05h30)
-            </h3>
-            <p className="text-sm text-error-800 font-medium leading-relaxed mb-4">
-              Les courses sont suspendues durant la nuit pour votre sécurité. 
-              Aucune nouvelle commande ne peut être acceptée pendant cette période.
-            </p>
-            <div className="bg-error-100/50 p-3 rounded-xl">
-              <p className="text-xs font-bold text-error-900">
-                Rentrez chez vous en sécurité.
+        {/* Orders List */}
+        <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4">
+          {isCurfewActive() && activeTab !== 'accepted' ? (
+            <div className="bg-gradient-to-br from-red-50 to-rose-100/60 rounded-3xl p-6 text-center border border-red-200 lg:col-span-2">
+              <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-red-600">
+                <XCircle className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-black text-red-950 mb-1.5 uppercase tracking-wide">
+                Couvre-feu de sécurité (22h30 - 05h30)
+              </h3>
+              <p className="text-xs text-red-800 font-medium leading-relaxed max-w-md mx-auto">
+                Les courses sont suspendues durant la nuit pour votre sécurité. 
               </p>
             </div>
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            {filteredOrders.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-16"
-              >
-                <div className="w-20 h-20 bg-grey-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                  {activeTab === 'accepted' ? (
-                    <Inbox className="w-10 h-10 text-grey-300" />
-                  ) : (
-                    <Package className="w-10 h-10 text-grey-300" />
-                  )}
-                </div>
-                <h3 className="font-bold text-grey-900 text-lg mb-1">
-                  {activeTab === 'accepted' ? 'Aucune commande en cours' : 'Aucune commande'}
-                </h3>
-                <p className="text-sm text-grey-500 max-w-xs mx-auto">
-                  {activeTab === 'accepted' 
-                    ? 'Les commandes que vous acceptez apparaîtront ici.'
-                    : 'En attente de nouvelles livraisons dans vos zones.'}
-                </p>
-                <button
-                  onClick={handleRefresh}
-                  className="mt-5 px-5 py-2.5 bg-grey-100 text-grey-700 rounded-xl text-sm font-bold active:scale-95 transition-transform inline-flex items-center gap-2"
+          ) : (
+            <AnimatePresence mode="wait">
+              {filteredOrders.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-white rounded-3xl p-10 text-center border border-dashed border-gray-200 lg:col-span-2"
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  Actualiser
-                </button>
-              </motion.div>
-            ) : (
-            <motion.div
-              key="list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-3"
-            >
-              {filteredOrders.map((order, idx) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  idx={idx}
-                  handleAcceptOrder={handleAcceptOrder}
-                  handlePickupVerification={handlePickupVerification}
-                  handleDeliveryVerification={handleDeliveryVerification}
-                />
-              ))}
-            </motion.div>
-            )}
-          </AnimatePresence>
-        )}
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-gray-300">
+                    {activeTab === 'accepted' ? (
+                      <Inbox className="w-8 h-8" />
+                    ) : (
+                      <Package className="w-8 h-8" />
+                    )}
+                  </div>
+                  <h3 className="font-black text-gray-900 text-base mb-1">
+                    {activeTab === 'accepted' ? 'Aucune livraison en cours' : 'Aucune course terminée'}
+                  </h3>
+                  <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                    {activeTab === 'accepted' 
+                      ? 'Les livraisons que vous acceptez dans le flux des courses apparaîtront ici pour la validation OTP.'
+                      : 'L\'historique complet de vos livraisons effectuées apparaîtra ici.'}
+                  </p>
+                  <button
+                    onClick={handleRefresh}
+                    className="mt-4 px-5 py-2.5 bg-gray-100 hover:bg-gray-200/70 text-gray-800 rounded-xl text-xs font-bold active:scale-95 transition-all inline-flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Actualiser
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="list"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-3 lg:space-y-0 lg:contents"
+                >
+                  {filteredOrders.map((order, idx) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      idx={idx}
+                      handleAcceptOrder={handleAcceptOrder}
+                      handlePickupVerification={handlePickupVerification}
+                      handleDeliveryVerification={handleDeliveryVerification}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
+        </div>
       </div>
 
       {/* Verification Modals */}

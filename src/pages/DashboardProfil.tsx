@@ -225,15 +225,15 @@ export default function DashboardProfil() {
   ];
 
   return (
-    <div className="pb-8 max-w-4xl mx-auto">
-      {/* Profile Header */}
-      <div className="bg-gradient-to-br from-primary to-primary-700 px-4 pt-6 pb-16 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+    <div className="pb-16 max-w-4xl mx-auto">
+      {/* Profile Hero Header */}
+      <div className="bg-gradient-to-br from-primary via-primary-600 to-primary-700 px-4 pt-6 pb-16 relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-xl pointer-events-none" />
         
         <div className="flex items-center gap-4 relative z-10">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white/20 flex items-center justify-center border-2 border-white/30 shadow-lg">
+          <div className="relative group">
+            <div className="w-20 h-20 rounded-3xl overflow-hidden bg-white/20 flex items-center justify-center border-2 border-white/40 shadow-xl group-hover:scale-105 transition-transform">
               {profile.photo_url ? (
                 <img 
                   src={profile.photo_url} 
@@ -245,11 +245,14 @@ export default function DashboardProfil() {
                   }}
                 />
               ) : (
-                <User className="w-10 h-10 text-white/70" />
+                <User className="w-10 h-10 text-white/80" />
               )}
             </div>
-            <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer">
-              <Camera className="w-3.5 h-3.5 text-primary" />
+            <label 
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-white text-primary rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-transform cursor-pointer border border-gray-100 hover:bg-gray-50"
+              title="Changer ma photo de profil"
+            >
+              <Camera className="w-4 h-4" />
               <input 
                 type="file" 
                 accept="image/*" 
@@ -258,21 +261,29 @@ export default function DashboardProfil() {
               />
             </label>
           </div>
+
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-white truncate">{profile.name}</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-black text-white truncate tracking-tight">{profile.name}</h2>
+              {profile.verification_status === 'approved' && (
+                <span className="bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  Vérifié ✓
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-warning fill-warning" />
-                <span className="text-sm font-semibold text-white">{profile.rating.toFixed(1)}</span>
+                <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
+                <span className="text-sm font-black text-white">{profile.rating.toFixed(1)}</span>
               </div>
-              <span className="text-white/50">·</span>
-              <span className="text-sm text-white/80">{profile.total_reviews} avis</span>
+              <span className="text-white/40">·</span>
+              <span className="text-xs text-white/85 font-medium">{profile.total_reviews} avis clients</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <VehicleIcon className="w-4 h-4 text-white/70" />
-              <span className="text-sm text-white/70">{profile.vehicle_type}</span>
+            <div className="flex items-center gap-1.5 mt-1.5 text-xs text-white/80 font-medium">
+              <VehicleIcon className="w-3.5 h-3.5 text-white/90" />
+              <span>{profile.vehicle_type}</span>
               {profile.vehicle_details && (
-                <span className="text-sm text-white/50 truncate"> — {profile.vehicle_details}</span>
+                <span className="text-white/60 truncate"> — {profile.vehicle_details}</span>
               )}
             </div>
           </div>
@@ -280,41 +291,41 @@ export default function DashboardProfil() {
       </div>
 
       {/* Stats Cards - overlapping the gradient */}
-      <div className="px-4 -mt-10 relative z-10">
+      <div className="px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-3 gap-3">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
+            className="bg-white rounded-3xl p-4 text-center shadow-sm border border-gray-100 flex flex-col items-center justify-center"
           >
-            <p className="text-2xl font-black text-primary">{profile.rating.toFixed(1)}</p>
-            <p className="text-[11px] text-grey-500 font-medium mt-1">Note</p>
+            <p className="text-2xl font-black text-primary leading-none">{profile.rating.toFixed(1)}</p>
+            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-wider">Note globale</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
+            className="bg-white rounded-3xl p-4 text-center shadow-sm border border-gray-100 flex flex-col items-center justify-center"
           >
-            <p className="text-2xl font-black text-secondary">{profile.total_reviews}</p>
-            <p className="text-[11px] text-grey-500 font-medium mt-1">Avis</p>
+            <p className="text-2xl font-black text-gray-900 leading-none">{deliveredOrders.length}</p>
+            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-wider">Livraisons</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl p-4 text-center shadow-sm border border-grey-100"
+            className="bg-white rounded-3xl p-4 text-center shadow-sm border border-gray-100 flex flex-col items-center justify-center"
           >
-            <p className="text-2xl font-black text-success">{profile.coverage_zones.length}</p>
-            <p className="text-[11px] text-grey-500 font-medium mt-1">Zones</p>
+            <p className="text-2xl font-black text-emerald-600 leading-none">{profile.coverage_zones.length}</p>
+            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-wider">Quartiers</p>
           </motion.div>
         </div>
       </div>
 
       {/* Menu Items */}
       <div className="px-4 mt-6">
-        <p className="text-xs font-bold text-grey-400 uppercase tracking-wider px-1 mb-3">Paramètres</p>
+        <p className="text-xs font-black text-gray-400 uppercase tracking-wider px-1 mb-3">Gestion & Paramètres</p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {menuItems.map((item, idx) => {
             const Icon = item.icon;
@@ -323,33 +334,33 @@ export default function DashboardProfil() {
                 key={idx}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 + idx * 0.05 }}
+                transition={{ delay: 0.05 + idx * 0.03 }}
                 onClick={item.action}
-                className="flex items-center gap-4 w-full p-4 bg-white rounded-2xl border border-grey-100 shadow-sm hover:bg-grey-50/80 active:bg-grey-50 transition-colors text-left"
+                className="flex items-center gap-3.5 w-full p-4 bg-white rounded-3xl border border-gray-100 shadow-sm hover:border-primary-200 hover:shadow-md active:bg-gray-50 transition-all text-left group"
               >
-                <div className="w-10 h-10 bg-grey-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-grey-600" />
+                <div className="w-11 h-11 bg-primary-50 text-primary rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-grey-900">{item.label}</p>
-                  <p className="text-xs text-grey-500 truncate mt-0.5">{item.subtitle}</p>
+                  <p className="text-sm font-bold text-gray-900 leading-tight">{item.label}</p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">{item.subtitle}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-grey-300 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
               </motion.button>
             );
           })}
         </div>
       </div>
 
-      {/* Email */}
+      {/* Email & Auth Info */}
       <div className="px-4 mt-4">
-        <div className="bg-white rounded-2xl border border-grey-100 shadow-sm p-4 flex items-center gap-4">
-          <div className="w-10 h-10 bg-grey-50 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Mail className="w-5 h-5 text-grey-600" />
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 flex items-center gap-3.5">
+          <div className="w-11 h-11 bg-gray-50 text-gray-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <Mail className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-grey-900">Email</p>
-            <p className="text-xs text-grey-500 truncate mt-0.5">{user?.email || '—'}</p>
+            <p className="text-sm font-bold text-gray-900 leading-tight">Compte Email</p>
+            <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email || '—'}</p>
           </div>
         </div>
       </div>
@@ -358,10 +369,10 @@ export default function DashboardProfil() {
       <div className="px-4 mt-6">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-3.5 bg-error-50 text-error rounded-2xl font-bold text-sm active:scale-95 transition-transform"
+          className="w-full flex items-center justify-center gap-2 py-4 bg-red-50 hover:bg-red-100/80 text-red-600 rounded-3xl font-black text-sm active:scale-[0.98] transition-all border border-red-100 shadow-sm"
         >
-          <LogOut className="w-5 h-5" />
-          Se déconnecter
+          <LogOut className="w-4 h-4" />
+          Se déconnecter de mon compte
         </button>
       </div>
 
