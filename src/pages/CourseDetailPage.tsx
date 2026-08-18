@@ -10,6 +10,7 @@ import { useSupabase } from '../hooks/useSupabase';
 import toast from 'react-hot-toast';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { isCurfewActive } from '../utils/security';
+import { friendlyError } from '../lib/messages';
 import PickupVerificationModal from '../components/livreur/PickupVerificationModal';
 import DeliveryVerificationModal from '../components/livreur/DeliveryVerificationModal';
 
@@ -129,7 +130,7 @@ export default function CourseDetailPage() {
       setOrder(data);
       toast.success("Course acceptée !");
     } catch (err: any) {
-      toast.error(err.message || "Erreur");
+      toast.error(friendlyError(err, "Impossible d'accepter cette course"));
     } finally {
       setActionLoading(false);
     }
@@ -152,7 +153,7 @@ export default function CourseDetailPage() {
       toast.success("Litige signalé avec succès. L'administration va l'étudier.");
       fetchOrder();
     } catch (err: any) {
-      toast.error(err.message || "Erreur lors du signalement du litige");
+      toast.error(friendlyError(err, "Erreur lors du signalement du litige"));
     } finally {
       setActionLoading(false);
     }

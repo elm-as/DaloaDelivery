@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, X, Phone } from 'lucide-react';
 import { deliveryAssignmentService } from '../../services/deliveryAssignmentService';
 import toast from 'react-hot-toast';
+import { friendlyError } from '../../lib/messages';
 
 interface PickupVerificationModalProps {
   assignmentId: string;
@@ -26,12 +27,12 @@ export default function PickupVerificationModal({
     setLoading(true);
     try {
       await deliveryAssignmentService.verifyPickup(assignmentId, otp);
-      toast.success('Pickup validé avec succès !');
+      toast.success('Récupération validée avec succès !');
       onSuccess();
       onClose();
       setOtp('');
     } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la vérification');
+      toast.error(friendlyError(error, 'Code de retrait incorrect ou expiré'));
     } finally {
       setLoading(false);
     }

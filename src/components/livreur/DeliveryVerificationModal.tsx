@@ -4,6 +4,7 @@ import { Camera, Shield, X, Check, Phone } from 'lucide-react';
 import { deliveryAssignmentService } from '../../services/deliveryAssignmentService';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import { friendlyError } from '../../lib/messages';
 
 interface DeliveryVerificationModalProps {
   assignmentId: string;
@@ -92,7 +93,7 @@ export default function DeliveryVerificationModal({
         toast.error('Impossible d\'obtenir votre position GPS. Vérifiez vos paramètres de localisation.');
         setStep('photo');
       } else {
-        toast.error(error.message || 'Erreur lors de la vérification');
+        toast.error(friendlyError(error, 'Erreur lors de la validation de livraison'));
         setStep('photo');
       }
     } finally {
@@ -109,7 +110,7 @@ export default function DeliveryVerificationModal({
         await deliveryAssignmentService.verifyDeliveryOtp(assignment.order_id, otp);
         setStep('photo');
       } catch (error: any) {
-        toast.error(error.message || 'Erreur OTP');
+        toast.error(friendlyError(error, 'Code OTP incorrect ou expiré'));
       } finally {
         setLoading(false);
       }
