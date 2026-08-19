@@ -89,7 +89,7 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
       <button
         type="button"
         onClick={() => setMapMode((prev) => (prev === 'street' ? 'satellite' : 'street'))}
-        className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-bold text-grey-900 shadow-md backdrop-blur border border-grey-200 active:scale-95 transition-all hover:bg-white"
+        className="absolute top-3 right-3 z-[1000] pointer-events-auto flex items-center gap-1.5 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-extrabold text-grey-900 shadow-lg backdrop-blur border border-grey-200 active:scale-95 transition-all hover:bg-white cursor-pointer"
       >
         <Layers className="w-3.5 h-3.5 text-primary-500" />
         <span>{mapMode === 'street' ? '🛰️ Satellite' : '🗺️ Plan'}</span>
