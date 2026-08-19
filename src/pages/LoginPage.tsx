@@ -182,9 +182,11 @@ export default function LoginPage() {
               setGoogleLoading(true);
               setError('');
               try {
+                const targetPath = redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`;
+                const callbackUrl = `${window.location.origin}${targetPath}`;
                 const { error } = await supabase.auth.signInWithOAuth({
                   provider: 'google',
-                  options: { redirectTo: window.location.origin + redirectTo },
+                  options: { redirectTo: callbackUrl },
                 });
                 if (error) throw error;
               } catch (err: unknown) {
