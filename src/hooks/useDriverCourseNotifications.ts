@@ -117,6 +117,25 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
       }
     );
 
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'seller_delivery_affiliations',
+      },
+      (payload) => {
+        const aff = payload.new;
+        if (aff && aff.status === 'pending') {
+          playCourseAlert(
+            '🤝 NOUVELLE DEMANDE D\'AFFILIATION !',
+            'Un vendeur souhaite vous affilier comme livreur dédié. Touchez pour voir la demande.',
+            '/affiliations'
+          );
+        }
+      }
+    );
+
     channel.subscribe();
 
     return () => {

@@ -104,6 +104,30 @@ export function AppBar() {
                 });
               }
 
+              // Vérifier les demandes d'affiliation vendeur en attente
+              try {
+                const { data: affData } = await supabase
+                  .from('seller_delivery_affiliations')
+                  .select('id, seller:users!seller_delivery_affiliations_seller_id_fkey(shop_name, full_name)')
+                  .eq('delivery_person_id', profile.id)
+                  .eq('status', 'pending');
+
+                if (affData && affData.length > 0) {
+                  const firstSeller = (affData[0] as any)?.seller?.shop_name || (affData[0] as any)?.seller?.full_name || 'Un vendeur';
+                  notifs.unshift({
+                    id: 'pending-affiliations',
+                    title: '🤝 Demande d\'affiliation reçue !',
+                    message: affData.length === 1
+                      ? `La boutique ${firstSeller} souhaite vous affilier comme livreur dédié.`
+                      : `${affData.length} vendeurs souhaitent vous ajouter comme livreur dédié.`,
+                    type: 'warning',
+                    link: '/affiliations',
+                  });
+                }
+              } catch (e) {
+                console.warn('Error checking pending affiliations:', e);
+              }
+
               if (profile.is_available) {
                 const pendingOrders = await deliveryOrderService.getPendingRequests();
                 if (pendingOrders.length > 0) {
