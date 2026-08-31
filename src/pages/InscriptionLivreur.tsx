@@ -1,151 +1,144 @@
-import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { useSupabase } from '../hooks/useSupabase';
-import { deliveryPersonService } from '../services/deliveryPersonService';
-import {
-  Bike,
-  Phone,
-  User,
-  Upload,
-  Clock,
-  Shield,
-  FileText,
-  AlertCircle,
-  Truck,
-  CreditCard
-} from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-declare global {
-  interface Window {
-    fbq?: any;
-  }
-}
+import { useSupabase } from '../hooks/useSupabase';
+import { deliveryPersonService } from '../services/deliveryPersonService';
+import { supabase } from '../lib/supabase';
+import { AuthStep } from '../components/registration/AuthStep';
+import { PersonalInfoStep } from '../components/registration/PersonalInfoStep';
+import { ServiceInfoStep } from '../components/registration/ServiceInfoStep';
+import { RegistrationZonesModal } from '../components/registration/RegistrationZonesModal';
+import {
+  type RegistrationFormData,
+  initialRegistrationFormData,
+  normalizePayoutNetwork,
+} from '../types/registration';
 
 export default function InscriptionLivreur() {
   const navigate = useNavigate();
-  const { user: currentUser, userProfile, loading: authLoading } = useSupabase();
-
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    vehicle_type: 'Moto',
-    vehicle_details: '',
-    coverage_zones: [] as string[],
-    pricing_description: '',
-    description: '',
-    photo: null as File | null,
-    payout_network: 'wave' as 'wave' | 'orange' | 'mtn' | 'moov',
-    payout_number: '',
-  });
-
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const { user, userProfile, loading: authLoading } = useSupabase();
+  const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [existingProfile, setExistingProfile] = useState<boolean | null>(null);
+  const [existingProfile, setExistingProfile] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const zonesDisponibles = [
-    'Centre-ville',
-    'Commerce',
-    'Lobia',
-    'Tazibouo',
-    'Kennedy',
-    'Marais',
-    'Huberson',
-    'Sapia',
-    'Garage',
-    'Gbeuliville',
-    'Zone Industrielle',
-    'Tous quartiers',
-  ];
+  // Zones Bottom Sheet State
+  const [showZonesModal, setShowZonesModal] = useState(false);
+  const [zoneSearch, setZoneSearch] = useState('');
 
-  const vehicleTypes = [
-    { value: 'Moto', label: 'Moto', icon: Bike },
-    { value: 'Vélo', label: 'Vélo', icon: Bike },
-    { value: 'Voiture', label: 'Voiture', icon: Truck },
-    { value: 'Triporteur', label: 'Triporteur', icon: Truck },
-  ];
+  const [formData, setFormData] = useState<RegistrationFormData>(initialRegistrationFormData);
 
-  // Vérifier si l'utilisateur a déjà un profil livreur
+  const isLoggedIn = !!user;
+  const totalSteps = isLoggedIn ? 2 : 3;
+
+  // Pré-remplir les données si connecté
   useEffect(() => {
-    async function checkProfile() {
-      if (!currentUser) return;
-      try {
-        const profile = await deliveryPersonService.getDeliveryPersonByUserId(currentUser.id);
-        if (profile) {
-          setExistingProfile(true);
-        } else {
-          setExistingProfile(false);
-          // Préremplir avec les infos du compte
-          setFormData((prev) => ({
-            ...prev,
-            name: userProfile?.full_name || '',
-            phone: userProfile?.phone || '',
-          }));
-        }
-      } catch (err) {
-        console.error('Erreur vérification profil:', err);
-        setExistingProfile(false);
-      }
+    if (!authLoading && user) {
+      deliveryPersonService
+        .getDeliveryPersonByUserId(user.id)
+        .then((profile) => {
+          if (profile) {
+            setExistingProfile(true);
+            toast('Vous avez déjà un profil de livreur actif', { icon: 'ℹ️' });
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              name: prev.name || userProfile?.full_name || user.user_metadata?.full_name || '',
+              phone: prev.phone || userProfile?.phone || user.user_metadata?.phone || '',
+              photoPreview: prev.photoPreview || userProfile?.avatar_url || user.user_metadata?.avatar_url || '',
+              payout_number: prev.payout_number || userProfile?.payout_number || userProfile?.phone || '',
+            }));
+          }
+        })
+        .catch((err) => console.error('Erreur profil existant:', err));
     }
-    if (!authLoading) {
-      if (!currentUser) {
-        navigate('/login?redirect=/inscription');
-      } else {
-        checkProfile();
-      }
-    }
-  }, [currentUser, userProfile, authLoading, navigate]);
+  }, [user, userProfile, authLoading]);
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const updateField = (field: keyof RegistrationFormData, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleZoneToggle = (zone: string) => {
-    setFormData((prev) => {
-      const exists = prev.coverage_zones.includes(zone);
-      if (exists) {
-        return { ...prev, coverage_zones: prev.coverage_zones.filter((z) => z !== zone) };
-      } else {
-        return { ...prev, coverage_zones: [...prev.coverage_zones, zone] };
-      }
-    });
-  };
-
-  const handlePhotoChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('La photo ne doit pas dépasser 5 Mo');
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La photo ne doit pas dépasser 5 Mo');
+      return;
+    }
+    const preview = URL.createObjectURL(file);
+    updateField('photo', file);
+    updateField('photoPreview', preview);
+  };
+
+  const toggleZone = (zone: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      coverage_zones: prev.coverage_zones.includes(zone)
+        ? prev.coverage_zones.filter((z) => z !== zone)
+        : [...prev.coverage_zones, zone],
+    }));
+  };
+
+  // Convertit l'étape d'affichage vers l'étape logique (1: Auth si non connecté, 2: Infos, 3: Service)
+  const getActualStep = (currentStep: number) => {
+    if (!isLoggedIn) return currentStep;
+    return currentStep + 1;
+  };
+
+  const canGoNext = () => {
+    if (!isLoggedIn && step === 1) {
+      return (
+        formData.email.trim() !== '' &&
+        formData.password.length >= 6 &&
+        formData.password === formData.confirmPassword
+      );
+    }
+    const actual = getActualStep(step);
+    switch (actual) {
+      case 2:
+        return formData.name.trim() !== '' && formData.phone.trim() !== '';
+      case 3:
+        return formData.vehicle_type !== '' && formData.coverage_zones.length > 0;
+      default:
+        return false;
+    }
+  };
+
+  const handleNext = async () => {
+    if (!isLoggedIn && step === 1) {
+      if (formData.password !== formData.confirmPassword) {
+        toast.error('Les mots de passe ne correspondent pas');
         return;
       }
-      setFormData((prev) => ({ ...prev, photo: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setSubmitting(true);
+      try {
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (error) throw error;
+        setStep(2);
+      } catch (err: unknown) {
+        let msg = err instanceof Error ? err.message : 'Erreur lors de la création du compte';
+        if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('already registered')) {
+          msg = 'Un compte avec cet e-mail existe déjà. Veuillez vous connecter.';
+        }
+        toast.error(msg);
+      } finally {
+        setSubmitting(false);
+      }
+      return;
     }
+    setStep((s) => s + 1);
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
-
-    // Validation
-    if (!formData.name.trim()) {
-      toast.error('Veuillez entrer votre nom complet');
-      return;
-    }
-    if (!formData.phone.trim()) {
-      toast.error('Veuillez entrer votre numéro de téléphone');
-      return;
-    }
-    if (formData.coverage_zones.length === 0) {
-      toast.error('Veuillez sélectionner au moins une zone de livraison');
+  const handleSubmit = async () => {
+    const currentUser = user || (await supabase.auth.getUser()).data.user;
+    if (!currentUser) {
+      toast.error('Vous devez être connecté pour finaliser');
       return;
     }
 
@@ -153,57 +146,67 @@ export default function InscriptionLivreur() {
 
     try {
       let photoUrl: string | null = null;
-
-      // 1. Upload de la photo de profil si fournie
       if (formData.photo) {
         const fileExt = formData.photo.name.split('.').pop();
         const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('livreur-photos')
           .upload(fileName, formData.photo);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage
-          .from('livreur-photos')
-          .getPublicUrl(fileName);
-        photoUrl = urlData.publicUrl;
+        if (uploadError) {
+          console.warn('Upload photo livreur échoué:', uploadError);
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('livreur-photos')
+            .getPublicUrl(fileName);
+          photoUrl = urlData.publicUrl;
+        }
       }
 
-      // 2. Synchroniser le rôle 'livreur' dans la table users
-      await supabase
-        .from('users')
-        .update({
-          full_name: formData.name,
-          phone: formData.phone,
-          avatar_url: photoUrl || userProfile?.avatar_url || null,
-          role: 'livreur',
-        } as any)
-        .eq('id', currentUser.id);
+      const cleanPayoutNetwork = normalizePayoutNetwork(formData.payout_network);
 
-      // 3. Création dans delivery_persons
+      // 1. Synchroniser le profil utilisateur (users)
+      try {
+        await supabase
+          .from('users')
+          .update({
+            full_name: formData.name,
+            phone: formData.phone,
+            avatar_url: photoUrl || formData.photoPreview || userProfile?.avatar_url || null,
+            role: 'livreur',
+            payout_network: cleanPayoutNetwork,
+            payout_number: formData.payout_number || null,
+          } as any)
+          .eq('id', currentUser.id);
+      } catch (userSyncErr) {
+        console.warn('Sync users warning:', userSyncErr);
+      }
+
+      // 2. Créer l'enregistrement officiel dans delivery_persons
       await deliveryPersonService.createDeliveryPerson({
         user_id: currentUser.id,
         name: formData.name,
         phone: formData.phone,
-        photo_url: photoUrl,
+        photo_url: photoUrl || formData.photoPreview || userProfile?.avatar_url || null,
         is_available: true,
         vehicle_type: formData.vehicle_type,
-        vehicle_details: formData.vehicle_details,
+        vehicle_details: formData.vehicle_details || '',
         coverage_zones: formData.coverage_zones,
-        pricing_description: formData.pricing_description,
-        description: formData.description,
+        pricing_description: formData.pricing_description || '',
+        description: formData.description || '',
         current_location: null,
-        payout_network: formData.payout_network || null,
+        payout_network: cleanPayoutNetwork,
         payout_number: formData.payout_number || null,
       });
 
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'CompleteRegistration', { content_name: 'LivreurProfile' });
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'CompleteRegistration', { content_name: 'LivreurProfile' });
       }
 
-      toast.success('Profil livreur créé avec succès !');
+      toast.success('Profil livreur créé avec succès ! 🎉');
       navigate('/dashboard');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur lors de l\'inscription';
+      console.error('Erreur inscription livreur:', err);
+      const message = err instanceof Error ? err.message : "Erreur lors de l'inscription";
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -212,7 +215,7 @@ export default function InscriptionLivreur() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-grey-50">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-grey-200 border-t-primary rounded-full animate-spin" />
       </div>
     );
@@ -220,275 +223,118 @@ export default function InscriptionLivreur() {
 
   if (existingProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-grey-50 px-4">
-        <div className="bg-white rounded-2xl p-8 shadow-card max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-success-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-success" />
-          </div>
-          <h2 className="text-xl font-bold text-grey-900 mb-2">Vous êtes déjà inscrit !</h2>
-          <p className="text-grey-600 mb-6 text-sm">
-            Vous disposez déjà d'un profil livreur sur DaloaDelivery. Accédez à votre tableau de bord
-            pour gérer votre disponibilité et vos livraisons.
-          </p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="w-full bg-primary hover:bg-primary-600 text-white font-semibold py-3 px-4 rounded-xl transition"
-          >
-            Accéder à mon tableau de bord
-          </button>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-24 h-24 bg-success-50 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle className="w-12 h-12 text-success" />
         </div>
+        <h1 className="text-2xl font-bold text-grey-900 mb-2">Vous êtes déjà livreur</h1>
+        <p className="text-grey-500 mb-8 max-w-sm">
+          Vous possédez déjà un profil actif sur DaloaDelivery. Gérez vos courses et vos gains depuis votre espace.
+        </p>
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="w-full max-w-sm py-4 bg-primary text-white rounded-2xl font-bold active:scale-95 transition-transform"
+        >
+          Accéder à mon tableau de bord
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-grey-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-50 rounded-2xl mb-4">
-            <Bike className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-grey-50 pb-20">
+      {/* Header avec jauge d'étapes */}
+      <div className="bg-primary px-4 pt-6 pb-20 rounded-b-[40px] shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary-100 block mb-0.5">
+              Rejoindre la flotte
+            </span>
+            <h1 className="text-2xl font-black text-white">Devenir livreur</h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-grey-900">
-            Devenir Livreur DaloaDelivery
-          </h1>
-          <p className="mt-2 text-grey-600 text-sm">
-            Rejoignez notre réseau de livreurs de confiance à Daloa et commencez à recevoir des courses
-          </p>
+          <div className="bg-white/20 px-3.5 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-2 text-xs font-black text-white border border-white/15">
+            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+            Étape {step}/{totalSteps}
+          </div>
         </div>
-
-        {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-card p-6 sm:p-8 space-y-6">
-          {/* Informations Personnelles */}
-          <div>
-            <h3 className="text-lg font-bold text-grey-900 mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-primary" />
-              Informations Personnelles
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-grey-700 mb-1">
-                  Nom complet <span className="text-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Ex: Kouassi Jean"
-                  required
-                  className="w-full px-4 py-2.5 rounded-xl border border-grey-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-grey-700 mb-1">
-                  Numéro de téléphone <span className="text-error">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-grey-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="Ex: 07 00 00 00 00"
-                    required
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-grey-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Photo de profil */}
-          <div>
-            <label className="block text-sm font-medium text-grey-700 mb-2">
-              Photo de profil (visage clair recommandé)
-            </label>
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-grey-100 border-2 border-dashed border-grey-300 flex items-center justify-center overflow-hidden shrink-0">
-                {photoPreview ? (
-                  <img src={photoPreview} alt="Aperçu" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-8 h-8 text-grey-400" />
-                )}
-              </div>
-              <div>
-                <label className="inline-flex items-center gap-2 px-4 py-2 bg-grey-100 hover:bg-grey-200 text-grey-700 font-medium text-sm rounded-xl cursor-pointer transition">
-                  <Upload className="w-4 h-4" />
-                  Choisir une photo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                  />
-                </label>
-                <p className="text-xs text-grey-500 mt-1">JPG, PNG max 5 Mo</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Véhicule */}
-          <div className="border-t border-grey-100 pt-6">
-            <h3 className="text-lg font-bold text-grey-900 mb-4 flex items-center gap-2">
-              <Truck className="w-5 h-5 text-primary" />
-              Moyen de Transport
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-              {vehicleTypes.map((v) => {
-                const IconComp = v.icon;
-                const isSelected = formData.vehicle_type === v.value;
-                return (
-                  <button
-                    type="button"
-                    key={v.value}
-                    onClick={() => setFormData((prev) => ({ ...prev, vehicle_type: v.value }))}
-                    className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-2 ${
-                      isSelected
-                        ? 'border-primary bg-primary-50 text-primary font-bold'
-                        : 'border-grey-200 hover:border-grey-300 text-grey-700'
-                    }`}
-                  >
-                    <IconComp className="w-5 h-5" />
-                    <span className="text-xs">{v.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-grey-700 mb-1">
-                Détails du véhicule (marque, modèle, plaque si disponible)
-              </label>
-              <input
-                type="text"
-                name="vehicle_details"
-                value={formData.vehicle_details}
-                onChange={handleChange}
-                placeholder="Ex: Moto Haojue 125cc Rouge - 1234 DL 01"
-                className="w-full px-4 py-2.5 rounded-xl border border-grey-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Zones de couverture */}
-          <div className="border-t border-grey-100 pt-6">
-            <h3 className="text-lg font-bold text-grey-900 mb-2 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              Quartiers Couverts à Daloa <span className="text-error">*</span>
-            </h3>
-            <p className="text-xs text-grey-500 mb-4">
-              Sélectionnez les quartiers où vous êtes disponible pour livrer
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {zonesDisponibles.map((zone) => {
-                const isSelected = formData.coverage_zones.includes(zone);
-                return (
-                  <button
-                    type="button"
-                    key={zone}
-                    onClick={() => handleZoneToggle(zone)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                      isSelected
-                        ? 'bg-primary text-white shadow-xs'
-                        : 'bg-grey-100 hover:bg-grey-200 text-grey-700'
-                    }`}
-                  >
-                    {zone}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Paiement / Mobile Money */}
-          <div className="border-t border-grey-100 pt-6">
-            <h3 className="text-lg font-bold text-grey-900 mb-4 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-primary" />
-              Réception des Gains (Mobile Money)
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-grey-700 mb-1">
-                  Réseau de paiement
-                </label>
-                <select
-                  name="payout_network"
-                  value={formData.payout_network}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl border border-grey-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
-                >
-                  <option value="wave">Wave</option>
-                  <option value="orange">Orange Money</option>
-                  <option value="mtn">MTN MoMo</option>
-                  <option value="moov">Moov Money</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-grey-700 mb-1">
-                  Numéro Mobile Money pour les virements
-                </label>
-                <input
-                  type="tel"
-                  name="payout_number"
-                  value={formData.payout_number}
-                  onChange={handleChange}
-                  placeholder="Ex: 07 00 00 00 00"
-                  className="w-full px-4 py-2.5 rounded-xl border border-grey-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Description & Tarification */}
-          <div className="border-t border-grey-100 pt-6">
-            <h3 className="text-lg font-bold text-grey-900 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
-              Présentation & Disponibilités
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-grey-700 mb-1">
-                  Présentez-vous brièvement (expérience, horaires, etc.)
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={3}
-                  placeholder="Ex: Livreur sérieux et ponctuel, disponible tous les jours de 8h à 20h. Plus de 3 ans d'expérience à Daloa."
-                  className="w-full px-4 py-2.5 rounded-xl border border-grey-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Note de validation */}
-          <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-800 leading-relaxed">
-              <strong>Vérification de sécurité :</strong> Pour recevoir des courses de forte valeur et être certifié,
-              une copie de votre pièce d'identité ou permis de conduire vous sera demandée depuis votre espace livreur.
-            </p>
-          </div>
-
-          {/* Bouton de soumission */}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-button text-sm flex items-center justify-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Création de votre profil en cours...</span>
-              </>
-            ) : (
-              <span>Finaliser mon inscription livreur</span>
-            )}
-          </button>
-        </form>
       </div>
+
+      <div className="px-4 -mt-12 relative z-20 max-w-lg mx-auto">
+        <AnimatePresence mode="wait">
+          {/* Étape 1 : Création de compte (si non connecté) */}
+          {!isLoggedIn && step === 1 && (
+            <AuthStep
+              formData={formData}
+              updateField={updateField}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+            />
+          )}
+
+          {/* Étape Infos Personnelles + Payout */}
+          {((isLoggedIn && step === 1) || (!isLoggedIn && step === 2)) && (
+            <PersonalInfoStep
+              formData={formData}
+              updateField={updateField}
+              handlePhotoChange={handlePhotoChange}
+            />
+          )}
+
+          {/* Étape Service & Zones */}
+          {((isLoggedIn && step === 2) || (!isLoggedIn && step === 3)) && (
+            <ServiceInfoStep
+              formData={formData}
+              updateField={updateField}
+              setShowZonesModal={setShowZonesModal}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Boutons de navigation */}
+        <div className="flex gap-3 mt-6">
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={() => setStep(step - 1)}
+              disabled={submitting}
+              className="flex-1 py-4 bg-white text-grey-900 rounded-2xl font-bold shadow-sm border border-grey-100 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="w-5 h-5" /> Retour
+            </button>
+          )}
+
+          {step < totalSteps ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canGoNext() || submitting}
+              className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+            >
+              Continuer <ChevronRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canGoNext() || submitting}
+              className="flex-[2] py-4 bg-success text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+            >
+              {submitting ? 'Validation...' : 'Terminer mon inscription'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Modal / Bottom sheet de sélection des zones */}
+      <RegistrationZonesModal
+        showZonesModal={showZonesModal}
+        setShowZonesModal={setShowZonesModal}
+        zoneSearch={zoneSearch}
+        setZoneSearch={setZoneSearch}
+        formData={formData}
+        toggleZone={toggleZone}
+      />
     </div>
   );
 }

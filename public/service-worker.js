@@ -67,14 +67,19 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
-        return caches.match(request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          if (request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('/');
-          }
+      .catch(async () => {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        if (request.headers.get('accept')?.includes('text/html')) {
+          const rootMatch = await caches.match('/');
+          if (rootMatch) return rootMatch;
+        }
+        return new Response('Network error occurred', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' },
         });
       })
   );
