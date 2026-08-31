@@ -42,6 +42,7 @@ export default function App() {
         <Route path="/annuaire" element={<AnnuairePage />} />
         <Route path="/livreur/:id" element={<LivreurDetailPage />} />
         <Route path="/devenir-livreur" element={<InscriptionLivreur />} />
+        <Route path="/inscription" element={<InscriptionLivreur />} />
         
         <Route path="/dashboard" element={<DashboardLivreur />} />
         <Route path="/dashboard/profil" element={<DashboardProfil />} />

@@ -162,7 +162,7 @@ export function AppBar() {
     if (location.pathname === '/annuaire') return 'Annuaire';
     if (location.pathname === '/login') return 'Connexion';
     if (location.pathname === '/register') return 'Inscription';
-    if (location.pathname === '/devenir-livreur') return 'Devenir livreur';
+    if (location.pathname === '/devenir-livreur' || location.pathname === '/inscription') return 'Devenir livreur';
     if (location.pathname.startsWith('/livreur/')) return 'Profil livreur';
     if (location.pathname === '/admin') return 'Administration';
     if (location.pathname === '/terms') return 'Conditions d\'utilisation';

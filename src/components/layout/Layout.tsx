@@ -12,6 +12,7 @@ export function Layout() {
     location.pathname === '/login' ||
     location.pathname === '/register' ||
     location.pathname === '/devenir-livreur' ||
+    location.pathname === '/inscription' ||
     location.pathname === '/terms' ||
     location.pathname === '/privacy' ||
     location.pathname === '/mentions-legales' ||
