@@ -211,10 +211,9 @@ export default function CourseDetailPage() {
           zoomControl={false}
         >
           <TileLayer
-            attribution='&copy; OpenStreetMap &copy; CARTO'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            subdomains="abcd"
-            maxZoom={20}
+            attribution='&copy; Esri &copy; OpenStreetMap contributors'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
           />
           <MapBounds coords={boundsCoords} />
 

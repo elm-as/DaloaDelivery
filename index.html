@@ -49,6 +49,20 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json" />
 
+    <!-- Early PWA Install Prompt Capture for Android -->
+    <script>
+      window.__deferredPwaPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__deferredPwaPrompt = e;
+        window.dispatchEvent(new CustomEvent('daloa:pwa-ready'));
+      });
+      window.addEventListener('appinstalled', function() {
+        window.__deferredPwaPrompt = null;
+        try { localStorage.setItem('pwa_installed', 'true'); } catch (err) {}
+      });
+    </script>
+
     <!-- Structured Data: Founder Person -->
     <script type="application/ld+json">
     {

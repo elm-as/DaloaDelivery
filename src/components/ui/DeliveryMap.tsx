@@ -75,7 +75,7 @@ function MapBounds({ livreurs, orders = [] }: { livreurs: DeliveryPerson[], orde
   return null;
 }
 
-const TILE_URL_STREET = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+const TILE_URL_STREET = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}";
 const TILE_URL_SATELLITE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
 export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryMapProps) {
@@ -92,7 +92,7 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
         className="absolute top-3 right-3 z-[1000] pointer-events-auto flex items-center gap-1.5 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-extrabold text-grey-900 shadow-lg backdrop-blur border border-grey-200 active:scale-95 transition-all hover:bg-white cursor-pointer"
       >
         <Layers className="w-3.5 h-3.5 text-primary-500" />
-        <span>{mapMode === 'street' ? '🛰️ Satellite' : '🗺️ Plan'}</span>
+        <span>{mapMode === 'street' ? '🛰️ Satellite' : '🗺️ Plan HD'}</span>
       </button>
 
       <MapContainer
@@ -102,10 +102,9 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
       >
         <TileLayer
           key={mapMode}
-          attribution={mapMode === 'street' ? '&copy; OpenStreetMap &copy; CARTO' : '&copy; Esri &copy; Maxar'}
+          attribution={mapMode === 'street' ? '&copy; Esri &copy; OpenStreetMap contributors' : '&copy; Esri &copy; Maxar'}
           url={mapMode === 'street' ? TILE_URL_STREET : TILE_URL_SATELLITE}
-          subdomains={mapMode === 'street' ? 'abcd' : 'abc'}
-          maxZoom={mapMode === 'street' ? 20 : 19}
+          maxZoom={19}
         />
 
         {livreurs.map((livreur) => {
