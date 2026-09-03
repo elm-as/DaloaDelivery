@@ -75,8 +75,15 @@ function MapBounds({ livreurs, orders = [] }: { livreurs: DeliveryPerson[], orde
   return null;
 }
 
-const TILE_URL_STREET = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}";
-const TILE_URL_SATELLITE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const MAPBOX_TOKEN = (import.meta as any).env?.VITE_MAPBOX_TOKEN || '';
+
+const TILE_URL_STREET = MAPBOX_TOKEN
+  ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`
+  : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+const TILE_URL_SATELLITE = MAPBOX_TOKEN
+  ? `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`
+  : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
 export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryMapProps) {
   const [mapMode, setMapMode] = useState<'street' | 'satellite'>('street');
@@ -102,9 +109,10 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
       >
         <TileLayer
           key={mapMode}
-          attribution={mapMode === 'street' ? '&copy; Esri &copy; OpenStreetMap contributors' : '&copy; Esri &copy; Maxar'}
+          attribution={MAPBOX_TOKEN ? '&copy; Mapbox' : '&copy; CARTO'}
           url={mapMode === 'street' ? TILE_URL_STREET : TILE_URL_SATELLITE}
-          maxZoom={19}
+          subdomains="abcd"
+          maxZoom={20}
         />
 
         {livreurs.map((livreur) => {

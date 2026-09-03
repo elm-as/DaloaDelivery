@@ -37,6 +37,10 @@ const driverIcon = new L.Icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
+const MAPBOX_TOKEN = (import.meta as any).env?.VITE_MAPBOX_TOKEN || '';
+const TILE_URL_STREET = MAPBOX_TOKEN
+  ? `https://api.mapbox.com/styles/v1/mapbox/navigation-day-v1/tiles/256/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`
+  : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
 const sellerIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
@@ -211,9 +215,10 @@ export default function CourseDetailPage() {
           zoomControl={false}
         >
           <TileLayer
-            attribution='&copy; Esri &copy; OpenStreetMap contributors'
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
-            maxZoom={19}
+            attribution={MAPBOX_TOKEN ? '&copy; Mapbox' : '&copy; CARTO'}
+            url={TILE_URL_STREET}
+            subdomains="abcd"
+            maxZoom={20}
           />
           <MapBounds coords={boundsCoords} />
 
