@@ -31,8 +31,8 @@ export default function InscriptionLivreur() {
 
   const [formData, setFormData] = useState<RegistrationFormData>(initialRegistrationFormData);
 
-  const isLoggedIn = !!user;
-  const totalSteps = isLoggedIn ? 2 : 3;
+  const [startedLoggedIn] = useState(() => Boolean(user));
+  const totalSteps = startedLoggedIn ? 2 : 3;
 
   // Pré-remplir les données si connecté
   useEffect(() => {
@@ -46,10 +46,10 @@ export default function InscriptionLivreur() {
           } else {
             setFormData((prev) => ({
               ...prev,
-              name: prev.name || userProfile?.full_name || user.user_metadata?.full_name || '',
-              phone: prev.phone || userProfile?.phone || user.user_metadata?.phone || '',
-              photoPreview: prev.photoPreview || userProfile?.avatar_url || user.user_metadata?.avatar_url || '',
-              payout_number: prev.payout_number || userProfile?.payout_number || userProfile?.phone || '',
+              name: String(prev.name || userProfile?.full_name || user.user_metadata?.full_name || ''),
+              phone: String(prev.phone || userProfile?.phone || user.user_metadata?.phone || ''),
+              photoPreview: String(prev.photoPreview || userProfile?.avatar_url || user.user_metadata?.avatar_url || ''),
+              payout_number: String(prev.payout_number || (userProfile as any)?.payout_number || userProfile?.phone || ''),
             }));
           }
         })
@@ -84,12 +84,12 @@ export default function InscriptionLivreur() {
 
   // Convertit l'étape d'affichage vers l'étape logique (1: Auth si non connecté, 2: Infos, 3: Service)
   const getActualStep = (currentStep: number) => {
-    if (!isLoggedIn) return currentStep;
+    if (!startedLoggedIn) return currentStep;
     return currentStep + 1;
   };
 
   const canGoNext = () => {
-    if (!isLoggedIn && step === 1) {
+    if (!startedLoggedIn && step === 1) {
       return (
         formData.email.trim() !== '' &&
         formData.password.length >= 6 &&
@@ -108,7 +108,7 @@ export default function InscriptionLivreur() {
   };
 
   const handleNext = async () => {
-    if (!isLoggedIn && step === 1) {
+    if (!startedLoggedIn && step === 1) {
       if (formData.password !== formData.confirmPassword) {
         toast.error('Les mots de passe ne correspondent pas');
         return;
@@ -139,6 +139,17 @@ export default function InscriptionLivreur() {
     const currentUser = user || (await supabase.auth.getUser()).data.user;
     if (!currentUser) {
       toast.error('Vous devez être connecté pour finaliser');
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      toast.error('Veuillez renseigner votre nom complet.');
+      setStep(startedLoggedIn ? 1 : 2);
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('Veuillez renseigner votre numéro de téléphone.');
+      setStep(startedLoggedIn ? 1 : 2);
       return;
     }
 
@@ -262,8 +273,8 @@ export default function InscriptionLivreur() {
 
       <div className="px-4 -mt-12 relative z-20 max-w-lg mx-auto">
         <AnimatePresence mode="wait">
-          {/* Étape 1 : Création de compte (si non connecté) */}
-          {!isLoggedIn && step === 1 && (
+          {/* Étape 1 : Création de compte (si non connecté au départ) */}
+          {!startedLoggedIn && step === 1 && (
             <AuthStep
               formData={formData}
               updateField={updateField}
@@ -273,7 +284,7 @@ export default function InscriptionLivreur() {
           )}
 
           {/* Étape Infos Personnelles + Payout */}
-          {((isLoggedIn && step === 1) || (!isLoggedIn && step === 2)) && (
+          {((startedLoggedIn && step === 1) || (!startedLoggedIn && step === 2)) && (
             <PersonalInfoStep
               formData={formData}
               updateField={updateField}
@@ -282,7 +293,7 @@ export default function InscriptionLivreur() {
           )}
 
           {/* Étape Service & Zones */}
-          {((isLoggedIn && step === 2) || (!isLoggedIn && step === 3)) && (
+          {((startedLoggedIn && step === 2) || (!startedLoggedIn && step === 3)) && (
             <ServiceInfoStep
               formData={formData}
               updateField={updateField}

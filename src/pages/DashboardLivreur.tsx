@@ -53,7 +53,7 @@ export default function DashboardLivreur() {
     if (!user) return;
     try {
       const profileData = await deliveryPersonService.getDeliveryPersonByUserId(user.id);
-      if (!profileData) {
+      if (!profileData || !profileData.name || !profileData.name.trim()) {
         // Check if user is an admin before forcing them to become a driver
         try {
           const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single();
@@ -66,7 +66,7 @@ export default function DashboardLivreur() {
         }
 
         navigate('/devenir-livreur');
-        toast("Créez votre profil de livreur d'abord", { icon: 'ℹ️' });
+        toast("Complétez votre profil de livreur d'abord", { icon: 'ℹ️' });
         return;
       }
       setProfile(profileData);

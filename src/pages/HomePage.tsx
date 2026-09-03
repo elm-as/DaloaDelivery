@@ -176,7 +176,7 @@ export default function HomePage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-primary-50 text-primary font-black text-base uppercase">
-                            {livreur.name.charAt(0)}
+                            {livreur.name?.trim() ? livreur.name.trim().charAt(0) : 'L'}
                           </div>
                         )}
                       </div>
@@ -187,7 +187,7 @@ export default function HomePage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <h3 className="font-bold text-sm text-gray-900 truncate leading-tight group-hover:text-primary transition-colors">
-                          {livreur.name}
+                          {livreur.name?.trim() || 'Livreur'}
                         </h3>
                         {livreur.verification_status === 'approved' && (
                           <span className="text-[10px] text-blue-600 font-bold">✓</span>

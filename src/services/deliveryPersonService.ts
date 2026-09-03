@@ -61,14 +61,22 @@ export const deliveryPersonService = {
       .from('delivery_persons_directory')
       .select('*')
       .eq('is_available', true)
+      .not('name', 'is', null)
+      .neq('name', '')
       .order('rating', { ascending: false });
 
     if (error) throw error;
-    return data as DeliveryPerson[];
+    return ((data as DeliveryPerson[]) || []).filter(
+      (d) => Boolean(d.name && d.name.trim().length > 0 && d.phone && d.phone.trim().length > 0)
+    );
   },
 
   async searchDeliveryPersons(filters: DeliveryPersonSearchFilters) {
-    let query = supabase.from('delivery_persons_directory').select('*');
+    let query = supabase
+      .from('delivery_persons_directory')
+      .select('*')
+      .not('name', 'is', null)
+      .neq('name', '');
 
     if (filters.available_only) {
       query = query.eq('is_available', true);
@@ -96,7 +104,9 @@ export const deliveryPersonService = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data as DeliveryPerson[];
+    return ((data as DeliveryPerson[]) || []).filter(
+      (d) => Boolean(d.name && d.name.trim().length > 0 && d.phone && d.phone.trim().length > 0)
+    );
   },
 
   async getDeliveryPersonById(id: string) {

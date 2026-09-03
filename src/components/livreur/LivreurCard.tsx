@@ -58,7 +58,7 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
               />
             ) : (
               <span className="text-base font-black text-primary uppercase">
-                {livreur.name.charAt(0)}
+                {livreur.name?.trim() ? livreur.name.trim().charAt(0) : 'L'}
               </span>
             )}
           </div>
@@ -74,7 +74,7 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <h3 className="font-bold text-sm text-gray-900 truncate leading-tight group-hover:text-primary transition-colors">
-              {livreur.name}
+              {livreur.name?.trim() || 'Livreur'}
             </h3>
             {livreur.verification_status === 'approved' && (
               <CheckCircle className="w-3.5 h-3.5 text-blue-500 fill-blue-500 text-white flex-shrink-0" />
