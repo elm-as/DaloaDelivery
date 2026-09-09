@@ -1,5 +1,5 @@
 import { type DeliveryPerson } from '../../types/livreur';
-import { Star, Bike, Car, Truck, CheckCircle, ChevronRight, Phone } from 'lucide-react';
+import { Star, Bike, Car, Truck, CheckCircle, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../../utils/imageOptimizer';

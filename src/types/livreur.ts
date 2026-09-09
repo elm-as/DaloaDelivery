@@ -18,6 +18,7 @@ export interface DeliveryPerson {
   verification_rejection_reason?: string | null;
   rating: number;
   total_reviews: number;
+  completed_deliveries?: number;
   vehicle_type: string;
   vehicle_details: string;
   coverage_zones: string[];

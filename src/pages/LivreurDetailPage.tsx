@@ -39,7 +39,7 @@ export default function LivreurDetailPage() {
   useSEO(title, {
     description: desc,
     keywords: livreur ? `${livreur.name}, livreur ${livreur.vehicle_type} Daloa, coursier Daloa` : 'livreur Daloa, livraison Côte d\'Ivoire',
-    ogImage: livreur?.avatar_url || 'https://delivery.daloamarket.com/og-image.png',
+    ogImage: livreur?.photo_url || 'https://delivery.daloamarket.com/og-image.png',
     canonical: `https://delivery.daloamarket.com/livreur/${id || ''}`,
   });
   const [reviews, setReviews] = useState<Review[]>([]);
