@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User } from 'lucide-react';
-import { deliveryPersonService } from '../services/deliveryPersonService';
+import { deliveryPersonService, rotateDeliveryPersonsEquitably } from '../services/deliveryPersonService';
 import type { DeliveryPerson } from '../types/livreur';
 import { useSEO } from '../hooks/useSEO';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
@@ -17,6 +17,7 @@ const CATEGORIES = [
 export default function HomePage() {
   const navigate = useNavigate();
   const [topLivreurs, setTopLivreurs] = useState<DeliveryPerson[]>([]);
+  const [totalAvailableCount, setTotalAvailableCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const deliveryServiceSchema = {
@@ -47,7 +48,11 @@ export default function HomePage() {
     const fetchTop = async () => {
       try {
         const data = await deliveryPersonService.searchDeliveryPersons({ available_only: true });
-        setTopLivreurs(data.slice(0, 3));
+        setTotalAvailableCount(data.length);
+        // Mélange équitable des coursiers disponibles pour une visibilité juste
+        const rotated = rotateDeliveryPersonsEquitably(data);
+        // Afficher tous les coursiers en ligne (jusqu'à 8 au lieu de 3)
+        setTopLivreurs(rotated.slice(0, 8));
       } catch (error) {
         console.error(error);
       } finally {
@@ -131,12 +136,17 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-black text-gray-900 uppercase tracking-wider">Livreurs en ligne</h2>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              {totalAvailableCount > 0 && (
+                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold border border-emerald-200/60">
+                  {totalAvailableCount}
+                </span>
+              )}
             </div>
             <button 
               onClick={() => navigate('/annuaire')}
               className="text-xs font-bold text-primary hover:text-primary-700 flex items-center gap-0.5"
             >
-              <span>Voir tout ({topLivreurs.length}+)</span>
+              <span>Voir tout ({totalAvailableCount})</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -158,74 +168,86 @@ export default function HomePage() {
                 <p className="text-xs text-gray-500 font-medium">Aucun livreur actuellement en ligne à Daloa.</p>
               </div>
             ) : (
-              topLivreurs.map((livreur) => (
-                <motion.div
-                  key={livreur.id}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => navigate(`/livreur/${livreur.id}`)}
-                  className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex items-center justify-between gap-3 cursor-pointer hover:border-primary-200 hover:shadow-md transition-all group"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200/80 flex items-center justify-center">
-                        {livreur.photo_url && !livreur.photo_url.startsWith('blob:') ? (
-                          <img 
-                            src={getOptimizedImageUrl(livreur.photo_url, 120, 75) || livreur.photo_url} 
-                            alt={livreur.name} 
-                            className="w-full h-full object-cover" 
-                            onError={(e) => {
-                              const target = e.currentTarget;
-                              target.onerror = null;
-                              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(livreur.name || 'Livreur')}&background=ea580c&color=ffffff&bold=true&size=128`;
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-primary-50 text-primary font-black text-base uppercase">
-                            {livreur.name?.trim() ? livreur.name.trim().charAt(0) : 'L'}
-                          </div>
-                        )}
-                      </div>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${livreur.is_available ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                    </div>
-                    
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-gray-900 truncate leading-tight group-hover:text-primary transition-colors">
-                          {livreur.name?.trim() || 'Livreur'}
-                        </h3>
-                        {livreur.verification_status === 'approved' && (
-                          <span className="text-[10px] text-blue-600 font-bold">✓</span>
-                        )}
+              <>
+                {topLivreurs.map((livreur) => (
+                  <motion.div
+                    key={livreur.id}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => navigate(`/livreur/${livreur.id}`)}
+                    className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex items-center justify-between gap-3 cursor-pointer hover:border-primary-200 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Avatar */}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200/80 flex items-center justify-center">
+                          {livreur.photo_url && !livreur.photo_url.startsWith('blob:') ? (
+                            <img 
+                              src={getOptimizedImageUrl(livreur.photo_url, 120, 75) || livreur.photo_url} 
+                              alt={livreur.name} 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                target.onerror = null;
+                                target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(livreur.name || 'Livreur')}&background=ea580c&color=ffffff&bold=true&size=128`;
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-primary-50 text-primary font-black text-base uppercase">
+                              {livreur.name?.trim() ? livreur.name.trim().charAt(0) : 'L'}
+                            </div>
+                          )}
+                        </div>
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${livreur.is_available ? 'bg-emerald-500' : 'bg-gray-400'}`} />
                       </div>
                       
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
-                        <div className="flex items-center gap-0.5 text-amber-600 font-bold">
-                          <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                          <span>{livreur.rating.toFixed(1)}</span>
+                      {/* Info */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-bold text-sm text-gray-900 truncate leading-tight group-hover:text-primary transition-colors">
+                            {livreur.name?.trim() || 'Livreur'}
+                          </h3>
+                          {livreur.verification_status === 'approved' && (
+                            <span className="text-[10px] text-blue-600 font-bold">✓</span>
+                          )}
                         </div>
-                        <span>·</span>
-                        <span className="font-medium text-gray-600">{livreur.vehicle_type}</span>
-                        {livreur.coverage_zones && livreur.coverage_zones.length > 0 && (
-                          <>
-                            <span>·</span>
-                            <span className="truncate text-gray-500 max-w-[100px]">{livreur.coverage_zones[0]}</span>
-                          </>
-                        )}
+                        
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                          <div className="flex items-center gap-0.5 text-amber-600 font-bold">
+                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                            <span>{livreur.rating.toFixed(1)}</span>
+                          </div>
+                          <span>·</span>
+                          <span className="font-medium text-gray-600">{livreur.vehicle_type}</span>
+                          {livreur.coverage_zones && livreur.coverage_zones.length > 0 && (
+                            <>
+                              <span>·</span>
+                              <span className="truncate text-gray-500 max-w-[100px]">{livreur.coverage_zones[0]}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Quick Action Button */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <span className="px-3 py-1.5 bg-gray-50 group-hover:bg-primary group-hover:text-white text-gray-700 rounded-xl text-xs font-bold transition-all border border-gray-100 flex items-center gap-1">
-                      <span>Voir</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </motion.div>
-              ))
+                    {/* Quick Action Button */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="px-3 py-1.5 bg-gray-50 group-hover:bg-primary group-hover:text-white text-gray-700 rounded-xl text-xs font-bold transition-all border border-gray-100 flex items-center gap-1">
+                        <span>Voir</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+
+                {totalAvailableCount > topLivreurs.length && (
+                  <button
+                    onClick={() => navigate('/annuaire')}
+                    className="w-full mt-2 py-3 bg-white hover:bg-gray-50 text-primary border border-primary-200 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
+                  >
+                    <span>Explorer tous les {totalAvailableCount} livreurs disponibles</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

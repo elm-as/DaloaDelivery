@@ -119,4 +119,45 @@ export const deliveryPersonService = {
     if (error) throw error;
     return data as DeliveryPerson;
   },
+
+  rotateEquitably(persons: DeliveryPerson[]): DeliveryPerson[] {
+    return rotateDeliveryPersonsEquitably(persons);
+  },
 };
+
+/**
+ * Réorganise équitablement la liste des livreurs disponibles.
+ * Évite d'avantager systématiquement les premiers inscrits en base de données.
+ * Les livreurs de même niveau de note ou statut sont brassés de manière uniforme.
+ *
+ * @param persons Liste des livreurs à réordonner
+ * @returns Nouvelle liste ordonnée de façon équitable
+ */
+export function rotateDeliveryPersonsEquitably(persons: DeliveryPerson[]): DeliveryPerson[] {
+  if (!persons || persons.length <= 1) return persons ? [...persons] : [];
+
+  // Mélange Fisher-Yates impartial
+  const shuffled = [...persons];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = shuffled[i];
+    shuffled[i] = shuffled[j];
+    shuffled[j] = temp;
+  }
+
+  // Tri équilibré : disponibilité d'abord, puis statut vérifié, puis note si > 0
+  return shuffled.sort((a, b) => {
+    if (a.is_available !== b.is_available) {
+      return a.is_available ? -1 : 1;
+    }
+    const aVerified = a.is_verified || a.verification_status === 'approved' ? 1 : 0;
+    const bVerified = b.is_verified || b.verification_status === 'approved' ? 1 : 0;
+    if (bVerified !== aVerified) {
+      return bVerified - aVerified;
+    }
+    if (a.rating > 0 || b.rating > 0) {
+      return b.rating - a.rating;
+    }
+    return 0;
+  });
+}

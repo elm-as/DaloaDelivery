@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, MapPin, X, List, Map as MapIcon } from 'lucide-react';
 import { LivreurCard } from '../components/livreur/LivreurCard';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { deliveryPersonService } from '../services/deliveryPersonService';
+import { deliveryPersonService, rotateDeliveryPersonsEquitably } from '../services/deliveryPersonService';
 import { DeliveryMap } from '../components/ui/DeliveryMap';
 import type { DeliveryPerson, DeliveryPersonSearchFilters } from '../types/livreur';
 import { DALOA_ZONES } from '../constants/zones';
@@ -27,14 +27,9 @@ export default function AnnuairePage() {
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [search, setSearch] = useState('');
   
-  // Read ?type= from URL if present
   const initialType = searchParams.get('type') || undefined;
-  const [filters, setFilters] = useState<DeliveryPersonSearchFilters>({
-    vehicle_type: initialType
-  });
-  const [localFilters, setLocalFilters] = useState<DeliveryPersonSearchFilters>({
-    vehicle_type: initialType
-  });
+  const [filters, setFilters] = useState<DeliveryPersonSearchFilters>({ vehicle_type: initialType });
+  const [localFilters, setLocalFilters] = useState<DeliveryPersonSearchFilters>({ vehicle_type: initialType });
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
@@ -42,7 +37,8 @@ export default function AnnuairePage() {
     setLoading(true);
     try {
       const data = await deliveryPersonService.searchDeliveryPersons(filters);
-      setLivreurs(data);
+      const fairList = !filters.search ? rotateDeliveryPersonsEquitably(data) : data;
+      setLivreurs(fairList);
     } catch {
       setLivreurs([]);
     } finally {
@@ -286,9 +282,7 @@ export default function AnnuairePage() {
                       <button
                         key={type}
                         onClick={() => handleFilterChange('vehicle_type', type)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                          localFilters.vehicle_type === type ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600'
-                        }`}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${localFilters.vehicle_type === type ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600'}`}
                       >
                         {type}
                       </button>
@@ -313,11 +307,7 @@ export default function AnnuairePage() {
                 <div>
                   <label className="block text-xs font-black text-gray-900 uppercase tracking-wider mb-2">Disponibilité</label>
                   <div className="flex gap-2">
-                    {[
-                      { label: 'Tous', value: undefined },
-                      { label: 'En ligne 🟢', value: true },
-                      { label: 'Hors ligne', value: false }
-                    ].map((opt, idx) => (
+                    {[ { label: 'Tous', value: undefined }, { label: 'En ligne 🟢', value: true }, { label: 'Hors ligne', value: false } ].map((opt, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleFilterChange('available_only', opt.value)}
