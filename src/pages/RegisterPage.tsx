@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { UserPlus, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Mail, Lock, AlertCircle, Eye, EyeOff, User, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 declare global {
   interface Window {
@@ -11,6 +11,8 @@ declare global {
 }
 
 export default function RegisterPage() {
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,6 +28,16 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!fullName.trim()) {
+      setError('Veuillez renseigner votre nom complet');
+      return;
+    }
+
+    if (!phone.trim()) {
+      setError('Veuillez renseigner votre numéro de téléphone');
+      return;
+    }
 
     if (!termsAccepted) {
       setError('Vous devez accepter les conditions générales d\'utilisation');
@@ -45,10 +57,32 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            name: fullName.trim(),
+            phone: phone.trim(),
+            role: 'livreur',
+          },
+        },
       });
+
+      if (error) throw error;
+
+      if (signUpData.user?.id) {
+        await supabase
+          .from('users')
+          .update({
+            full_name: fullName.trim(),
+            phone: phone.trim(),
+            role: 'livreur',
+          } as any)
+          .eq('id', signUpData.user.id)
+          .catch(() => undefined);
+      }
 
       if (error) throw error;
 
@@ -100,6 +134,44 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleRegister} className="space-y-5">
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-bold text-grey-900 mb-2 pl-1">
+                Nom complet
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-grey-400" />
+                <input
+                  id="fullName"
+                  type="text"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Ex: Kouamé Jean"
+                  required
+                  className="w-full pl-12 pr-4 py-3.5 bg-grey-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-colors font-medium text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-bold text-grey-900 mb-2 pl-1">
+                Numéro de téléphone
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-grey-400" />
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="0701020304"
+                  required
+                  className="w-full pl-12 pr-4 py-3.5 bg-grey-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-colors font-medium text-sm"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-grey-900 mb-2 pl-1">
                 Adresse Email

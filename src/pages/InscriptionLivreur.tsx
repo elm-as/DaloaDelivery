@@ -118,6 +118,7 @@ export default function InscriptionLivreur() {
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
+          options: { data: { role: 'livreur' } },
         });
         if (error) throw error;
         setStep(2);
@@ -142,13 +143,8 @@ export default function InscriptionLivreur() {
       return;
     }
 
-    if (!formData.name.trim()) {
-      toast.error('Veuillez renseigner votre nom complet.');
-      setStep(startedLoggedIn ? 1 : 2);
-      return;
-    }
-    if (!formData.phone.trim()) {
-      toast.error('Veuillez renseigner votre numéro de téléphone.');
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      toast.error('Veuillez renseigner votre nom complet et votre numéro de téléphone.');
       setStep(startedLoggedIn ? 1 : 2);
       return;
     }
@@ -174,20 +170,29 @@ export default function InscriptionLivreur() {
       }
 
       const cleanPayoutNetwork = normalizePayoutNetwork(formData.payout_network);
+      const finalAvatar = photoUrl || formData.photoPreview || userProfile?.avatar_url || null;
 
-      // 1. Synchroniser le profil utilisateur (users)
+      // 1. Synchroniser le profil utilisateur (users) et auth metadata
       try {
-        await supabase
-          .from('users')
-          .update({
+        await Promise.all([
+          supabase.from('users').update({
             full_name: formData.name,
             phone: formData.phone,
-            avatar_url: photoUrl || formData.photoPreview || userProfile?.avatar_url || null,
+            avatar_url: finalAvatar,
             role: 'livreur',
             payout_network: cleanPayoutNetwork,
             payout_number: formData.payout_number || null,
-          } as any)
-          .eq('id', currentUser.id);
+          } as any).eq('id', currentUser.id),
+          supabase.auth.updateUser({
+            data: {
+              full_name: formData.name,
+              name: formData.name,
+              phone: formData.phone,
+              avatar_url: finalAvatar,
+              role: 'livreur',
+            },
+          }),
+        ]);
       } catch (userSyncErr) {
         console.warn('Sync users warning:', userSyncErr);
       }
@@ -197,7 +202,7 @@ export default function InscriptionLivreur() {
         user_id: currentUser.id,
         name: formData.name,
         phone: formData.phone,
-        photo_url: photoUrl || formData.photoPreview || userProfile?.avatar_url || null,
+        photo_url: finalAvatar,
         is_available: true,
         vehicle_type: formData.vehicle_type,
         vehicle_details: formData.vehicle_details || '',
@@ -285,20 +290,12 @@ export default function InscriptionLivreur() {
 
           {/* Étape Infos Personnelles + Payout */}
           {((startedLoggedIn && step === 1) || (!startedLoggedIn && step === 2)) && (
-            <PersonalInfoStep
-              formData={formData}
-              updateField={updateField}
-              handlePhotoChange={handlePhotoChange}
-            />
+            <PersonalInfoStep formData={formData} updateField={updateField} handlePhotoChange={handlePhotoChange} />
           )}
 
           {/* Étape Service & Zones */}
           {((startedLoggedIn && step === 2) || (!startedLoggedIn && step === 3)) && (
-            <ServiceInfoStep
-              formData={formData}
-              updateField={updateField}
-              setShowZonesModal={setShowZonesModal}
-            />
+            <ServiceInfoStep formData={formData} updateField={updateField} setShowZonesModal={setShowZonesModal} />
           )}
         </AnimatePresence>
 
@@ -314,26 +311,22 @@ export default function InscriptionLivreur() {
               <ChevronLeft className="w-5 h-5" /> Retour
             </button>
           )}
-
-          {step < totalSteps ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={!canGoNext() || submitting}
-              className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
-            >
-              Continuer <ChevronRight className="w-5 h-5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canGoNext() || submitting}
-              className="flex-[2] py-4 bg-success text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
-            >
-              {submitting ? 'Validation...' : 'Terminer mon inscription'}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={step < totalSteps ? handleNext : handleSubmit}
+            disabled={!canGoNext() || submitting}
+            className={`flex-[2] py-4 text-white rounded-2xl font-bold shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 ${
+              step < totalSteps ? 'bg-primary' : 'bg-success'
+            }`}
+          >
+            {step < totalSteps ? (
+              <>Continuer <ChevronRight className="w-5 h-5" /></>
+            ) : submitting ? (
+              'Validation...'
+            ) : (
+              'Terminer mon inscription'
+            )}
+          </button>
         </div>
       </div>
 
