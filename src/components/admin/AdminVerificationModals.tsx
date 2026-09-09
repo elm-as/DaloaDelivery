@@ -60,7 +60,7 @@ export const AdminVerificationModals = ({
                   <div className="px-4 pb-4 border-b border-grey-100">
                     <div className="flex items-center gap-3">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-grey-100 flex items-center justify-center flex-shrink-0">
-                        {selectedDriver.photo_url ? (
+                        {selectedDriver.photo_url && !selectedDriver.photo_url.startsWith('blob:') ? (
                           <img
                             src={selectedDriver.photo_url}
                             alt={selectedDriver.name}

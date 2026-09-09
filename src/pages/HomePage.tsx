@@ -5,6 +5,7 @@ import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User } from 'luci
 import { deliveryPersonService } from '../services/deliveryPersonService';
 import type { DeliveryPerson } from '../types/livreur';
 import { useSEO } from '../hooks/useSEO';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const CATEGORIES = [
   { id: 'Moto', label: 'Moto', icon: Bike, color: 'bg-primary-50 text-primary', delay: 0.1 },
@@ -168,11 +169,16 @@ export default function HomePage() {
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
                       <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200/80 flex items-center justify-center">
-                        {livreur.photo_url ? (
+                        {livreur.photo_url && !livreur.photo_url.startsWith('blob:') ? (
                           <img 
-                            src={livreur.photo_url} 
+                            src={getOptimizedImageUrl(livreur.photo_url, 120, 75) || livreur.photo_url} 
                             alt={livreur.name} 
                             className="w-full h-full object-cover" 
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              target.onerror = null;
+                              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(livreur.name || 'Livreur')}&background=ea580c&color=ffffff&bold=true&size=128`;
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-primary-50 text-primary font-black text-base uppercase">

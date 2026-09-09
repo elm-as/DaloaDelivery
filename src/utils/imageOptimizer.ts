@@ -1,6 +1,6 @@
 export function getOptimizedImageUrl(url: string | null | undefined, width = 400, quality = 80): string {
-  if (!url) return '';
-  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+  if (!url || url.startsWith('blob:')) return '';
+  if (url.startsWith('data:')) return url;
 
   if (url.includes('.supabase.co/storage/v1/object/public/')) {
     const transformed = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');

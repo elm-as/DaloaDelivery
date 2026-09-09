@@ -40,9 +40,9 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
         {/* Avatar */}
         <div className="relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200/80">
-            {livreur.photo_url ? (
+            {livreur.photo_url && !livreur.photo_url.startsWith('blob:') ? (
               <img 
-                src={getOptimizedImageUrl(livreur.photo_url, 120, 75)} 
+                src={getOptimizedImageUrl(livreur.photo_url, 120, 75) || livreur.photo_url} 
                 alt={livreur.name} 
                 width={48}
                 height={48}
@@ -50,10 +50,9 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
                 decoding="async"
                 className="w-full h-full object-cover" 
                 onError={(e) => {
-                  const target = e.currentTarget as HTMLImageElement;
-                  if (livreur.photo_url && target.src !== livreur.photo_url) {
-                    target.src = livreur.photo_url;
-                  }
+                  const target = e.currentTarget;
+                  target.onerror = null;
+                  target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(livreur.name || 'Livreur')}&background=ea580c&color=ffffff&bold=true&size=128`;
                 }}
               />
             ) : (

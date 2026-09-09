@@ -152,9 +152,9 @@ export default function LivreurDetailPage() {
                 <div className="relative mb-3">
                   <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 p-1 ring-4 ring-white/30 shadow-xl backdrop-blur-sm">
                     <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                      {livreur.photo_url ? (
+                      {livreur.photo_url && !livreur.photo_url.startsWith('blob:') ? (
                         <img 
-                          src={getOptimizedImageUrl(livreur.photo_url, 300, 80)} 
+                          src={getOptimizedImageUrl(livreur.photo_url, 300, 80) || livreur.photo_url} 
                           alt={livreur.name} 
                           width={96}
                           height={96}
@@ -163,10 +163,9 @@ export default function LivreurDetailPage() {
                           decoding="async"
                           className="w-full h-full object-cover" 
                           onError={(e) => {
-                            const target = e.currentTarget as HTMLImageElement;
-                            if (livreur.photo_url && target.src !== livreur.photo_url) {
-                              target.src = livreur.photo_url;
-                            }
+                            const target = e.currentTarget;
+                            target.onerror = null;
+                            target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(livreur.name || 'Livreur')}&background=ea580c&color=ffffff&bold=true&size=256`;
                           }}
                         />
                       ) : (

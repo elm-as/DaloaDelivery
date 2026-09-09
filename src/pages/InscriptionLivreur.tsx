@@ -154,23 +154,23 @@ export default function InscriptionLivreur() {
     try {
       let photoUrl: string | null = null;
       if (formData.photo) {
-        const fileExt = formData.photo.name.split('.').pop();
+        const fileExt = formData.photo.name.split('.').pop() || 'jpg';
         const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('livreur-photos')
-          .upload(fileName, formData.photo);
+          .upload(fileName, formData.photo, { upsert: true, contentType: formData.photo.type || 'image/jpeg' });
         if (uploadError) {
           console.warn('Upload photo livreur échoué:', uploadError);
+          toast.error("Photo non enregistrée. Vous pourrez la modifier dans votre profil.");
         } else {
-          const { data: urlData } = supabase.storage
-            .from('livreur-photos')
-            .getPublicUrl(fileName);
-          photoUrl = urlData.publicUrl;
+          photoUrl = supabase.storage.from('livreur-photos').getPublicUrl(fileName).data.publicUrl;
         }
       }
 
       const cleanPayoutNetwork = normalizePayoutNetwork(formData.payout_network);
-      const finalAvatar = photoUrl || formData.photoPreview || userProfile?.avatar_url || null;
+      const safePreview = formData.photoPreview?.startsWith('http') ? formData.photoPreview : null;
+      const safeUserAvatar = userProfile?.avatar_url?.startsWith('http') ? userProfile.avatar_url : null;
+      const finalAvatar = photoUrl || safePreview || safeUserAvatar || null;
 
       // 1. Synchroniser le profil utilisateur (users) et auth metadata
       try {
