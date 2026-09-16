@@ -40,7 +40,7 @@ export const DALOA_ZONES = [
   'Cocotier',
   'Corridor',
   'Gbokora',
-  'Hodjinninkloni',
+  'Odjenecourani',
   'Houssoukro',
   'Institut Pastoral',
   'Jacqueville',

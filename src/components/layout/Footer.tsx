@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { MessageCircle, Mail, MapPin } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -41,10 +41,15 @@ export function Footer() {
                 <MapPin className="w-4 h-4 text-primary" />
                 Daloa, Côte d'Ivoire
               </div>
-              <div className="flex items-center gap-2 text-grey-400 text-sm">
-                <Phone className="w-4 h-4 text-primary" />
-                +225 07 88 00 08 31
-              </div>
+              <a
+                href="https://wa.me/2250173801559"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-grey-400 text-sm hover:text-white transition-colors"
+              >
+                <MessageCircle className="w-4 h-4 text-primary" />
+                WhatsApp +225 01 73 80 15 59
+              </a>
               <div className="flex items-center gap-2 text-grey-400 text-sm">
                 <Mail className="w-4 h-4 text-primary" />
                 support@daloamarket.com

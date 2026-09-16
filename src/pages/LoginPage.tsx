@@ -21,17 +21,36 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
+      if (signInData.user && redirectTo === '/dashboard') {
+        try {
+          const { data: userRow } = await supabase.from('users').select('role').eq('id', signInData.user.id).maybeSingle();
+          if (userRow?.role === 'admin' || userRow?.role === 'superadmin') {
+            toast.success('Connexion admin réussie !');
+            navigate('/admin');
+            return;
+          }
+        } catch {}
+      }
+
       toast.success('Connexion réussie !');
       navigate(redirectTo);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur de connexion';
+      let message = err instanceof Error ? err.message : 'Erreur de connexion';
+      try {
+        const { data: provInfo } = await supabase.rpc('get_auth_provider_for_email', {
+          p_email: email.trim(),
+        });
+        if (provInfo?.exists && !provInfo?.has_password && provInfo?.provider === 'google') {
+          message = "Ce compte a été créé avec Google sur DaloaMarket. Aucun mot de passe n'est configuré : veuillez cliquer sur « S'inscrire avec Google » ci-dessous.";
+        }
+      } catch {}
       setError(message);
       toast.error('Échec de la connexion');
     } finally {

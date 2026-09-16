@@ -26,6 +26,110 @@ export const deliveryPersonService = {
     return result as DeliveryPerson;
   },
 
+  async registerDriverProfile({
+    userId,
+    formData,
+    userProfile,
+  }: {
+    userId: string;
+    formData: {
+      name: string;
+      phone: string;
+      photo: File | null;
+      photoPreview: string;
+      vehicle_type: string;
+      vehicle_details: string;
+      coverage_zones: string[];
+      pricing_description: string;
+      description: string;
+      payout_network?: string;
+      payout_number?: string;
+    };
+    userProfile?: Record<string, unknown> | null;
+  }): Promise<DeliveryPerson> {
+    let photoUrl: string | null = null;
+    if (formData.photo) {
+      const fileExt = formData.photo.name.split('.').pop() || 'jpg';
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('livreur-photos')
+        .upload(fileName, formData.photo, {
+          upsert: true,
+          contentType: formData.photo.type || 'image/jpeg',
+        });
+      if (uploadError) {
+        console.warn('Upload photo livreur échoué:', uploadError);
+      } else {
+        photoUrl = supabase.storage.from('livreur-photos').getPublicUrl(fileName).data.publicUrl;
+      }
+    }
+
+    const map: Record<string, string> = {
+      wave: 'wave-ci',
+      'wave-ci': 'wave-ci',
+      orange: 'orange-money-ci',
+      'orange-money-ci': 'orange-money-ci',
+      mtn: 'mtn-ci',
+      'mtn-ci': 'mtn-ci',
+      moov: 'moov-ci',
+      'moov-ci': 'moov-ci',
+    };
+    const cleanPayoutNetwork = formData.payout_network ? map[formData.payout_network] || 'wave-ci' : 'wave-ci';
+    const safePreview = formData.photoPreview?.startsWith('http') ? formData.photoPreview : null;
+    const safeUserAvatar = typeof userProfile?.avatar_url === 'string' && userProfile.avatar_url.startsWith('http')
+      ? userProfile.avatar_url
+      : null;
+    const finalAvatar = photoUrl || safePreview || safeUserAvatar || null;
+
+    let nextRole = 'livreur';
+    try {
+      const { data: userRow } = await supabase.from('users').select('role').eq('id', userId).maybeSingle();
+      if (userRow?.role === 'admin' || userRow?.role === 'superadmin' || userRow?.role === 'vendeur') {
+        nextRole = userRow.role;
+      }
+    } catch {}
+
+    try {
+      await Promise.all([
+        supabase.from('users').update({
+          full_name: formData.name,
+          phone: formData.phone,
+          avatar_url: finalAvatar,
+          role: nextRole,
+          payout_network: cleanPayoutNetwork,
+          payout_number: formData.payout_number || null,
+        } as any).eq('id', userId),
+        supabase.auth.updateUser({
+          data: {
+            full_name: formData.name,
+            name: formData.name,
+            phone: formData.phone,
+            avatar_url: finalAvatar,
+            role: nextRole,
+          },
+        }),
+      ]);
+    } catch (userSyncErr) {
+      console.warn('Sync users warning:', userSyncErr);
+    }
+
+    return this.createDeliveryPerson({
+      user_id: userId,
+      name: formData.name,
+      phone: formData.phone,
+      photo_url: finalAvatar,
+      is_available: true,
+      vehicle_type: formData.vehicle_type,
+      vehicle_details: formData.vehicle_details || '',
+      coverage_zones: formData.coverage_zones,
+      pricing_description: formData.pricing_description || '',
+      description: formData.description || '',
+      current_location: null,
+      payout_network: cleanPayoutNetwork,
+      payout_number: formData.payout_number || null,
+    });
+  },
+
   async updateDeliveryPerson(
     id: string,
     updates: Partial<Omit<DeliveryPerson, 'id' | 'user_id' | 'created_at' | 'updated_at'>>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User } from 'lucide-react';
 import { deliveryPersonService, rotateDeliveryPersonsEquitably } from '../services/deliveryPersonService';
 import type { DeliveryPerson } from '../types/livreur';
+import ProBadge from '../components/ui/ProBadge';
 import { useSEO } from '../hooks/useSEO';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
@@ -207,15 +208,21 @@ export default function HomePage() {
                             {livreur.name?.trim() || 'Livreur'}
                           </h3>
                           {livreur.verification_status === 'approved' && (
-                            <span className="text-[10px] text-blue-600 font-bold">✓</span>
+                            <ProBadge iconOnly size="xs" className="flex-shrink-0" />
                           )}
                         </div>
                         
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
-                          <div className="flex items-center gap-0.5 text-amber-600 font-bold">
-                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                            <span>{livreur.rating.toFixed(1)}</span>
-                          </div>
+                          {livreur.total_reviews > 0 ? (
+                            <div className="flex items-center gap-0.5 text-amber-600 font-bold tabular-nums">
+                              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                              <span>{livreur.rating.toFixed(1)}</span>
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
+                              Nouveau
+                            </span>
+                          )}
                           <span>·</span>
                           <span className="font-medium text-gray-600">{livreur.vehicle_type}</span>
                           {livreur.coverage_zones && livreur.coverage_zones.length > 0 && (

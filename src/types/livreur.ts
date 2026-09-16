@@ -10,6 +10,8 @@ export interface DeliveryPerson {
   phone: string;
   photo_url: string | null;
   cni_url: string | null;
+  /** Permis de conduire, distinct de la piece d identite. */
+  licence_url: string | null;
   selfie_cni_url: string | null;
   portrait_live_url: string | null;
   is_available: boolean;

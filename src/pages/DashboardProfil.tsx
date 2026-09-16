@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { ZonesModal, ProfileModal, PhoneModal } from '../components/profile/ProfileModals';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import ProBadge from '../components/ui/ProBadge';
 import { deliveryPersonService } from '../services/deliveryPersonService';
 import { deliveryOrderService, type DeliveryRequest } from '../services/deliveryOrderService';
 import { EarningsModal } from '../components/dashboard/EarningsModal';
@@ -266,9 +267,7 @@ export default function DashboardProfil() {
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-white truncate tracking-tight">{profile.name}</h2>
               {profile.verification_status === 'approved' && (
-                <span className="bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  Vérifié ✓
-                </span>
+                <ProBadge size="sm" className="ring-2 ring-white/40" />
               )}
             </div>
             <div className="flex items-center gap-2 mt-1">

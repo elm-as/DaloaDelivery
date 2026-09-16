@@ -270,6 +270,7 @@ export default function AdminPage() {
       { key: 'cni', url: driver.cni_url },
       { key: 'selfie', url: driver.selfie_cni_url },
       { key: 'portrait', url: driver.portrait_live_url },
+      { key: 'licence', url: driver.licence_url },
     ];
 
     for (const field of fields) {

@@ -93,6 +93,15 @@ export const AdminVerificationModals = ({
                         Documents soumis
                       </h4>
                       
+                      {['Moto', 'Voiture', 'Triporteur'].includes(selectedDriver.vehicle_type || '') &&
+                        !(signedUrls.licence || selectedDriver.licence_url) && (
+                          <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-800">
+                            Aucun permis de conduire transmis, alors que le véhicule déclaré
+                            ({selectedDriver.vehicle_type}) en exige un. Dossier soumis avant la mise
+                            en place de cette pièce, ou permis manquant.
+                          </div>
+                        )}
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {(signedUrls.cni || selectedDriver.cni_url) && (
                           <div>
@@ -116,6 +125,22 @@ export const AdminVerificationModals = ({
                                 alt="Selfie CNI"
                                 className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
                                 onClick={() => window.open((signedUrls.selfie || selectedDriver.selfie_cni_url)?.split('#')[0], '_blank')}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        {(signedUrls.licence || selectedDriver.licence_url) && (
+                          <div>
+                            <p className="text-xs font-bold text-grey-600 mb-1">
+                              4. Permis de conduire
+                              {selectedDriver.vehicle_type ? ` (${selectedDriver.vehicle_type})` : ''}
+                            </p>
+                            <div className="bg-grey-50 rounded-xl overflow-hidden border border-grey-200 aspect-[4/3]">
+                              <img
+                                src={(signedUrls.licence || selectedDriver.licence_url)!.split('#')[0]}
+                                alt="Permis de conduire"
+                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                onClick={() => window.open((signedUrls.licence || selectedDriver.licence_url)?.split('#')[0], '_blank')}
                               />
                             </div>
                           </div>

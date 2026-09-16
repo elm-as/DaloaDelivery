@@ -24,7 +24,7 @@ const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 
 export default function DashboardLivreur() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useSupabase();
+  const { user, userProfile, loading: authLoading } = useSupabase();
   const [profile, setProfile] = useState<DeliveryPerson | null>(null);
 
   // Activate real-time PWA Push, Audio Synth Beep & Vibration alerts for new available courses
@@ -52,20 +52,24 @@ export default function DashboardLivreur() {
   const fetchData = useCallback(async () => {
     if (!user) return;
     try {
+      // 1. Rediriger immédiatement les admins vers leur panneau
+      if (userProfile?.role === 'admin' || userProfile?.role === 'superadmin') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+      try {
+        const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle();
+        if (userData?.role === 'admin' || userData?.role === 'superadmin') {
+          navigate('/admin', { replace: true });
+          return;
+        }
+      } catch (err) {
+        console.error("Error checking user role:", err);
+      }
+
       const profileData = await deliveryPersonService.getDeliveryPersonByUserId(user.id);
       if (!profileData || !profileData.name || !profileData.name.trim()) {
-        // Check if user is an admin before forcing them to become a driver
-        try {
-          const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single();
-          if (userData?.role === 'admin' || userData?.role === 'superadmin') {
-            navigate('/admin');
-            return;
-          }
-        } catch (err) {
-          console.error("Error checking user role:", err);
-        }
-
-        navigate('/devenir-livreur');
+        navigate('/devenir-livreur', { replace: true });
         toast("Complétez votre profil de livreur d'abord", { icon: 'ℹ️' });
         return;
       }

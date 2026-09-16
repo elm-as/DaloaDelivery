@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useSupabase } from '../hooks/useSupabase';
@@ -14,7 +14,6 @@ import { RegistrationZonesModal } from '../components/registration/RegistrationZ
 import {
   type RegistrationFormData,
   initialRegistrationFormData,
-  normalizePayoutNetwork,
 } from '../types/registration';
 
 export default function InscriptionLivreur() {
@@ -22,40 +21,48 @@ export default function InscriptionLivreur() {
   const { user, userProfile, loading: authLoading } = useSupabase();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [existingProfile, setExistingProfile] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Zones Bottom Sheet State
+  // Modal des zones de couverture
   const [showZonesModal, setShowZonesModal] = useState(false);
   const [zoneSearch, setZoneSearch] = useState('');
 
   const [formData, setFormData] = useState<RegistrationFormData>(initialRegistrationFormData);
 
-  const [startedLoggedIn] = useState(() => Boolean(user));
-  const totalSteps = startedLoggedIn ? 2 : 3;
+  // État de connexion réactif : jamais figé dans un useState
+  const isLoggedIn = Boolean(user);
+  const totalSteps = isLoggedIn ? 2 : 3;
 
-  // Pré-remplir les données si connecté
+  // Redirection automatique des admins et des coursiers déjà inscrits
   useEffect(() => {
-    if (!authLoading && user) {
-      deliveryPersonService
-        .getDeliveryPersonByUserId(user.id)
-        .then((profile) => {
-          if (profile) {
-            setExistingProfile(true);
-            toast('Vous avez déjà un profil de livreur actif', { icon: 'ℹ️' });
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              name: String(prev.name || userProfile?.full_name || user.user_metadata?.full_name || ''),
-              phone: String(prev.phone || userProfile?.phone || user.user_metadata?.phone || ''),
-              photoPreview: String(prev.photoPreview || userProfile?.avatar_url || user.user_metadata?.avatar_url || ''),
-              payout_number: String(prev.payout_number || (userProfile as any)?.payout_number || userProfile?.phone || ''),
-            }));
-          }
-        })
-        .catch((err) => console.error('Erreur profil existant:', err));
+    if (authLoading || !user) return;
+
+    // 1. Les administrateurs n'ont rien à faire sur l'onboarding livreur
+    if (userProfile?.role === 'admin' || userProfile?.role === 'superadmin') {
+      navigate('/admin', { replace: true });
+      return;
     }
-  }, [user, userProfile, authLoading]);
+
+    // 2. Si le livreur existe déjà, aller directement au tableau de bord
+    deliveryPersonService
+      .getDeliveryPersonByUserId(user.id)
+      .then((profile) => {
+        if (profile && profile.name && profile.name.trim()) {
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
+        // Pré-remplir les données depuis le compte Google / profil existant
+        setFormData((prev) => ({
+          ...prev,
+          name: String(prev.name || userProfile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || ''),
+          phone: String(prev.phone || userProfile?.phone || user.user_metadata?.phone || ''),
+          photoPreview: String(prev.photoPreview || userProfile?.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || ''),
+          payout_number: String(prev.payout_number || (userProfile as any)?.payout_number || userProfile?.phone || ''),
+        }));
+      })
+      .catch((err) => console.error('Erreur vérification profil livreur:', err));
+  }, [user, userProfile, authLoading, navigate]);
 
   const updateField = (field: keyof RegistrationFormData, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -82,22 +89,21 @@ export default function InscriptionLivreur() {
     }));
   };
 
-  // Convertit l'étape d'affichage vers l'étape logique (1: Auth si non connecté, 2: Infos, 3: Service)
+  // Convertit l'étape d'affichage vers l'étape logique (1: Auth, 2: Infos, 3: Service)
   const getActualStep = (currentStep: number) => {
-    if (!startedLoggedIn) return currentStep;
+    if (!isLoggedIn) return currentStep;
     return currentStep + 1;
   };
 
   const canGoNext = () => {
-    if (!startedLoggedIn && step === 1) {
-      return (
-        formData.email.trim() !== '' &&
-        formData.password.length >= 6 &&
-        formData.password === formData.confirmPassword
-      );
-    }
     const actual = getActualStep(step);
     switch (actual) {
+      case 1:
+        return (
+          formData.email.trim() !== '' &&
+          formData.password.length >= 6 &&
+          formData.password === formData.confirmPassword
+        );
       case 2:
         return formData.name.trim() !== '' && formData.phone.trim() !== '';
       case 3:
@@ -108,7 +114,7 @@ export default function InscriptionLivreur() {
   };
 
   const handleNext = async () => {
-    if (!startedLoggedIn && step === 1) {
+    if (!isLoggedIn && step === 1) {
       if (formData.password !== formData.confirmPassword) {
         toast.error('Les mots de passe ne correspondent pas');
         return;
@@ -123,11 +129,36 @@ export default function InscriptionLivreur() {
         if (error) throw error;
         setStep(2);
       } catch (err: unknown) {
-        let msg = err instanceof Error ? err.message : 'Erreur lors de la création du compte';
-        if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('already registered')) {
-          msg = 'Un compte avec cet e-mail existe déjà. Veuillez vous connecter.';
+        const errMsg = err instanceof Error ? err.message : '';
+        const isAlreadyRegistered =
+          errMsg.toLowerCase().includes('already exists') ||
+          errMsg.toLowerCase().includes('already registered') ||
+          (err as any)?.status === 422;
+
+        if (isAlreadyRegistered) {
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: formData.email.trim(),
+            password: formData.password,
+          });
+
+          if (!signInErr && signInData.user) {
+            toast.success('Compte DaloaMarket reconnu ! Renseignez vos infos coursier.');
+            const existingDriver = await deliveryPersonService.getDeliveryPersonByUserId(signInData.user.id);
+            if (existingDriver) {
+              navigate('/dashboard');
+              return;
+            }
+            setStep(1); // Comme l'utilisateur est maintenant connecté, étape 1 = infos perso
+            return;
+          }
+
+          toast.error(
+            'Un compte existe déjà avec cet email. Utilisez « Continuer avec Google » ou vérifiez le mot de passe.',
+            { duration: 5000 }
+          );
+        } else {
+          toast.error(errMsg || 'Erreur lors de la création du compte');
         }
-        toast.error(msg);
       } finally {
         setSubmitting(false);
       }
@@ -145,73 +176,16 @@ export default function InscriptionLivreur() {
 
     if (!formData.name.trim() || !formData.phone.trim()) {
       toast.error('Veuillez renseigner votre nom complet et votre numéro de téléphone.');
-      setStep(startedLoggedIn ? 1 : 2);
+      setStep(1);
       return;
     }
 
     setSubmitting(true);
-
     try {
-      let photoUrl: string | null = null;
-      if (formData.photo) {
-        const fileExt = formData.photo.name.split('.').pop() || 'jpg';
-        const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('livreur-photos')
-          .upload(fileName, formData.photo, { upsert: true, contentType: formData.photo.type || 'image/jpeg' });
-        if (uploadError) {
-          console.warn('Upload photo livreur échoué:', uploadError);
-          toast.error("Photo non enregistrée. Vous pourrez la modifier dans votre profil.");
-        } else {
-          photoUrl = supabase.storage.from('livreur-photos').getPublicUrl(fileName).data.publicUrl;
-        }
-      }
-
-      const cleanPayoutNetwork = normalizePayoutNetwork(formData.payout_network);
-      const safePreview = formData.photoPreview?.startsWith('http') ? formData.photoPreview : null;
-      const safeUserAvatar = userProfile?.avatar_url?.startsWith('http') ? userProfile.avatar_url : null;
-      const finalAvatar = photoUrl || safePreview || safeUserAvatar || null;
-
-      // 1. Synchroniser le profil utilisateur (users) et auth metadata
-      try {
-        await Promise.all([
-          supabase.from('users').update({
-            full_name: formData.name,
-            phone: formData.phone,
-            avatar_url: finalAvatar,
-            role: 'livreur',
-            payout_network: cleanPayoutNetwork,
-            payout_number: formData.payout_number || null,
-          } as any).eq('id', currentUser.id),
-          supabase.auth.updateUser({
-            data: {
-              full_name: formData.name,
-              name: formData.name,
-              phone: formData.phone,
-              avatar_url: finalAvatar,
-              role: 'livreur',
-            },
-          }),
-        ]);
-      } catch (userSyncErr) {
-        console.warn('Sync users warning:', userSyncErr);
-      }
-
-      // 2. Créer l'enregistrement officiel dans delivery_persons
-      await deliveryPersonService.createDeliveryPerson({
-        user_id: currentUser.id,
-        name: formData.name,
-        phone: formData.phone,
-        photo_url: finalAvatar,
-        is_available: true,
-        vehicle_type: formData.vehicle_type,
-        vehicle_details: formData.vehicle_details || '',
-        coverage_zones: formData.coverage_zones,
-        pricing_description: formData.pricing_description || '',
-        description: formData.description || '',
-        current_location: null,
-        payout_network: cleanPayoutNetwork,
-        payout_number: formData.payout_number || null,
+      await deliveryPersonService.registerDriverProfile({
+        userId: currentUser.id,
+        formData,
+        userProfile,
       });
 
       if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -237,26 +211,6 @@ export default function InscriptionLivreur() {
     );
   }
 
-  if (existingProfile) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-24 h-24 bg-success-50 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle className="w-12 h-12 text-success" />
-        </div>
-        <h1 className="text-2xl font-bold text-grey-900 mb-2">Vous êtes déjà livreur</h1>
-        <p className="text-grey-500 mb-8 max-w-sm">
-          Vous possédez déjà un profil actif sur DaloaDelivery. Gérez vos courses et vos gains depuis votre espace.
-        </p>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="w-full max-w-sm py-4 bg-primary text-white rounded-2xl font-bold active:scale-95 transition-transform"
-        >
-          Accéder à mon tableau de bord
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-grey-50 pb-20">
       {/* Header avec jauge d'étapes */}
@@ -278,8 +232,8 @@ export default function InscriptionLivreur() {
 
       <div className="px-4 -mt-12 relative z-20 max-w-lg mx-auto">
         <AnimatePresence mode="wait">
-          {/* Étape 1 : Création de compte (si non connecté au départ) */}
-          {!startedLoggedIn && step === 1 && (
+          {/* Étape 1 : Création de compte (affichée uniquement si non connecté) */}
+          {!isLoggedIn && step === 1 && (
             <AuthStep
               formData={formData}
               updateField={updateField}
@@ -289,12 +243,12 @@ export default function InscriptionLivreur() {
           )}
 
           {/* Étape Infos Personnelles + Payout */}
-          {((startedLoggedIn && step === 1) || (!startedLoggedIn && step === 2)) && (
+          {((isLoggedIn && step === 1) || (!isLoggedIn && step === 2)) && (
             <PersonalInfoStep formData={formData} updateField={updateField} handlePhotoChange={handlePhotoChange} />
           )}
 
           {/* Étape Service & Zones */}
-          {((startedLoggedIn && step === 2) || (!startedLoggedIn && step === 3)) && (
+          {((isLoggedIn && step === 2) || (!isLoggedIn && step === 3)) && (
             <ServiceInfoStep formData={formData} updateField={updateField} setShowZonesModal={setShowZonesModal} />
           )}
         </AnimatePresence>

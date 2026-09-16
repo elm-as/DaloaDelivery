@@ -1,5 +1,6 @@
 import { type DeliveryPerson } from '../../types/livreur';
-import { Star, Bike, Car, Truck, CheckCircle, ChevronRight } from 'lucide-react';
+import { Star, Bike, Car, Truck, ChevronRight } from 'lucide-react';
+import ProBadge from '../ui/ProBadge';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../../utils/imageOptimizer';
@@ -76,17 +77,23 @@ export function LivreurCard({ livreur, index = 0 }: LivreurCardProps) {
               {livreur.name?.trim() || 'Livreur'}
             </h3>
             {livreur.verification_status === 'approved' && (
-              <CheckCircle className="w-3.5 h-3.5 text-blue-500 fill-blue-500 text-white flex-shrink-0" />
+              <ProBadge iconOnly size="xs" className="flex-shrink-0" />
             )}
           </div>
 
           <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500 flex-wrap">
             {/* Rating */}
-            <div className="flex items-center gap-0.5 text-amber-600 font-bold">
-              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-              <span>{livreur.rating.toFixed(1)}</span>
-              <span className="text-[10px] text-gray-400 font-normal">({livreur.total_reviews})</span>
-            </div>
+            {livreur.total_reviews > 0 ? (
+              <div className="flex items-center gap-0.5 text-amber-600 font-bold tabular-nums">
+                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                <span>{livreur.rating.toFixed(1)}</span>
+                <span className="text-[10px] text-gray-400 font-normal">({livreur.total_reviews})</span>
+              </div>
+            ) : (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
+                Nouveau
+              </span>
+            )}
 
             <span>·</span>
 

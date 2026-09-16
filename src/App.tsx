@@ -19,12 +19,33 @@ import PayoutSetupPage from './pages/PayoutSetupPage';
 import VerificationPage from './pages/VerificationPage';
 import AffiliationsPage from './pages/AffiliationsPage';
 import BannedPage from './pages/BannedPage';
+import MaintenancePage from './pages/MaintenancePage';
 import { useSupabase } from './hooks/useSupabase';
+import { supabase } from './lib/supabase';
+import { useState, useEffect } from 'react';
 
 export default function App() {
   const { user, userProfile } = useSupabase();
   const location = useLocation();
+  const [maintenance, setMaintenance] = useState<{ enabled: boolean; message?: string; expected_reopening?: string | null }>({
+    enabled: false,
+  });
 
+  useEffect(() => {
+    supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'maintenance_mode')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) {
+          setMaintenance(data.value as any);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'superadmin';
   const isBannedPath = location.pathname === '/banned';
   if (userProfile?.banned && !isBannedPath) {
     return <Navigate to="/banned" replace />;
@@ -33,11 +54,15 @@ export default function App() {
     return <Navigate to="/" replace />;
   }
 
+  // Maintenance mode (les admins restent autorisés à naviguer)
+  if (maintenance.enabled && !isAdmin && location.pathname !== '/admin') {
+    return <MaintenancePage message={maintenance.message} expectedReopening={maintenance.expected_reopening} />;
+  }
+
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* If user is logged in, they are a livreur, redirect from Home to Dashboard */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <HomePage />} />
+        <Route path="/" element={<HomePage />} />
         
         <Route path="/annuaire" element={<AnnuairePage />} />
         <Route path="/livreur/:id" element={<LivreurDetailPage />} />
@@ -57,7 +82,7 @@ export default function App() {
         <Route path="/banned" element={<BannedPage />} />
         
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register" element={<InscriptionLivreur />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/mentions-legales" element={<MentionsLegalesPage />} />

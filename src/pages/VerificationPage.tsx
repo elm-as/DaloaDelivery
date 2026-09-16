@@ -20,6 +20,15 @@ const VerificationPage: React.FC = () => {
   const [verifyCniFile, setVerifyCniFile] = useState<File | null>(null);
   const [verifySelfieFile, setVerifySelfieFile] = useState<File | null>(null);
   const [verifyPortraitFile, setVerifyPortraitFile] = useState<File | null>(null);
+  const [verifyLicenceFile, setVerifyLicenceFile] = useState<File | null>(null);
+
+  /**
+   * Le permis n'est exigé que pour un véhicule motorisé. Le vélo en est exclu :
+   * il ne requiert aucun titre de conduite, et l'imposer écarterait la majorité
+   * des coursiers de Daloa.
+   */
+  const VEHICLES_REQUIRING_LICENCE = ['Moto', 'Voiture', 'Triporteur'];
+  const needsLicence = VEHICLES_REQUIRING_LICENCE.includes(profile?.vehicle_type || '');
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -46,6 +55,10 @@ const VerificationPage: React.FC = () => {
   const handleVerifyUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile || !user || !verifyCniFile || !verifySelfieFile || !verifyPortraitFile) return;
+    if (needsLicence && !verifyLicenceFile) {
+      toast.error(`Votre véhicule (${profile.vehicle_type}) nécessite un permis de conduire.`);
+      return;
+    }
 
     setSubmitting(true);
     setSubmissionStep('uploading');
@@ -61,6 +74,7 @@ const VerificationPage: React.FC = () => {
       const cniUrl = await uploadDoc(verifyCniFile, 'cni');
       const selfieUrl = await uploadDoc(verifySelfieFile, 'selfie');
       const portraitUrl = await uploadDoc(verifyPortraitFile, 'portrait');
+      const licenceUrl = verifyLicenceFile ? await uploadDoc(verifyLicenceFile, 'licence') : null;
 
       setSubmissionStep('ai_checking');
       const aiReport = await runAIDetection({
@@ -74,6 +88,7 @@ const VerificationPage: React.FC = () => {
         cni_url: cniUrl,
         selfie_cni_url: selfieUrl,
         portrait_live_url: portraitUrl,
+        licence_url: licenceUrl,
         verification_status: 'pending',
         is_verified: false,
         ai_verification_results: aiReport.ai_verification_results,
@@ -199,7 +214,7 @@ const VerificationPage: React.FC = () => {
               {/* Field 1: CNI */}
               <div>
                 <label className="block text-sm font-bold text-gray-800 mb-2 pl-1">
-                  1. Pièce d'identité (CNI, Passeport ou Permis)
+                  1. Pièce d'identité (CNI ou Passeport)
                 </label>
                 <label className={`w-full flex items-center gap-3.5 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
                   verifyCniFile 
@@ -300,12 +315,53 @@ const VerificationPage: React.FC = () => {
                   />
                 </label>
               </div>
+
+              {/* Field 4: Permis de conduire — véhicules motorisés uniquement */}
+              {needsLicence && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-800 mb-2 pl-1">
+                    4. Permis de conduire ({profile.vehicle_type})
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2 pl-1 leading-relaxed">
+                    Votre pièce d'identité établit qui vous êtes ; le permis atteste
+                    que vous pouvez conduire votre véhicule. Les deux sont demandés.
+                  </p>
+                  <label className={`w-full flex items-center gap-3.5 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                    verifyLicenceFile
+                      ? 'border-emerald-500 bg-emerald-50/10'
+                      : 'border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100/70'
+                  }`}>
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      verifyLicenceFile ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'
+                    }`}>
+                      {verifyLicenceFile ? <CheckCircle className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-800 truncate">
+                        {verifyLicenceFile ? verifyLicenceFile.name : 'Importer votre permis de conduire'}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {verifyLicenceFile ? 'Fichier sélectionné' : 'Format image ou PDF (max 5 Mo)'}
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setVerifyLicenceFile(file);
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={submitting || !verifyCniFile || !verifySelfieFile || !verifyPortraitFile}
+                disabled={submitting || !verifyCniFile || !verifySelfieFile || !verifyPortraitFile || (needsLicence && !verifyLicenceFile)}
                 className="w-full py-4 bg-primary hover:bg-primary-700 text-white rounded-2xl font-bold text-sm shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-40"
               >
                 {submitting ? (

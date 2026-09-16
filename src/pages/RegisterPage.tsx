@@ -94,6 +94,18 @@ export default function RegisterPage() {
       navigate(redirectTo);
     } catch (err: unknown) {
       let message = err instanceof Error ? err.message : "Erreur lors de l'inscription";
+      try {
+        const { data: provInfo } = await supabase.rpc('get_auth_provider_for_email', {
+          p_email: email.trim(),
+        });
+        if (provInfo?.exists && !provInfo?.has_password && provInfo?.provider === 'google') {
+          message = "Ce compte a été créé avec Google sur DaloaMarket. Aucun mot de passe n'est configuré : veuillez cliquer sur « S'inscrire avec Google » ci-dessous.";
+          setError(message);
+          toast.error('Connexion Google requise');
+          setLoading(false);
+          return;
+        }
+      } catch {}
       if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('already registered')) {
         message = "Un compte avec cet e-mail existe déjà sur DaloaMarket/DaloaDelivery. Veuillez utiliser la page de connexion pour vous connecter.";
       }
