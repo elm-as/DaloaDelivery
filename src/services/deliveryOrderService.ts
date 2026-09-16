@@ -85,7 +85,7 @@ async function fetchSellerAddresses(assignments: any[]): Promise<Record<string, 
 
   const { data } = await supabase
     .from('users')
-    .select('id, district, shop_latitude, shop_longitude, latitude, longitude, full_name, phone, avatar_url, shop_name, shop_logo_url')
+    .select('id, district, shop_latitude, shop_longitude, full_name, phone, avatar_url, shop_name, shop_logo_url')
     .in('id', sellerIds);
     
   const addressMap: Record<string, SellerInfo> = {};
@@ -97,8 +97,8 @@ async function fetchSellerAddresses(assignments: any[]): Promise<Record<string, 
         avatarUrl: u.avatar_url || u.shop_logo_url || null,
         shopName: u.shop_name,
         address: u.district || 'Adresse du vendeur',
-        lat: u.shop_latitude ?? u.latitude ?? undefined,
-        lng: u.shop_longitude ?? u.longitude ?? undefined
+        lat: u.shop_latitude ?? undefined,
+        lng: u.shop_longitude ?? undefined
       };
     });
   }

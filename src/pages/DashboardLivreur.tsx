@@ -419,8 +419,8 @@ export default function DashboardLivreur() {
             <div className="w-9 h-9 bg-amber-50 rounded-2xl flex items-center justify-center mb-1.5">
               <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
             </div>
-            <p className="text-xl font-black text-gray-900 leading-none">{profile.rating.toFixed(1)}</p>
-            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase">{profile.total_reviews} avis</p>
+            <p className="text-xl font-black text-gray-900 leading-none">{profile.total_reviews > 0 ? profile.rating.toFixed(1) : '-'}</p>
+            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase">{profile.total_reviews > 0 ? `${profile.total_reviews} avis` : 'Nouveau'}</p>
           </motion.div>
 
           <motion.div
