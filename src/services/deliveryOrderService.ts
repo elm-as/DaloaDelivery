@@ -17,6 +17,9 @@ export interface DeliveryRequest {
   status: 'awaiting_pickup' | 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
   assigned_driver_id: string | null;
   created_at: string;
+  /** Renseignés depuis `delivery_assignments` : le calcul des gains du jour filtre dessus. */
+  accepted_at: string | null;
+  delivered_at: string | null;
   pickup_lat?: number;
   pickup_lng?: number;
   dropoff_lat?: number;
@@ -45,8 +48,6 @@ function mapAssignmentToRequest(assignment: any, sellerInfo?: SellerInfo): Deliv
   const order = Array.isArray(assignment.orders) 
     ? assignment.orders[0] || {}
     : assignment.orders || {};
-  
-  console.log("Mapping assignment:", assignment.id, "orders data:", assignment.orders, "extracted order:", order);
 
   return {
     id: assignment.id,
@@ -65,6 +66,8 @@ function mapAssignmentToRequest(assignment: any, sellerInfo?: SellerInfo): Deliv
     status: assignment.status,
     assigned_driver_id: assignment.delivery_person_id,
     created_at: assignment.created_at,
+    accepted_at: assignment.accepted_at ?? null,
+    delivered_at: assignment.delivered_at ?? null,
     pickup_lat: sellerInfo?.lat || undefined,
     pickup_lng: sellerInfo?.lng || undefined,
     dropoff_lat: order.delivery_lat || undefined,

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Star, User, ToggleLeft, ToggleRight, XCircle, AlertTriangle,
+  Star, User, ToggleLeft, ToggleRight, AlertTriangle,
   MapPin, Package, Clock, ChevronRight, Moon,
   Zap, Navigation, RefreshCw, Bike, Car, Truck
 } from 'lucide-react';
@@ -17,6 +17,7 @@ import { useDriverCourseNotifications } from '../hooks/useDriverCourseNotificati
 import type { DeliveryPerson } from '../types/livreur';
 import toast from 'react-hot-toast';
 import { isCurfewActive } from '../utils/security';
+import { friendlyError } from '../lib/messages';
 
 const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Moto: Bike, Vélo: Bike, Voiture: Car, Triporteur: Truck, motorcycle: Bike, car: Car,
@@ -222,8 +223,13 @@ export default function DashboardLivreur() {
       await deliveryOrderService.acceptRequest(orderId, profile.id);
       toast.success('Commande acceptée !');
       setPendingOrders((prev) => prev.filter(o => o.id !== orderId));
-    } catch {
-      toast.error('Erreur: commande déjà prise ou indisponible.');
+      // On relit la base : le retrait local ne prouve pas que l'écriture a eu lieu,
+      // et « Mes courses » doit voir la course apparaître immédiatement.
+      await fetchData();
+      navigate(`/course/${orderId}`);
+    } catch (err: any) {
+      toast.error(friendlyError(err, 'Erreur : commande déjà prise ou indisponible.'));
+      fetchData();
     }
   };
 

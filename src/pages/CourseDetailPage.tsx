@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, Navigation, XCircle, AlertTriangle, Moon } from 'lucide-react';
+import { ArrowLeft, Navigation, Phone, AlertTriangle, Moon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { deliveryOrderService, type DeliveryRequest } from '../services/deliveryOrderService';
 import { useSupabase } from '../hooks/useSupabase';
@@ -57,6 +57,24 @@ const buyerIcon = new L.Icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
+
+/**
+ * Les neuf valeurs autorisées par la contrainte CHECK de `delivery_assignments.status`.
+ * Sans table explicite, un statut inattendu (`pending_seller_confirmation`, `cancelled`,
+ * `disputed`…) retombait sur « Course terminée » et faisait passer une course non
+ * acceptée pour une course livrée.
+ */
+const COURSE_STATUS_LABELS: Record<string, string> = {
+  pending_seller_confirmation: 'En attente du vendeur',
+  awaiting_pickup: 'Nouvelle course',
+  accepted: 'En route vers le vendeur',
+  picked_up: 'En route vers le client',
+  in_transit: 'En route vers le client',
+  delivered: 'Course terminée',
+  auto_released: 'Course terminée',
+  disputed: 'Litige en cours',
+  cancelled: 'Course annulée',
+};
 
 function MapBounds({ coords }: { coords: [number, number][] }) {
   const map = useMap();
@@ -254,10 +272,7 @@ export default function CourseDetailPage() {
           {/* Status Badge */}
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-black text-grey-900">
-              {order.status === 'awaiting_pickup' ? 'Nouvelle course' : 
-               order.status === 'accepted' ? 'En route vers le vendeur' :
-               order.status === 'picked_up' || order.status === 'in_transit' ? 'En route vers le client' : 
-               'Course terminée'}
+              {COURSE_STATUS_LABELS[order.status] ?? 'Course indisponible'}
             </h2>
             <div className="px-3 py-1 bg-primary-50 text-primary rounded-lg font-bold text-sm">
               {Math.round(order.proposed_price * 0.9)} FCFA net
@@ -378,6 +393,7 @@ export default function CourseDetailPage() {
 
       <PickupVerificationModal
         assignmentId={order.id}
+        sellerPhone={order.seller_phone}
         isOpen={pickupModalOpen}
         onClose={() => setPickupModalOpen(false)}
         onSuccess={() => {
