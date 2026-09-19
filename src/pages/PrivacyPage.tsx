@@ -13,7 +13,7 @@ export default function PrivacyPage() {
             Politique de Confidentialité
           </h1>
           <p className="text-sm text-grey-500 max-w-lg mx-auto">
-            Dernière mise à jour : 2 juillet 2026 — DaloaDelivery s'engage à protéger vos données personnelles.
+            Dernière mise à jour : 2 juillet 2026. DaloaDelivery s'engage à protéger vos données personnelles.
           </p>
         </div>
 

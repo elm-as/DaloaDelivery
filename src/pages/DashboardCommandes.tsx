@@ -191,7 +191,7 @@ export default function DashboardCommandes() {
                   Sécurité Nocturne Active
                 </div>
                 <h3 className="text-base font-black text-white mb-1 tracking-tight">
-                  Couvre-feu de sécurité (22h30 — 05h30)
+                  Couvre-feu de sécurité (22h30 à 05h30)
                 </h3>
                 <p className="text-xs text-gray-300 font-medium leading-relaxed max-w-md mx-auto">
                   Les nouvelles livraisons sont suspendues durant la nuit pour votre sécurité. Vous pouvez toujours clôturer vos courses en cours.

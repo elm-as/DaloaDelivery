@@ -50,7 +50,7 @@ export const RevealablePhone: React.FC<RevealablePhoneProps> = ({
         }
       >
         <Eye className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-        <span>{compact ? masked : `Voir le numéro — ${masked}`}</span>
+        <span>{compact ? masked : `Voir le numéro : ${masked}`}</span>
       </button>
     );
   }

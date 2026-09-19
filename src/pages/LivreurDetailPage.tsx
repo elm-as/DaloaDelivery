@@ -17,7 +17,7 @@ export default function LivreurDetailPage() {
   const [livreur, setLivreur] = useState<DeliveryPerson | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const title = livreur ? `${livreur.name} — Livreur ${livreur.vehicle_type} à Daloa` : 'Livreur à Daloa';
+  const title = livreur ? `${livreur.name} : Livreur ${livreur.vehicle_type} à Daloa` : 'Livreur à Daloa';
   const desc = livreur
     ? `${livreur.name} est livreur en ${livreur.vehicle_type} à Daloa. ${
         livreur.total_reviews > 0 ? `Note: ${livreur.rating.toFixed(1)}/5 (${livreur.total_reviews} avis).` : 'Nouveau coursier disponible.'

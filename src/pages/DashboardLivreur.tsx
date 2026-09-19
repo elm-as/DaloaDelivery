@@ -490,7 +490,7 @@ export default function DashboardLivreur() {
                   Sécurité Nocturne Active
                 </div>
                 <h3 className="text-base font-black text-white mb-1 tracking-tight">
-                  Couvre-feu de sécurité (22h30 — 05h30)
+                  Couvre-feu de sécurité (22h30 à 05h30)
                 </h3>
                 <p className="text-xs text-gray-300 font-medium leading-relaxed max-w-md mx-auto">
                   Les attributions de courses sont automatiquement suspendues durant la nuit pour protéger les livreurs et les marchandises à Daloa.
