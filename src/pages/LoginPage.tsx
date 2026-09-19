@@ -100,7 +100,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative z-10 pt-6 border-t border-white/15 flex items-center justify-between text-xs text-white/70 font-medium">
-            <span>© 2026 DaloaDelivery — ElmasCore</span>
+            <span>© 2026 DaloaDelivery, ElmasCore</span>
             <span>Support Livreurs: +225 01 00 00 00</span>
           </div>
         </div>

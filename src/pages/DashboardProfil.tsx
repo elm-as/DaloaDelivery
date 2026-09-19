@@ -282,7 +282,7 @@ export default function DashboardProfil() {
               <VehicleIcon className="w-3.5 h-3.5 text-white/90" />
               <span>{profile.vehicle_type}</span>
               {profile.vehicle_details && (
-                <span className="text-white/60 truncate"> — {profile.vehicle_details}</span>
+                <span className="text-white/60 truncate"> ({profile.vehicle_details})</span>
               )}
             </div>
           </div>

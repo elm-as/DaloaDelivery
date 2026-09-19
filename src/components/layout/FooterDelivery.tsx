@@ -54,7 +54,7 @@ export function FooterDelivery() {
         </div>
 
         <div className="border-t border-grey-100 mt-8 pt-6 flex items-center justify-between text-xs text-grey-400">
-          <p>© {new Date().getFullYear()} ElmasCore — DaloaDelivery. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} ElmasCore, DaloaDelivery. Tous droits réservés.</p>
           <p>Daloa, Côte d'Ivoire</p>
         </div>
       </div>

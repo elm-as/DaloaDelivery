@@ -38,7 +38,7 @@ export default function HomePage() {
     description: 'Trouvez un livreur vérifié à Daloa (moto, vélo, voiture, triporteur) pour vos colis, repas et marchandises.',
   };
 
-  useSEO('Livreurs fiables à Daloa — Service de Livraison Express', {
+  useSEO('Livreurs fiables à Daloa : Service de Livraison Express', {
     description: 'Trouvez rapidement un livreur disponible à Daloa (Côte d\'Ivoire). Coursiers vérifiés par moto, vélo, voiture et triporteur avec suivi en temps réel.',
     keywords: 'livreur Daloa, livraison moto Daloa, coursier Côte d\'Ivoire, livraison express DaloaDelivery',
     canonical: 'https://delivery.daloamarket.com/',

@@ -13,7 +13,7 @@ export default function TermsPage() {
             Conditions Générales d'Utilisation
           </h1>
           <p className="text-sm text-grey-500 max-w-lg mx-auto">
-            Dernière mise à jour : 2 juillet 2026 — Veuillez lire attentivement ces conditions avant d'utiliser DaloaDelivery.
+            Dernière mise à jour : 2 juillet 2026. Veuillez lire attentivement ces conditions avant d'utiliser DaloaDelivery.
           </p>
         </div>
 
@@ -158,7 +158,7 @@ export default function TermsPage() {
                   <h4 className="font-semibold text-grey-800 mt-3">5.4 Rémunération des prestations et validation par code OTP</h4>
                   <p>Le paiement des prestations de livraison s'effectue en toute transparence. La libération des fonds vers le compte Mobile Money du livreur est déclenchée dès la validation conforme du <strong>Code OTP de livraison</strong> transmis par l'acheteur lors de la réception du colis. <strong>Une commission de service de 10% est retenue par la plateforme</strong> sur le montant de chaque course pour couvrir les frais de fonctionnement, d'assurance et de paiement Mobile Money. Le livreur reçoit ainsi 90% du prix de livraison convenu.</p>
 
-                  <h4 className="font-semibold text-grey-800 mt-3">5.5 Couvre-feu nocturne de sécurité (22h30 — 05h30)</h4>
+                  <h4 className="font-semibold text-grey-800 mt-3">5.5 Couvre-feu nocturne de sécurité (22h30 à 05h30)</h4>
                   <p>Pour préserver l'intégrité physique des coursiers et la sécurité des biens transportés à Daloa, <strong>l'attribution de nouvelles courses est strictement suspendue entre 22h30 et 05h30</strong>. Seules les courses déjà acceptées avant 22h30 peuvent être finalisées. Aucun livreur ne peut être contraint ou sollicité pour démarrer une nouvelle livraison durant cette plage horaire.</p>
 
                   <h4 className="font-semibold text-grey-800 mt-3">5.6 Gestion des Destinataires Absents ou Refus Injustifié</h4>

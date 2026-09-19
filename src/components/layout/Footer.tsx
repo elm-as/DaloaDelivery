@@ -59,7 +59,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-grey-800 mt-8 pt-8 text-center text-grey-500 text-sm">
-          &copy; {new Date().getFullYear()} DaloaDelivery (ElmasCore) — Fondé par Elmas. Tous droits réservés.
+          &copy; {new Date().getFullYear()} DaloaDelivery (ElmasCore), fondé par Elmas. Tous droits réservés.
         </div>
       </div>
     </footer>

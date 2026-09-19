@@ -172,8 +172,8 @@ export const AdminVerificationModals = ({
                           selectedDriver.ai_flagged ? 'text-red-700' : 'text-emerald-700'
                         }`}>
                           {selectedDriver.ai_flagged 
-                            ? <><ShieldAlert className="w-4 h-4" /> ⚠️ Alerte — Contenu IA détecté</>
-                            : <><Bot className="w-4 h-4" /> ✅ Analyse IA — RAS</>
+                            ? <><ShieldAlert className="w-4 h-4" /> ⚠️ Alerte : Contenu IA détecté</>
+                            : <><Bot className="w-4 h-4" /> ✅ Analyse IA : RAS</>
                           }
                         </p>
                         <div className="space-y-2">

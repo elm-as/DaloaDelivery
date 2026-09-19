@@ -324,7 +324,7 @@ export default function CourseDetailPage() {
                 <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-gray-900 rounded-3xl p-5 text-center border border-indigo-800/40 text-white shadow-xl">
                   <div className="flex items-center justify-center gap-2 mb-2 text-amber-400">
                     <Moon className="w-5 h-5" />
-                    <span className="font-black text-xs uppercase tracking-wider">Couvre-feu Actif (22h30 — 05h30)</span>
+                    <span className="font-black text-xs uppercase tracking-wider">Couvre-feu Actif (22h30 à 05h30)</span>
                   </div>
                   <p className="text-xs text-gray-300 font-medium leading-relaxed">
                     L'acceptation des nouvelles courses est suspendue la nuit pour votre sécurité. Reprise dès 05h30.
