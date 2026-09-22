@@ -263,31 +263,23 @@ export function AppBar() {
           </nav>
 
           {/* Right side icons */}
-          <div className="flex items-center gap-1.5">
-            {user && (
-              <button
-                onClick={handleLogout}
-                className="w-9 h-9 rounded-full bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center active:scale-95 transition-all border border-red-100 flex-shrink-0"
-                title="Se déconnecter"
-                aria-label="Se déconnecter"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
-            <button
-              onClick={() => setShowLegal(true)}
-              className="w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
-              title="Menu & Informations légales"
-            >
-              <MoreVertical className="w-5 h-5" />
-            </button>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowNotifs(true)}
               className="relative w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
               title="Notifications"
+              aria-label="Notifications"
             >
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-white" />
+            </button>
+            <button
+              onClick={() => setShowLegal(true)}
+              className="w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
+              title="Menu & Informations légales"
+              aria-label="Menu et informations"
+            >
+              <MoreVertical className="w-5 h-5" />
             </button>
           </div>
         </div>
