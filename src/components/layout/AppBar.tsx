@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Bell, ArrowLeft, X, BellRing, Info, AlertTriangle, CheckCircle, MoreVertical, Shield, FileText } from 'lucide-react';
+import { Bell, ArrowLeft, MoreVertical, LogOut, User } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { useSupabase } from '../../hooks/useSupabase';
 import { supabase } from '../../lib/supabase';
 import { deliveryPersonService } from '../../services/deliveryPersonService';
 import { deliveryOrderService } from '../../services/deliveryOrderService';
-
-interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  link?: string;
-}
+import { NotificationsSheet, type AppNotification } from './NotificationsSheet';
+import { LegalSheet } from './LegalSheet';
 
 export function AppBar() {
   const location = useLocation();
@@ -40,17 +34,17 @@ export function AppBar() {
         if (!user) {
           notifs.push({
             id: 'annuaire',
-            title: 'Besoin d\'un livreur ?',
+            title: "Besoin d'un livreur ?",
             message: 'Consultez notre annuaire pour trouver le livreur parfait.',
             type: 'info',
-            link: '/annuaire'
+            link: '/annuaire',
           });
           notifs.push({
             id: 'devenir',
             title: 'Envie de devenir livreur ?',
             message: 'Rejoignez-nous et commencez à générer des revenus.',
             type: 'success',
-            link: '/devenir-livreur'
+            link: '/devenir-livreur',
           });
         } else {
           // Check Admin
@@ -60,14 +54,14 @@ export function AppBar() {
               .from('delivery_persons')
               .select('id')
               .or('verification_status.eq.pending,and(verification_status.is.null,cni_url.not.is.null)');
-            
+
             if (pendingDocs && pendingDocs.length > 0) {
               notifs.push({
                 id: 'admin-docs',
                 title: 'Vérifications en attente',
                 message: `${pendingDocs.length} document(s) de livreur en attente de validation.`,
                 type: 'warning',
-                link: '/admin'
+                link: '/admin',
               });
             }
           }
@@ -79,20 +73,20 @@ export function AppBar() {
               if (profile.verification_status === 'pending' || (!profile.verification_status && profile.cni_url)) {
                 notifs.push({
                   id: 'doc-pending',
-                  title: 'Document en cours d\'examen',
+                  title: "Document en cours d'examen",
                   message: 'Votre CNI est en cours de validation par notre équipe.',
                   type: 'info',
-                  link: '/dashboard/profil'
+                  link: '/dashboard/profil',
                 });
               } else if (profile.verification_status === 'rejected') {
                 notifs.push({
                   id: 'doc-rejected',
                   title: 'Document refusé',
-                  message: profile.verification_rejection_reason 
+                  message: profile.verification_rejection_reason
                     ? `Refusé : ${profile.verification_rejection_reason}`
-                    : 'Votre document n\'a pas été validé. Veuillez en soumettre un nouveau.',
+                    : "Votre document n'a pas été validé. Veuillez en soumettre un nouveau.",
                   type: 'error',
-                  link: '/dashboard/profil'
+                  link: '/dashboard/profil',
                 });
               } else if (profile.verification_status === 'approved') {
                 notifs.push({
@@ -100,7 +94,7 @@ export function AppBar() {
                   title: 'Profil Vérifié',
                   message: 'Félicitations, vous êtes un livreur vérifié !',
                   type: 'success',
-                  link: '/dashboard/profil'
+                  link: '/dashboard/profil',
                 });
               }
 
@@ -113,13 +107,17 @@ export function AppBar() {
                   .eq('status', 'pending');
 
                 if (affData && affData.length > 0) {
-                  const firstSeller = (affData[0] as any)?.seller?.shop_name || (affData[0] as any)?.seller?.full_name || 'Un vendeur';
+                  const firstSeller =
+                    (affData[0] as any)?.seller?.shop_name ||
+                    (affData[0] as any)?.seller?.full_name ||
+                    'Un vendeur';
                   notifs.unshift({
                     id: 'pending-affiliations',
-                    title: '🤝 Demande d\'affiliation reçue !',
-                    message: affData.length === 1
-                      ? `La boutique ${firstSeller} souhaite vous affilier comme livreur dédié.`
-                      : `${affData.length} vendeurs souhaitent vous ajouter comme livreur dédié.`,
+                    title: "🤝 Demande d'affiliation reçue !",
+                    message:
+                      affData.length === 1
+                        ? `La boutique ${firstSeller} souhaite vous affilier comme livreur dédié.`
+                        : `${affData.length} vendeurs souhaitent vous ajouter comme livreur dédié.`,
                     type: 'warning',
                     link: '/affiliations',
                   });
@@ -136,7 +134,7 @@ export function AppBar() {
                     title: 'Nouvelles commandes',
                     message: `Il y a ${pendingOrders.length} commande(s) en attente.`,
                     type: 'success',
-                    link: '/dashboard'
+                    link: '/dashboard',
                   });
                 }
               } else {
@@ -145,7 +143,7 @@ export function AppBar() {
                   title: 'Vous êtes hors ligne',
                   message: 'Passez en ligne pour recevoir des courses.',
                   type: 'warning',
-                  link: '/dashboard'
+                  link: '/dashboard',
                 });
               }
             }
@@ -159,7 +157,7 @@ export function AppBar() {
             id: 'empty',
             title: 'Aucune notification',
             message: 'Vous êtes à jour.',
-            type: 'info'
+            type: 'info',
           });
         }
       } catch (err) {
@@ -179,9 +177,19 @@ export function AppBar() {
     };
   }, [showNotifs, user]);
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Déconnexion réussie');
+      navigate('/login');
+    } catch {
+      toast.error('Erreur lors de la déconnexion');
+    }
+  };
+
   const getTitle = () => {
     if (location.pathname === '/dashboard') return 'Tableau de bord';
-    if (location.pathname === '/dashboard/commandes') return 'Mes commandes';
+    if (location.pathname === '/dashboard/commandes' || location.pathname === '/livraisons') return 'Mes livraisons';
     if (location.pathname === '/dashboard/profil') return 'Mon profil';
     if (location.pathname === '/annuaire') return 'Annuaire';
     if (location.pathname === '/login') return 'Connexion';
@@ -189,7 +197,7 @@ export function AppBar() {
     if (location.pathname === '/devenir-livreur' || location.pathname === '/inscription') return 'Devenir livreur';
     if (location.pathname.startsWith('/livreur/')) return 'Profil livreur';
     if (location.pathname === '/admin') return 'Administration';
-    if (location.pathname === '/terms') return 'Conditions d\'utilisation';
+    if (location.pathname === '/terms') return "Conditions d'utilisation";
     if (location.pathname === '/privacy') return 'Confidentialité';
     if (location.pathname === '/mentions-legales') return 'Mentions légales';
     return '';
@@ -211,7 +219,7 @@ export function AppBar() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
             ) : null}
-            
+
             <Link to="/" className="flex items-center gap-2 text-primary hover:text-primary-600 transition-colors">
               <img src="/logo.png" alt="DaloaDelivery" className="w-6 h-6 object-contain" />
               {isHome || !title ? (
@@ -223,24 +231,60 @@ export function AppBar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-grey-700">
-            <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
-            <Link to="/annuaire" className="hover:text-primary transition-colors">Annuaire livreurs</Link>
-            <Link to={user ? "/dashboard" : "/devenir-livreur"} className="hover:text-primary transition-colors">Espace Livreur</Link>
+          <nav className="hidden lg:flex items-center gap-5 text-sm font-semibold text-grey-700">
+            <Link to="/" className="hover:text-primary transition-colors">
+              Accueil
+            </Link>
+            <Link to="/annuaire" className="hover:text-primary transition-colors">
+              Annuaire livreurs
+            </Link>
+            <Link to={user ? '/dashboard' : '/devenir-livreur'} className="hover:text-primary transition-colors">
+              Espace Livreur
+            </Link>
+            {user && (
+              <Link
+                to="/dashboard/profil"
+                className="flex items-center gap-1.5 text-xs text-grey-600 hover:text-primary transition-colors"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Mon profil</span>
+              </Link>
+            )}
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all border border-red-100 active:scale-95 ml-1"
+                title="Se déconnecter"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Déconnexion</span>
+              </button>
+            )}
           </nav>
 
-          {/* Right side */}
-          <div className="flex items-center gap-1">
-            <button 
+          {/* Right side icons */}
+          <div className="flex items-center gap-1.5">
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="w-9 h-9 rounded-full bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center active:scale-95 transition-all border border-red-100 flex-shrink-0"
+                title="Se déconnecter"
+                aria-label="Se déconnecter"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+            <button
               onClick={() => setShowLegal(true)}
               className="w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
-              title="Informations légales"
+              title="Menu & Informations légales"
             >
               <MoreVertical className="w-5 h-5" />
             </button>
-            <button 
+            <button
               onClick={() => setShowNotifs(true)}
               className="relative w-9 h-9 rounded-full bg-grey-50 flex items-center justify-center text-grey-600 active:bg-grey-100 transition-colors flex-shrink-0"
+              title="Notifications"
             >
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-white" />
@@ -250,172 +294,21 @@ export function AppBar() {
       </header>
 
       {/* Notifications Bottom Sheet */}
-      <AnimatePresence>
-        {showNotifs && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowNotifs(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-            />
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[101] max-h-[85vh] flex flex-col shadow-2xl"
-            >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-grey-100">
-                <div className="flex items-center gap-2">
-                  <BellRing className="w-5 h-5 text-primary" />
-                  <h3 className="text-xl font-bold text-grey-900">Notifications</h3>
-                </div>
-                <button
-                  onClick={() => setShowNotifs(false)}
-                  className="w-10 h-10 bg-grey-100 rounded-full flex items-center justify-center text-grey-600 active:scale-95 transition-transform"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-8">
-                {loading ? (
-                  <div className="flex justify-center py-10">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  notifications.map((notif) => (
-                    <button
-                      key={notif.id}
-                      onClick={() => {
-                        if (notif.link) {
-                          navigate(notif.link);
-                          setShowNotifs(false);
-                        }
-                      }}
-                      className={`w-full text-left bg-white rounded-2xl p-4 border flex items-start gap-3 transition-colors ${
-                        notif.link ? 'active:bg-grey-50' : 'cursor-default'
-                      } ${
-                        notif.type === 'error' ? 'border-error/20 bg-error/5' :
-                        notif.type === 'warning' ? 'border-warning/20 bg-warning/5' :
-                        notif.type === 'success' ? 'border-success/20 bg-success/5' :
-                        'border-grey-100'
-                      }`}
-                    >
-                      <div className="mt-0.5">
-                        {notif.type === 'error' && <AlertTriangle className="w-5 h-5 text-error" />}
-                        {notif.type === 'warning' && <AlertTriangle className="w-5 h-5 text-warning" />}
-                        {notif.type === 'success' && <CheckCircle className="w-5 h-5 text-success" />}
-                        {notif.type === 'info' && <Info className="w-5 h-5 text-primary" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className={`text-sm font-bold mb-1 ${
-                          notif.type === 'error' ? 'text-error-600' :
-                          notif.type === 'warning' ? 'text-warning-700' :
-                          notif.type === 'success' ? 'text-success-700' :
-                          'text-grey-900'
-                        }`}>
-                          {notif.title}
-                        </h4>
-                        <p className="text-sm text-grey-600 leading-snug">{notif.message}</p>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <NotificationsSheet
+        isOpen={showNotifs}
+        onClose={() => setShowNotifs(false)}
+        notifications={notifications}
+        loading={loading}
+        onNavigate={(link) => navigate(link)}
+      />
 
-      {/* Legal Bottom Sheet */}
-      <AnimatePresence>
-        {showLegal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowLegal(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-            />
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[101] max-h-[60vh] flex flex-col shadow-2xl"
-            >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-grey-100">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-bold text-grey-900">Informations</h3>
-                </div>
-                <button
-                  onClick={() => setShowLegal(false)}
-                  className="w-10 h-10 bg-grey-100 rounded-full flex items-center justify-center text-grey-600 active:scale-95 transition-transform"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-2 pb-8">
-                <Link
-                  to="/terms"
-                  onClick={() => setShowLegal(false)}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-grey-50 active:bg-grey-100 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-grey-900">Conditions d'utilisation</p>
-                    <p className="text-xs text-grey-500">CGU régissant l'utilisation de la plateforme</p>
-                  </div>
-                  <ArrowLeft className="w-4 h-4 text-grey-400 rotate-180" />
-                </Link>
-
-                <Link
-                  to="/privacy"
-                  onClick={() => setShowLegal(false)}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-grey-50 active:bg-grey-100 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-grey-900">Politique de confidentialité</p>
-                    <p className="text-xs text-grey-500">Comment nous protégeons vos données</p>
-                  </div>
-                  <ArrowLeft className="w-4 h-4 text-grey-400 rotate-180" />
-                </Link>
-
-                <Link
-                  to="/mentions-legales"
-                  onClick={() => setShowLegal(false)}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-grey-50 active:bg-grey-100 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
-                    <Info className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-grey-900">Mentions légales</p>
-                    <p className="text-xs text-grey-500">Éditeur, hébergement, propriété intellectuelle</p>
-                  </div>
-                  <ArrowLeft className="w-4 h-4 text-grey-400 rotate-180" />
-                </Link>
-              </div>
-
-              {/* Branding */}
-              <div className="flex-shrink-0 p-4 border-t border-grey-100 text-center">
-                <p className="text-xs text-grey-400">DaloaDelivery © {new Date().getFullYear()}</p>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Menu & Legal Bottom Sheet */}
+      <LegalSheet
+        isOpen={showLegal}
+        onClose={() => setShowLegal(false)}
+        user={user}
+        onLogout={handleLogout}
+      />
     </>
   );
 }

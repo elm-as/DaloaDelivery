@@ -66,18 +66,39 @@ export const PersonalInfoStep = ({ formData, updateField, handlePhotoChange }: a
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">Réseau de retrait</label>
-              <select
-                value={formData.payout_network || ''}
-                onChange={(e) => updateField('payout_network', e.target.value)}
-                className="w-full px-4 py-3.5 bg-grey-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none font-medium text-sm appearance-none"
-              >
-                <option value="">Sélectionnez un réseau</option>
-                <option value="wave-ci">Wave</option>
-                <option value="orange-money-ci">Orange Money</option>
-                <option value="mtn-ci">MTN Money</option>
-                <option value="moov-ci">Moov Money</option>
-              </select>
+              <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">Réseau de retrait *</label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { id: 'wave-ci', label: 'Wave', logo: '/wave-logo.png' },
+                  { id: 'orange-money-ci', label: 'Orange Money', logo: '/Orange_logo.svg' },
+                  { id: 'mtn-ci', label: 'MTN MoMo', logo: '/MTN logo.jpeg' },
+                  { id: 'moov-ci', label: 'Moov Money', logo: '/moov-logo.png' },
+                ].map((net) => {
+                  const isSelected = formData.payout_network === net.id;
+                  return (
+                    <button
+                      key={net.id}
+                      type="button"
+                      onClick={() => updateField('payout_network', net.id)}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-2xl border-2 transition-all text-left relative ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-xs'
+                          : 'border-grey-200/80 bg-grey-50 hover:bg-white hover:border-grey-300'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-xl overflow-hidden bg-white p-1 border border-grey-200/60 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                        <img src={net.logo} alt={net.label} className="w-full h-full object-contain" />
+                      </div>
+                      <span className="text-xs font-bold text-grey-800 truncate">{net.label}</span>
+                      {isSelected && (
+                        <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-bold">
+                          ✓
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div>

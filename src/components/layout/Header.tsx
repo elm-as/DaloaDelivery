@@ -1,11 +1,24 @@
-import { Link } from 'react-router-dom';
-import { Menu, X, LogIn, UserPlus, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, LogIn, UserPlus, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useSupabase } from '../../hooks/useSupabase';
+import { supabase } from '../../lib/supabase';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useSupabase();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Déconnexion réussie');
+      navigate('/login');
+    } catch {
+      toast.error('Erreur lors de la déconnexion');
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -30,13 +43,23 @@ export function Header() {
 
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary-600 transition-colors"
-              >
-                <User className="w-4 h-4" />
-                Tableau de bord
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary-600 transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  Tableau de bord
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-card font-medium transition-colors text-sm"
+                  title="Se déconnecter"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Déconnexion</span>
+                </button>
+              </div>
             ) : (
               <>
                 <Link
@@ -47,7 +70,7 @@ export function Header() {
                   Connexion
                 </Link>
                 <Link
-                  to="/register"
+                  to="/devenir-livreur"
                   className="flex items-center gap-1 px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary-600 transition-colors"
                 >
                   <UserPlus className="w-4 h-4" />
@@ -78,14 +101,26 @@ export function Header() {
                 Devenir livreur
               </Link>
               {user ? (
-                <Link
-                  to="/dashboard"
-                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary-600 transition-colors w-fit"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <User className="w-4 h-4" />
-                  Tableau de bord
-                </Link>
+                <div className="flex flex-col gap-2 pt-2 border-t border-grey-100">
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary-600 transition-colors w-fit"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    Tableau de bord
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-card font-medium transition-colors w-fit text-sm"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Se déconnecter</span>
+                  </button>
+                </div>
               ) : (
                 <div className="flex gap-3 pt-2">
                   <Link
@@ -97,7 +132,7 @@ export function Header() {
                     Connexion
                   </Link>
                   <Link
-                    to="/register"
+                    to="/devenir-livreur"
                     className="flex items-center gap-1 px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >

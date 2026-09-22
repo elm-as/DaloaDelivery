@@ -67,7 +67,8 @@ export default function App() {
         <Route path="/annuaire" element={<AnnuairePage />} />
         <Route path="/livreur/:id" element={<LivreurDetailPage />} />
         <Route path="/devenir-livreur" element={<InscriptionLivreur />} />
-        <Route path="/inscription" element={<InscriptionLivreur />} />
+        {/* Alias historiques : une seule URL canonique pour l'inscription. */}
+        <Route path="/inscription" element={<Navigate to="/devenir-livreur" replace />} />
         
         <Route path="/dashboard" element={<DashboardLivreur />} />
         <Route path="/dashboard/profil" element={<DashboardProfil />} />
@@ -75,14 +76,14 @@ export default function App() {
         <Route path="/dashboard/profil/verification" element={<VerificationPage />} />
         <Route path="/affiliations" element={<AffiliationsPage />} />
         <Route path="/dashboard/commandes" element={<DashboardCommandes />} />
-        <Route path="/livraisons" element={<DashboardCommandes />} />
+        <Route path="/livraisons" element={<Navigate to="/dashboard/commandes" replace />} />
         <Route path="/course/:id" element={<CourseDetailPage />} />
         
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/banned" element={<BannedPage />} />
         
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<InscriptionLivreur />} />
+        <Route path="/register" element={<Navigate to="/devenir-livreur" replace />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/mentions-legales" element={<MentionsLegalesPage />} />

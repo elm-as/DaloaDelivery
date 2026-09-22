@@ -53,9 +53,30 @@ export function FooterDelivery() {
           </div>
         </div>
 
-        <div className="border-t border-grey-100 mt-8 pt-6 flex items-center justify-between text-xs text-grey-400">
-          <p>© {new Date().getFullYear()} ElmasCore, DaloaDelivery. Tous droits réservés.</p>
-          <p>Daloa, Côte d'Ivoire</p>
+        {/* Moyens de paiement & reversement */}
+        <div className="border-t border-grey-100 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs text-grey-500">
+            <span className="font-bold text-grey-700">Règlements & Reversements sécurisés :</span>
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-11 bg-white rounded-lg border border-grey-200/90 p-1 flex items-center justify-center shadow-2xs hover:border-primary/40 transition-colors" title="Wave Côte d'Ivoire">
+                <img src="/wave-logo.png" alt="Wave" className="h-full max-w-full object-contain" />
+              </div>
+              <div className="h-7 w-11 bg-white rounded-lg border border-grey-200/90 p-1 flex items-center justify-center shadow-2xs hover:border-primary/40 transition-colors" title="Orange Money">
+                <img src="/Orange_logo.svg" alt="Orange Money" className="h-full max-w-full object-contain" />
+              </div>
+              <div className="h-7 w-11 bg-white rounded-lg border border-grey-200/90 p-1 flex items-center justify-center shadow-2xs hover:border-primary/40 transition-colors" title="MTN MoMo">
+                <img src="/MTN logo.jpeg" alt="MTN MoMo" className="h-full max-w-full object-contain rounded-xs" />
+              </div>
+              <div className="h-7 w-11 bg-white rounded-lg border border-grey-200/90 p-1 flex items-center justify-center shadow-2xs hover:border-primary/40 transition-colors" title="Moov Money">
+                <img src="/moov-logo.png" alt="Moov Money" className="h-full max-w-full object-contain" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs text-grey-400">
+            <p>© {new Date().getFullYear()} ElmasCore, DaloaDelivery. Tous droits réservés.</p>
+            <p>Daloa, Côte d'Ivoire</p>
+          </div>
         </div>
       </div>
     </footer>

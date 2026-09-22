@@ -1,7 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Search, CheckCircle, Upload, Camera, Shield, FileText } from 'lucide-react';
+import { X, Search, CheckCircle } from 'lucide-react';
 import { DALOA_ZONES } from '../../constants/zones';
+
+const PAYOUT_NETWORKS = [
+  { id: 'wave-ci', label: 'Wave', logo: '/wave-logo.png' },
+  { id: 'orange-money-ci', label: 'Orange Money', logo: '/Orange_logo.svg' },
+  { id: 'mtn-ci', label: 'MTN MoMo', logo: '/MTN logo.jpeg' },
+  { id: 'moov-ci', label: 'Moov Money', logo: '/moov-logo.png' },
+];
 
 export const ZonesModal = ({
   active,
@@ -198,17 +205,33 @@ export const PayoutModal = ({ active, onClose, updating, editPayoutNetwork, setE
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">Réseau Mobile Money</label>
-            <select
-              value={editPayoutNetwork}
-              onChange={(e) => setEditPayoutNetwork(e.target.value)}
-              className="w-full px-4 py-3 bg-grey-50 rounded-xl outline-none focus:ring-2 focus:ring-primary text-sm font-medium"
-            >
-              <option value="">Sélectionner un réseau</option>
-              <option value="orange-money-ci">Orange Money</option>
-              <option value="mtn-ci">MTN Mobile Money</option>
-              <option value="moov-ci">Moov Money</option>
-              <option value="wave-ci">Wave</option>
-            </select>
+            <div className="grid grid-cols-2 gap-2">
+              {PAYOUT_NETWORKS.map((net) => {
+                const isSelected = editPayoutNetwork === net.id;
+                return (
+                  <button
+                    key={net.id}
+                    type="button"
+                    onClick={() => setEditPayoutNetwork(net.id)}
+                    className={`flex items-center gap-2 p-2 rounded-xl border-2 transition-all text-left relative ${
+                      isSelected
+                        ? 'border-primary bg-primary/5 shadow-xs'
+                        : 'border-grey-200/80 bg-grey-50 hover:bg-white hover:border-grey-300'
+                    }`}
+                  >
+                    <div className="w-7 h-7 rounded-lg overflow-hidden bg-white p-0.5 border border-grey-200/60 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                      <img src={net.logo} alt={net.label} className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-xs font-bold text-grey-800 truncate">{net.label}</span>
+                    {isSelected && (
+                      <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-bold">
+                        ✓
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">Numéro du compte</label>
@@ -233,156 +256,3 @@ export const PayoutModal = ({ active, onClose, updating, editPayoutNetwork, setE
   );
 };
 
-export const VerificationModal = ({
-  active,
-  onClose,
-  updating,
-  profile,
-  verifyCniFile,
-  setVerifyCniFile,
-  verifySelfieFile,
-  setVerifySelfieFile,
-  verifyPortraitFile,
-  setVerifyPortraitFile,
-  handleVerifyUpload
-}: any) => {
-  if (!active) return null;
-  return (
-    <motion.div
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[100] flex flex-col shadow-strong"
-      style={{ maxHeight: '92vh' }}
-    >
-      <div className="flex-shrink-0">
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-grey-200 rounded-full" />
-        </div>
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-grey-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg text-grey-900">Vérification d'identité</h3>
-              <p className="text-xs text-grey-500 mt-0.5">Soumettez vos documents pour être vérifié</p>
-            </div>
-          </div>
-          <button
-            onClick={() => !updating && onClose()}
-            className="w-9 h-9 bg-grey-100 rounded-full flex items-center justify-center text-grey-500 active:scale-90 transition-transform"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-5 py-5">
-        {profile.verification_status === 'approved' && (
-          <div className="text-center py-8">
-            <div className="w-20 h-20 bg-success-50 rounded-full flex items-center justify-center mx-auto mb-5">
-              <CheckCircle className="w-10 h-10 text-success" />
-            </div>
-            <h4 className="font-bold text-xl text-grey-900 mb-2">Profil vérifié ✓</h4>
-            <p className="text-sm text-grey-500 mb-6">
-              Votre identité a été validée par notre équipe. Vous pouvez accepter toutes les commandes.
-            </p>
-            <div className="flex items-center justify-between p-4 bg-success-50 rounded-xl border border-success-100">
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-success" />
-                <div className="text-left">
-                  <p className="text-sm font-bold text-grey-900">Documents d'identité</p>
-                  <p className="text-xs text-success font-medium">Approuvé</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {profile.verification_status === 'rejected' && (
-          <div className="space-y-5">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-danger-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <X className="w-8 h-8 text-danger" />
-              </div>
-              <h4 className="font-bold text-grey-900 mb-2">Documents refusés</h4>
-            </div>
-            {profile.verification_rejection_reason && (
-              <div className="bg-danger-50 rounded-xl p-4 border border-danger-100">
-                <p className="text-xs font-bold text-danger-700 mb-1">Raison du refus :</p>
-                <p className="text-sm text-danger-600">{profile.verification_rejection_reason}</p>
-              </div>
-            )}
-            <p className="text-sm text-grey-500 text-center">
-              Vous pouvez resoumettre vos documents ci-dessous.
-            </p>
-          </div>
-        )}
-
-        {(profile.verification_status !== 'approved') && (
-          <div className="space-y-4 mt-4">
-            <div>
-              <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">1. Carte d'identité (CNI)</label>
-              <label className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${verifyCniFile ? 'border-success bg-success-50' : 'border-dashed border-grey-200 bg-grey-50 hover:bg-grey-100'}`}>
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${verifyCniFile ? 'bg-success-100' : 'bg-grey-100'}`}>
-                  {verifyCniFile ? <CheckCircle className="w-5 h-5 text-success" /> : <Upload className="w-5 h-5 text-grey-400" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-grey-700 truncate">
-                    {verifyCniFile ? verifyCniFile.name : 'Uploader le recto de la CNI'}
-                  </p>
-                  <p className="text-xs text-grey-400 mt-0.5">{verifyCniFile ? 'Fichier sélectionné' : 'Image ou PDF'}</p>
-                </div>
-                <input type="file" className="hidden" accept="image/*,.pdf" onChange={(e) => { const f = e.target.files?.[0]; if(f) setVerifyCniFile(f); }} />
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">2. Selfie avec la CNI</label>
-              <label className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${verifySelfieFile ? 'border-success bg-success-50' : 'border-dashed border-grey-200 bg-grey-50 hover:bg-grey-100'}`}>
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${verifySelfieFile ? 'bg-success-100' : 'bg-grey-100'}`}>
-                  {verifySelfieFile ? <CheckCircle className="w-5 h-5 text-success" /> : <Camera className="w-5 h-5 text-grey-400" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-grey-700 truncate">
-                    {verifySelfieFile ? verifySelfieFile.name : 'Prendre un selfie avec votre CNI'}
-                  </p>
-                  <p className="text-xs text-grey-400 mt-0.5">{verifySelfieFile ? 'Fichier sélectionné' : 'Le visage et la carte doivent être nets'}</p>
-                </div>
-                <input type="file" className="hidden" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if(f) setVerifySelfieFile(f); }} />
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-grey-900 mb-2 pl-1">3. Photo de profil</label>
-              <label className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${verifyPortraitFile ? 'border-success bg-success-50' : 'border-dashed border-grey-200 bg-grey-50 hover:bg-grey-100'}`}>
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${verifyPortraitFile ? 'bg-success-100' : 'bg-grey-100'}`}>
-                  {verifyPortraitFile ? <CheckCircle className="w-5 h-5 text-success" /> : <Camera className="w-5 h-5 text-grey-400" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-grey-700 truncate">
-                    {verifyPortraitFile ? verifyPortraitFile.name : 'Photo de profil (portrait)'}
-                  </p>
-                  <p className="text-xs text-grey-400 mt-0.5">{verifyPortraitFile ? 'Fichier sélectionné' : 'Pour les clients'}</p>
-                </div>
-                <input type="file" className="hidden" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if(f) setVerifyPortraitFile(f); }} />
-              </label>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {(profile.verification_status !== 'approved') && (
-        <div className="flex-shrink-0 p-4 border-t border-grey-100 bg-white pb-[env(safe-area-inset-bottom,1rem)]">
-          <button
-            onClick={handleVerifyUpload}
-            disabled={updating || !verifyCniFile || !verifySelfieFile || !verifyPortraitFile}
-            className="w-full py-4 bg-primary text-white rounded-2xl font-bold active:scale-95 transition-transform disabled:opacity-50"
-          >
-            {updating ? 'Envoi...' : 'Soumettre pour vérification'}
-          </button>
-        </div>
-      )}
-    </motion.div>
-  );
-};

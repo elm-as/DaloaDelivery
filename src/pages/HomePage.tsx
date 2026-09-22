@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User } from 'lucide-react';
+import { Search, Bike, Car, Truck, ChevronRight, Star, MapPin, User, ShieldCheck } from 'lucide-react';
 import { deliveryPersonService, rotateDeliveryPersonsEquitably } from '../services/deliveryPersonService';
 import type { DeliveryPerson } from '../types/livreur';
 import ProBadge from '../components/ui/ProBadge';
@@ -259,6 +259,37 @@ export default function HomePage() {
           </div>
         </div>
         
+        {/* Moyens de paiement & reversement partenaires */}
+        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-gray-900 leading-tight">
+                Règlements & Reversements instantanés
+              </h3>
+              <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                Paiements directs et reversements 100% sécurisés par Mobile Money
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="h-8 px-2.5 bg-gray-50 border border-gray-200/80 rounded-xl flex items-center justify-center shadow-2xs" title="Wave Côte d'Ivoire">
+              <img src="/wave-logo.png" alt="Wave" className="h-4 max-w-full object-contain" />
+            </div>
+            <div className="h-8 px-2.5 bg-gray-50 border border-gray-200/80 rounded-xl flex items-center justify-center shadow-2xs" title="Orange Money">
+              <img src="/Orange_logo.svg" alt="Orange Money" className="h-4 max-w-full object-contain" />
+            </div>
+            <div className="h-8 px-2.5 bg-gray-50 border border-gray-200/80 rounded-xl flex items-center justify-center shadow-2xs" title="MTN MoMo">
+              <img src="/MTN logo.jpeg" alt="MTN MoMo" className="h-4 max-w-full object-contain rounded-xs" />
+            </div>
+            <div className="h-8 px-2.5 bg-gray-50 border border-gray-200/80 rounded-xl flex items-center justify-center shadow-2xs" title="Moov Money">
+              <img src="/moov-logo.png" alt="Moov Money" className="h-4 max-w-full object-contain" />
+            </div>
+          </div>
+        </div>
+
         {/* Banner CTA Espace Livreur */}
         <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-3xl p-5 shadow-lg text-white relative overflow-hidden border border-gray-800">
           <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">

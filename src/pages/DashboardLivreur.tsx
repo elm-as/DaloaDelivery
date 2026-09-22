@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star, User, ToggleLeft, ToggleRight, AlertTriangle,
   MapPin, Package, Clock, ChevronRight, Moon,
-  Zap, Navigation, RefreshCw, Bike, Car, Truck
+  Zap, Navigation, RefreshCw, Bike, Car, Truck, LogOut
 } from 'lucide-react';
 import { EarningsModal } from '../components/dashboard/EarningsModal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -14,6 +14,7 @@ import { deliveryPersonService } from '../services/deliveryPersonService';
 import { deliveryOrderService, type DeliveryRequest } from '../services/deliveryOrderService';
 import { useSupabase } from '../hooks/useSupabase';
 import { useDriverCourseNotifications } from '../hooks/useDriverCourseNotifications';
+import { registerDeliveryWebPush } from '../lib/pushNotifications';
 import type { DeliveryPerson } from '../types/livreur';
 import toast from 'react-hot-toast';
 import { isCurfewActive } from '../utils/security';
@@ -33,6 +34,16 @@ export default function DashboardLivreur() {
     isAvailable: !!profile?.is_available,
     driverZone: profile?.coverage_zones,
   });
+  /* Création du jeton push à la connexion : tant qu'un livreur n'a pas de ligne
+     dans `push_subscriptions`, aucune course ne peut lui être poussée hors de
+     l'onglet ouvert. Déclenché une seule fois par profil livreur chargé. */
+  const pushRegisteredRef = useRef(false);
+  useEffect(() => {
+    if (!user?.id || !profile?.id || pushRegisteredRef.current) return;
+    pushRegisteredRef.current = true;
+    registerDeliveryWebPush(user.id).catch(() => undefined);
+  }, [user?.id, profile?.id]);
+
   const [pendingOrders, setPendingOrders] = useState<DeliveryRequest[]>([]);
   const [deliveredOrders, setDeliveredOrders] = useState<DeliveryRequest[]>([]);
   const [todayEarnings, setTodayEarnings] = useState(0);
@@ -235,6 +246,16 @@ export default function DashboardLivreur() {
 
 
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Déconnexion réussie');
+      navigate('/login');
+    } catch {
+      toast.error('Erreur lors de la déconnexion');
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -251,12 +272,21 @@ export default function DashboardLivreur() {
         </div>
         <h1 className="text-2xl font-bold text-grey-900 mb-2">Profil introuvable</h1>
         <p className="text-grey-500 mb-6">Vous n'avez pas encore créé votre profil de livreur.</p>
-        <button
-          onClick={() => navigate('/devenir-livreur')}
-          className="px-6 py-4 bg-primary text-white rounded-2xl font-bold w-full max-w-sm active:scale-95 transition-transform"
-        >
-          Devenir livreur
-        </button>
+        <div className="flex flex-col gap-3 w-full max-w-sm">
+          <button
+            onClick={() => navigate('/devenir-livreur')}
+            className="px-6 py-4 bg-primary text-white rounded-2xl font-bold active:scale-95 transition-transform shadow-md"
+          >
+            Devenir livreur
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-2xl font-bold border border-red-100 active:scale-95 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Se déconnecter</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -311,14 +341,25 @@ export default function DashboardLivreur() {
               </div>
             </div>
 
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              aria-label="Actualiser les courses"
-              className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white active:scale-90 transition-all border border-white/20 shadow-md hover:bg-white/25"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                aria-label="Actualiser les courses"
+                title="Actualiser les courses"
+                className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white active:scale-90 transition-all border border-white/20 shadow-md hover:bg-white/25"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                onClick={handleLogout}
+                aria-label="Se déconnecter"
+                title="Se déconnecter"
+                className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white/90 hover:text-white active:scale-90 transition-all border border-white/20 shadow-md hover:bg-red-500/40"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Interactive Online/Offline Switcher */}
