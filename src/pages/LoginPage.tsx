@@ -147,6 +147,13 @@ export default function LoginPage() {
                   className="w-full pl-12 pr-4 py-3.5 bg-grey-50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-colors font-medium text-sm"
                 />
               </div>
+              {/* Compte commun à tout DaloaMarket : la page du site principal sert à tous. */}
+              <a
+                href="https://daloamarket.com/auth/reset-password"
+                className="mt-2 inline-block pl-1 text-xs font-semibold text-primary hover:underline"
+              >
+                Mot de passe oublié ?
+              </a>
             </div>
 
             <div>

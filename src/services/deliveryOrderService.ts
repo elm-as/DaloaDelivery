@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { fetchContactPhones } from '../lib/contacts';
 
 export interface DeliveryRequest {
   id: string; // assignment id
@@ -88,15 +89,17 @@ async function fetchSellerAddresses(assignments: any[]): Promise<Record<string, 
 
   const { data } = await supabase
     .from('users')
-    .select('id, district, shop_latitude, shop_longitude, full_name, phone, avatar_url, shop_name, shop_logo_url')
+    .select('id, district, shop_latitude, shop_longitude, full_name, avatar_url, shop_name, shop_logo_url')
     .in('id', sellerIds);
+  // Téléphone du vendeur : public tant qu'il a une annonce en ligne, sinon réservé au livreur.
+  const phones = await fetchContactPhones(sellerIds);
     
   const addressMap: Record<string, SellerInfo> = {};
   if (data) {
     data.forEach((u: any) => {
       addressMap[u.id] = {
         name: u.full_name || u.shop_name || 'Vendeur',
-        phone: u.phone,
+        phone: phones.get(u.id),
         avatarUrl: u.avatar_url || u.shop_logo_url || null,
         shopName: u.shop_name,
         address: u.district || 'Adresse du vendeur',

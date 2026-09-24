@@ -28,7 +28,10 @@ const VerificationPage: React.FC = () => {
    * des coursiers de Daloa.
    */
   const VEHICLES_REQUIRING_LICENCE = ['Moto', 'Voiture', 'Triporteur'];
-  const needsLicence = VEHICLES_REQUIRING_LICENCE.includes(profile?.vehicle_type || '');
+  // Insensible à la casse : l'app a enregistré « moto » pour certains livreurs.
+  const needsLicence = VEHICLES_REQUIRING_LICENCE.some(
+    (v) => v.toLowerCase() === (profile?.vehicle_type || '').trim().toLowerCase()
+  );
 
   const fetchProfile = async () => {
     if (!user) return;

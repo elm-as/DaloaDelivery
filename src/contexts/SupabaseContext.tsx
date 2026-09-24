@@ -33,11 +33,14 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
 
     const loadProfile = async (userId: string) => {
       try {
-        const { data, error } = await supabase
-          .from('users')
+        // Profil complet (colonnes privées comprises) : la vue `users_private`
+        // ne rend que la ligne de l'utilisateur connecté.
+        const { data: row, error } = await supabase
+          .from('users_private')
           .select('*')
           .eq('id', userId)
           .single();
+        const data = row as unknown as UserProfile | null;
         if (active && !error && data) {
           // Auto-fill full_name and avatar_url from Google OAuth metadata if missing
           const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -52,10 +55,10 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
               if (needsName) patch.full_name = googleName;
               if (needsAvatar) patch.avatar_url = googleAvatar;
               try {
-                const { data: patched, error: patchErr } = await supabase
-                  .from('users').update(patch).eq('id', userId).select('*').single();
-                if (!patchErr && patched) {
-                  setUserProfile(patched);
+                const { error: patchErr } = await supabase
+                  .from('users').update(patch).eq('id', userId);
+                if (!patchErr) {
+                  setUserProfile({ ...data, ...patch });
                   return;
                 }
               } catch (err) { console.error('Error auto-filling Google profile:', err); }
@@ -79,11 +82,13 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
                   full_name: googleName,
                   avatar_url: googleAvatar,
                 }, { onConflict: 'id' })
-                .select('*')
+                .select('id')
                 .maybeSingle();
 
               if (!createErr && created) {
-                setUserProfile(created);
+                const { data: fresh } = await supabase
+                  .from('users_private').select('*').eq('id', userId).maybeSingle();
+                if (fresh) setUserProfile(fresh as unknown as UserProfile);
               }
             } catch (err) {
               console.error('Error auto-creating user profile in DaloaDelivery:', err);

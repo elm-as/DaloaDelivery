@@ -142,8 +142,9 @@ export default function AdminPage() {
       const mediatorUserIds = [...new Set(rawAssignments.map((a) => a.resolved_by).filter(Boolean))];
       const allUserIds = [...new Set([...orderUserIds, ...driverUserIds, ...mediatorUserIds])];
 
+      // Admin : fiches complètes via la vue users_private.
       const { data: users } = await supabase
-        .from('users')
+        .from('users_private')
         .select('id, full_name, phone')
         .in('id', allUserIds);
 

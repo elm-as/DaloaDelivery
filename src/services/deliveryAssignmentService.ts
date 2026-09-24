@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { fetchContactPhones } from '../lib/contacts';
 
 export interface DeliveryAssignment {
   id: string;
@@ -91,16 +92,8 @@ async function enrichWithPhones(assignments: any[]): Promise<any[]> {
     userIds.add(o.buyer_id);
   }
 
-  // Étape 2 : récupérer les téléphones depuis users
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, phone')
-    .in('id', Array.from(userIds));
-
-  const phoneMap = new Map<string, string>();
-  for (const u of (users || [])) {
-    if (u.phone) phoneMap.set(u.id, u.phone);
-  }
+  // Étape 2 : téléphones via get_contact_phones (réservés au livreur de la course)
+  const phoneMap = await fetchContactPhones(Array.from(userIds));
 
   // Fusion
   return assignments.map((a) => {
