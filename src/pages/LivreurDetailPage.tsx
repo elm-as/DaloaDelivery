@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MapPin, Phone, MessageSquare, Shield } from 'lucide-react';
+import { MapPin, Shield } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import ProBadge from '../components/ui/ProBadge';
 import { LivreurHeaderCard } from '../components/livreur/LivreurHeaderCard';
@@ -59,8 +59,6 @@ export default function LivreurDetailPage() {
   }
 
   if (!livreur) return null;
-
-  const whatsappNumber = livreur.phone ? livreur.phone.replace(/[^0-9]/g, '') : '';
 
   return (
     <div className="pb-28 bg-gray-50 min-h-screen">

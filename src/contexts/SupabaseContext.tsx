@@ -25,7 +25,7 @@ export const SupabaseContext = createContext<SupabaseContextType | null>(null);
 export function SupabaseProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [userProfile, setUserProfile] = useState<Record<string, unknown> | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
             const needsName = !data.full_name && googleName;
             const needsAvatar = !data.avatar_url && googleAvatar;
             if (needsName || needsAvatar) {
-              const patch: Record<string, string> = {};
+              const patch: { full_name?: string; avatar_url?: string } = {};
               if (needsName) patch.full_name = googleName;
               if (needsAvatar) patch.avatar_url = googleAvatar;
               try {
@@ -74,7 +74,8 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
                 .from('users')
                 .upsert({
                   id: userId,
-                  email: currentUser.email || null,
+                  // Un compte OAuth a toujours un e-mail ; la colonne est obligatoire.
+                  email: currentUser.email ?? '',
                   full_name: googleName,
                   avatar_url: googleAvatar,
                 }, { onConflict: 'id' })

@@ -112,25 +112,8 @@ export const reviewService = {
 
     if (error) throw error;
 
-    const { data: reviews } = await supabase
-      .from('delivery_person_reviews')
-      .select('rating')
-      .eq('delivery_person_id', deliveryPersonId);
-
-    const totalReviews = reviews?.length || 0;
-    const avgRating =
-      totalReviews > 0
-        ? reviews!.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-        : 0;
-
-    await supabase
-      .from('delivery_persons')
-      .update({
-        rating: Math.round(avgRating * 10) / 10,
-        total_reviews: totalReviews,
-      })
-      .eq('id', deliveryPersonId);
-
+    // La note moyenne est recalculée par la base (trigger refresh_driver_rating) :
+    // l'ancien UPDATE client était annulé par protect_delivery_persons_columns.
     return review as Review;
   },
 

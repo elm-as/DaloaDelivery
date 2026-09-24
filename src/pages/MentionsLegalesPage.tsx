@@ -55,7 +55,7 @@ export default function MentionsLegalesPage() {
                       <MessageCircle className="w-5 h-5 text-primary flex-shrink-0" />
                       <div>
                         <p className="font-bold text-xs text-gray-900">WhatsApp (pas d'appels)</p>
-                        <p className="text-xs text-gray-600">+225 01 73 80 15 59</p>
+                        <p className="text-xs text-gray-600">+225 07 04 16 33 61</p>
                       </div>
                     </div>
                   </div>

@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Store, Check, X, Clock, Shield, Phone, MessageCircle } from 'lucide-react';
+import { Store, Check, X, Clock, Shield, Phone, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { driverAffiliationService, type DriverAffiliation } from '../services/driverAffiliationService';
 
 export default function AffiliationsPage() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [affiliations, setAffiliations] = useState<DriverAffiliation[]>([]);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -35,7 +33,7 @@ export default function AffiliationsPage() {
     setUpdatingId(null);
 
     if (res.success) {
-      toast.success(res.message);
+      toast.success(res.message || 'Réponse enregistrée.');
       fetchAffiliations();
     } else {
       toast.error(res.message || 'Erreur lors de la réponse');

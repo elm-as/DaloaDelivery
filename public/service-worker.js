@@ -1,7 +1,7 @@
 // Service Worker pour PWA DaloaDelivery
 // Mode Network-First avec fallback cache pour l'App Shell
 // Important: Ne JAMAIS mettre en cache les requêtes API Supabase (cross-origin)
-const CACHE_NAME = 'daloa-delivery-cache-v1';
+const CACHE_NAME = 'daloa-delivery-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -107,14 +107,15 @@ self.addEventListener('push', (event) => {
   const options = {
     body: data.body || 'Une nouvelle course est disponible à Daloa !',
     icon: data.icon || '/android-chrome-192x192.png',
-    badge: '/favicon-32x32.png',
+    // Silhouette blanche sur fond transparent, seule forme lisible par Android.
+    badge: '/notification-badge.png',
     data: { url: data.url || '/dashboard' },
     // Pattern de vibration prolongée spécifique aux livreurs (500ms vibrer, 200ms pause, 500ms vibrer...)
     vibrate: [500, 200, 500, 200, 500],
     tag: data.tag || 'daloadelivery-course-alert',
     renotify: true,
     actions: [
-      { action: 'open', title: '⚡ Voir la course', icon: '/favicon-32x32.png' },
+      { action: 'open', title: '⚡ Voir la course' },
       { action: 'dismiss', title: 'Fermer' },
     ],
   };

@@ -331,7 +331,7 @@ export default function TermsPage() {
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">
                         <MessageCircle className="w-3 h-3 text-primary" />
                       </span>
-                      <span><strong className="text-grey-800">WhatsApp :</strong> +225 01 73 80 15 59 (pas d'appels)</span>
+                      <span><strong className="text-grey-800">WhatsApp :</strong> +225 07 04 16 33 61 (pas d'appels)</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded bg-primary-50 flex items-center justify-center flex-shrink-0">

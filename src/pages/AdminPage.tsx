@@ -23,16 +23,6 @@ const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>>
   Moto: Bike, 'Vélo': Bike, Voiture: Car, Triporteur: Truck, motorcycle: Bike, car: Car,
 };
 
-const REJECTION_REASONS = [
-  'Document illisible',
-  'Document incomplet',
-  'Document expiré',
-  'Faux document suspect',
-  'Photo du document floue',
-  'Document ne correspond pas au nom inscrit',
-  'Type de document non accepté',
-];
-
 export default function AdminPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useSupabase();
@@ -233,6 +223,11 @@ export default function AdminPage() {
         p_action: action
       });
       if (error) throw error;
+      // La RPC signale un refus dans son corps : sans ce test, il passait pour un succès.
+      const result = data as { success?: boolean; reason?: string; message?: string } | null;
+      if (result && result.success === false) {
+        throw new Error(result.message || result.reason || 'Résolution refusée');
+      }
       
       let msg = '';
       if (action === 'deliver') msg = 'Litige résolu : Commande livrée (tout le monde payé)';
@@ -425,12 +420,6 @@ export default function AdminPage() {
           </span>
         );
     }
-  };
-
-  const getDocType = (cniUrl: string | null) => {
-    if (!cniUrl) return null;
-    const hash = cniUrl.split('#type=')[1];
-    return hash || 'CNI';
   };
 
   return (

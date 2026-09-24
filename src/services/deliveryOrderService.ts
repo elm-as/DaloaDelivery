@@ -155,8 +155,9 @@ export const deliveryOrderService = {
     });
     
     if (rpcError) throw rpcError;
-    if (rpcData?.success === false) {
-      throw new Error(rpcData.reason || 'Erreur lors de l\'acceptation de la course');
+    const accepted = rpcData as { success?: boolean; reason?: string } | null;
+    if (accepted?.success === false) {
+      throw new Error(accepted.reason || 'Erreur lors de l\'acceptation de la course');
     }
     
     return this.getRequestById(assignmentId);

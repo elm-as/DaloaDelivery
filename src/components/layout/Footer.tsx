@@ -42,13 +42,13 @@ export function Footer() {
                 Daloa, Côte d'Ivoire
               </div>
               <a
-                href="https://wa.me/2250173801559"
+                href="https://wa.me/2250704163361"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-grey-400 text-sm hover:text-white transition-colors"
               >
                 <MessageCircle className="w-4 h-4 text-primary" />
-                WhatsApp +225 01 73 80 15 59
+                WhatsApp +225 07 04 16 33 61
               </a>
               <div className="flex items-center gap-2 text-grey-400 text-sm">
                 <Mail className="w-4 h-4 text-primary" />

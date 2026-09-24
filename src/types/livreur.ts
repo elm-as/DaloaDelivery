@@ -5,7 +5,7 @@ export interface Coordinates {
 
 export interface DeliveryPerson {
   id: string;
-  user_id: string | null;
+  user_id: string;
   name: string;
   phone: string;
   photo_url: string | null;
@@ -20,7 +20,8 @@ export interface DeliveryPerson {
   verification_rejection_reason?: string | null;
   rating: number;
   total_reviews: number;
-  completed_deliveries?: number;
+  /** Fourni par la vue `delivery_persons_directory`. */
+  total_deliveries?: number | null;
   vehicle_type: string;
   vehicle_details: string;
   coverage_zones: string[];
@@ -28,7 +29,8 @@ export interface DeliveryPerson {
   description: string;
   payout_network?: string | null;
   payout_number?: string | null;
-  current_location: Coordinates | null;
+  /** Colonne text contenant du JSON `{lat,lng}` : lire avec parseGeoPoint. */
+  current_location: string | null;
   ai_verification_results?: Record<string, { probability: number; is_ai: boolean; details: string }> | null;
   ai_flagged?: boolean;
   created_at: string;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Shield, Upload, Camera, CheckCircle, FileText, X, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Shield, Upload, Camera, CheckCircle, FileText, AlertCircle } from 'lucide-react';
 import { useSupabase } from '../hooks/useSupabase';
 import { supabase } from '../lib/supabase';
 import { deliveryPersonService } from '../services/deliveryPersonService';

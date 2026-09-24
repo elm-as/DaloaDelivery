@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, RefreshCw, XCircle, Inbox, Moon } from 'lucide-react';
+import { Package, RefreshCw, Inbox, Moon } from 'lucide-react';
 import { OrderCard } from '../components/dashboard/OrderCard';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { deliveryPersonService } from '../services/deliveryPersonService';

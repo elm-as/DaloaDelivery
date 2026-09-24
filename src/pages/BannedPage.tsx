@@ -11,7 +11,6 @@ export default function BannedPage() {
   const navigate = useNavigate();
 
   const [banReason, setBanReason] = useState<string | null>(null);
-  const [appealReasonText, setAppealReasonText] = useState('');
   const [appealStatus, setAppealStatus] = useState<string | null>(null);
   const [appealReasonSaved, setAppealReasonSaved] = useState<string | null>(null);
 
@@ -106,18 +105,9 @@ export default function BannedPage() {
         p_reason: appealInput.trim(),
       });
 
-      if (rpcError) {
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            ban_appeal_reason: appealInput.trim(),
-            ban_appeal_status: 'pending',
-            ban_appealed_at: new Date().toISOString(),
-          } as any)
-          .eq('id', user?.id);
-
-        if (updateError) throw updateError;
-      }
+      // Pas de repli en UPDATE direct : `ban_appeal_status` est protégé
+      // (protect_users_columns), le repli n'enregistrait rien.
+      if (rpcError) throw rpcError;
 
       toast.success('Votre contestation a été enregistrée');
       setShowAppealForm(false);

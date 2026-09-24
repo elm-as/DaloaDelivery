@@ -44,9 +44,10 @@ export default function LoginPage() {
     } catch (err: unknown) {
       let message = err instanceof Error ? err.message : 'Erreur de connexion';
       try {
-        const { data: provInfo } = await supabase.rpc('get_auth_provider_for_email', {
+        const { data: provRaw } = await supabase.rpc('get_auth_provider_for_email', {
           p_email: email.trim(),
         });
+        const provInfo = provRaw as { exists?: boolean; has_password?: boolean; provider?: string } | null;
         if (provInfo?.exists && !provInfo?.has_password && provInfo?.provider === 'google') {
           message = "Ce compte a été créé avec Google sur DaloaMarket. Aucun mot de passe n'est configuré : veuillez cliquer sur « S'inscrire avec Google » ci-dessous.";
         }

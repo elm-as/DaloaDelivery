@@ -3,7 +3,8 @@ import type { DeliveryPerson, DeliveryPersonSearchFilters } from '../types/livre
 
 export const deliveryPersonService = {
   async createDeliveryPerson(
-    data: Omit<DeliveryPerson, 'id' | 'created_at' | 'updated_at' | 'rating' | 'total_reviews' | 'cni_url' | 'selfie_cni_url' | 'portrait_live_url'> & { 
+    data: Omit<DeliveryPerson, 'id' | 'created_at' | 'updated_at' | 'rating' | 'total_reviews' | 'total_deliveries' | 'cni_url' | 'selfie_cni_url' | 'portrait_live_url' | 'licence_url'> & { 
+      licence_url?: string | null;
       cni_url?: string | null;
       selfie_cni_url?: string | null;
       portrait_live_url?: string | null;
@@ -81,21 +82,15 @@ export const deliveryPersonService = {
       : null;
     const finalAvatar = photoUrl || safePreview || safeUserAvatar || null;
 
-    let nextRole = 'livreur';
-    try {
-      const { data: userRow } = await supabase.from('users').select('role').eq('id', userId).maybeSingle();
-      if (userRow?.role === 'admin' || userRow?.role === 'superadmin' || userRow?.role === 'vendeur') {
-        nextRole = userRow.role;
-      }
-    } catch {}
-
     try {
       await Promise.all([
         supabase.from('users').update({
           full_name: formData.name,
           phone: formData.phone,
           avatar_url: finalAvatar,
-          role: nextRole,
+          // Pas de `role` : la base refuse ce changement depuis le navigateur
+          // et l'UPDATE entier échouait. Le rôle livreur est posé par le
+          // trigger delivery_person_sets_role à la création de la fiche.
           payout_network: cleanPayoutNetwork,
           payout_number: formData.payout_number || null,
         } as any).eq('id', userId),
@@ -105,7 +100,6 @@ export const deliveryPersonService = {
             name: formData.name,
             phone: formData.phone,
             avatar_url: finalAvatar,
-            role: nextRole,
           },
         }),
       ]);
@@ -132,7 +126,7 @@ export const deliveryPersonService = {
 
   async updateDeliveryPerson(
     id: string,
-    updates: Partial<Omit<DeliveryPerson, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+    updates: Partial<Omit<DeliveryPerson, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'total_deliveries'>>
   ) {
     const { data, error } = await supabase
       .from('delivery_persons')

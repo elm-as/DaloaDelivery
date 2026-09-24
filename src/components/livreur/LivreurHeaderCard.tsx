@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Star, Phone, MessageSquare, User, Truck, Bike, Car } from 'lucide-react';
+import { Star, User, Truck, Bike, Car } from 'lucide-react';
 import ProBadge from '../ui/ProBadge';
 import { getOptimizedImageUrl } from '../../utils/imageOptimizer';
 import type { DeliveryPerson } from '../../types/livreur';
@@ -138,7 +138,7 @@ export function LivreurHeaderCard({ livreur }: LivreurHeaderCardProps) {
             className="bg-white rounded-2xl p-3 text-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
           >
             <p className="text-xl font-black text-primary leading-tight tabular-nums">
-              {livreur.completed_deliveries || 0}
+              {livreur.total_deliveries || 0}
             </p>
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Courses</p>
           </motion.div>

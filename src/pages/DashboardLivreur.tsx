@@ -210,7 +210,7 @@ export default function DashboardLivreur() {
         const { latitude, longitude } = position.coords;
         try {
           const updated = await deliveryPersonService.updateDeliveryPerson(profile.id, {
-            current_location: { lat: latitude, lng: longitude }
+            current_location: JSON.stringify({ lat: latitude, lng: longitude })
           });
           setProfile(updated);
           toast.success('Position mise à jour !', { id: 'loc' });

@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Search, CheckCircle } from 'lucide-react';
 import { DALOA_ZONES } from '../../constants/zones';

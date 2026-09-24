@@ -8,7 +8,6 @@ import DashboardProfil from './pages/DashboardProfil';
 import DashboardCommandes from './pages/DashboardCommandes';
 import LivreurDetailPage from './pages/LivreurDetailPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminPage from './pages/AdminPage';
 import TermsPage from './pages/TermsPage';
@@ -25,24 +24,24 @@ import { supabase } from './lib/supabase';
 import { useState, useEffect } from 'react';
 
 export default function App() {
-  const { user, userProfile } = useSupabase();
+  const { userProfile } = useSupabase();
   const location = useLocation();
   const [maintenance, setMaintenance] = useState<{ enabled: boolean; message?: string; expected_reopening?: string | null }>({
     enabled: false,
   });
 
   useEffect(() => {
-    supabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'maintenance_mode')
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.value) {
-          setMaintenance(data.value as any);
-        }
-      })
-      .catch(() => {});
+    // Un builder Supabase n'expose que `then` : on passe par async/await.
+    (async () => {
+      const { data } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'maintenance_mode')
+        .maybeSingle();
+      if (data?.value) {
+        setMaintenance(data.value as any);
+      }
+    })().catch(() => {});
   }, []);
 
   const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'superadmin';

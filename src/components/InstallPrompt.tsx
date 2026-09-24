@@ -12,7 +12,6 @@ export const InstallPrompt: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
 
@@ -28,9 +27,7 @@ export const InstallPrompt: React.FC = () => {
     // 2. Détecter la plateforme
     const ua = window.navigator.userAgent || '';
     const detectedIOS = /iphone|ipad|ipod/i.test(ua) && !(window as any).MSStream;
-    const detectedAndroid = /android/i.test(ua);
     setIsIOS(detectedIOS);
-    setIsAndroid(detectedAndroid);
 
     // 3. Vérifier si le prompt a été capturé avant le montage du composant
     if ((window as any).__deferredPwaPrompt) {

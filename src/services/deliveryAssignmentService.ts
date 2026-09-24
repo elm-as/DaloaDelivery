@@ -127,7 +127,7 @@ export const deliveryAssignmentService = {
       .is('delivery_person_id', null);
     
     if (error) throw error;
-    return enrichWithPhones(data) as DeliveryAssignment[];
+    return (await enrichWithPhones(data)) as DeliveryAssignment[];
   },
 
   /**
@@ -141,7 +141,7 @@ export const deliveryAssignmentService = {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return enrichWithPhones(data) as DeliveryAssignment[];
+    return (await enrichWithPhones(data)) as DeliveryAssignment[];
   },
 
   /**
@@ -154,7 +154,7 @@ export const deliveryAssignmentService = {
     });
     
     if (error) throw error;
-    assertRpcSuccess(data as VerificationResult);
+    assertRpcSuccess(data as unknown as VerificationResult);
     return this.getById(assignmentId);
   },
 
@@ -171,7 +171,7 @@ export const deliveryAssignmentService = {
     });
 
     if (error) throw error;
-    assertRpcSuccess(data as VerificationResult, 'pickup');
+    assertRpcSuccess(data as unknown as VerificationResult, 'pickup');
     return this.getById(assignmentId);
   },
 
@@ -185,7 +185,7 @@ export const deliveryAssignmentService = {
     });
 
     if (error) throw error;
-    assertRpcSuccess(data as VerificationResult);
+    assertRpcSuccess(data as unknown as VerificationResult);
     return true;
   },
 
@@ -202,7 +202,7 @@ export const deliveryAssignmentService = {
     });
 
     if (error) throw error;
-    assertRpcSuccess(data as VerificationResult);
+    assertRpcSuccess(data as unknown as VerificationResult);
     return this.getById(assignmentId);
   },
 

@@ -42,6 +42,8 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
     if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
       try {
         const registration = await navigator.serviceWorker.ready;
+        // `vibrate` et `renotify` sont reconnus par Chrome Android mais absents
+        // du type DOM standard.
         registration.showNotification(title, {
           body,
           icon: '/android-chrome-192x192.png',
@@ -50,7 +52,7 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
           tag: `daloadelivery-course-${Date.now()}`,
           renotify: true,
           data: { url },
-        });
+        } as NotificationOptions & { vibrate?: number[]; renotify?: boolean });
       } catch (e) {
         console.warn('Service Worker notification failed:', e);
       }
