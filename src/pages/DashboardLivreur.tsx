@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star, User, ToggleLeft, ToggleRight, AlertTriangle,
   MapPin, Package, Clock, ChevronRight, Moon,
-  Zap, Navigation, RefreshCw, Bike, Car, Truck, LogOut
+  Navigation, RefreshCw, LogOut
 } from 'lucide-react';
 import { EarningsModal } from '../components/dashboard/EarningsModal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -19,10 +19,6 @@ import type { DeliveryPerson } from '../types/livreur';
 import toast from 'react-hot-toast';
 import { isCurfewActive } from '../utils/security';
 import { friendlyError } from '../lib/messages';
-
-const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Moto: Bike, Vélo: Bike, Voiture: Car, Triporteur: Truck, motorcycle: Bike, car: Car,
-};
 
 export default function DashboardLivreur() {
   const navigate = useNavigate();
@@ -291,28 +287,25 @@ export default function DashboardLivreur() {
     );
   }
 
-  const VehicleIcon = VEHICLE_ICONS[profile.vehicle_type] || Bike;
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? 'Bonjour' : currentHour < 18 ? 'Bon après-midi' : 'Bonsoir';
 
   return (
     <div className="pb-24 bg-grey-50 min-h-screen">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden px-4 pt-6 pb-10 bg-gradient-to-br from-primary via-primary-600 to-primary-700 text-white">
-        {/* Decorative background glow */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/3 blur-xl pointer-events-none" />
-
-        <div className="relative z-10 max-w-4xl mx-auto">
-          {/* Top Row: Avatar + Name + Action buttons */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div 
-                onClick={() => navigate('/dashboard/profil')}
-                className="relative cursor-pointer group"
-                title="Voir mon profil"
-              >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white/20 flex items-center justify-center border-2 border-white/40 shadow-xl group-hover:scale-105 transition-transform">
+      {/* Tableau de bord allégé : l'interrupteur En ligne puis les courses.
+          L'ancien bandeau en dégradé, la carte des gains et la rangée de trois
+          tuiles repoussaient la première course sous la ligne de flottaison. */}
+      <div className="bg-white border-b border-gray-100 px-4 pt-5 pb-4">
+        <div className="max-w-4xl mx-auto space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard/profil')}
+              className="flex items-center gap-3 text-left"
+              title="Voir mon profil"
+            >
+              <div className="relative">
+                <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
                   {profile.photo_url ? (
                     <img
                       src={profile.photo_url}
@@ -324,22 +317,20 @@ export default function DashboardLivreur() {
                       }}
                     />
                   ) : (
-                    <User className="w-7 h-7 text-white/90" />
+                    <User className="w-5 h-5 text-gray-400" />
                   )}
                 </div>
-                <div 
-                  className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${
-                    profile.is_available ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'
-                  }`} 
+                <span
+                  className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${
+                    profile.is_available ? 'bg-emerald-500' : 'bg-gray-400'
+                  }`}
                 />
               </div>
               <div>
-                <p className="text-white/80 text-xs font-semibold uppercase tracking-wider">{greeting}</p>
-                <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
-                  {profile.name.split(' ')[0]} 👋
-                </h1>
+                <p className="text-xs text-gray-500">{greeting}</p>
+                <h1 className="text-lg font-bold text-gray-900 leading-tight">{profile.name.split(' ')[0]}</h1>
               </div>
-            </div>
+            </button>
 
             <div className="flex items-center gap-2">
               <button
@@ -347,7 +338,7 @@ export default function DashboardLivreur() {
                 disabled={refreshing}
                 aria-label="Actualiser les courses"
                 title="Actualiser les courses"
-                className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white active:scale-90 transition-all border border-white/20 shadow-md hover:bg-white/25"
+                className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
@@ -355,153 +346,73 @@ export default function DashboardLivreur() {
                 onClick={handleLogout}
                 aria-label="Se déconnecter"
                 title="Se déconnecter"
-                className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white/90 hover:text-white active:scale-90 transition-all border border-white/20 shadow-md hover:bg-red-500/40"
+                className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-red-50 hover:text-red-600 active:scale-95"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Interactive Online/Offline Switcher */}
+          {/* L'action principale du livreur */}
           <button
             onClick={handleToggleAvailability}
             disabled={toggling}
-            className={`w-full flex items-center justify-between p-4 rounded-3xl transition-all backdrop-blur-md border shadow-lg ${
-              profile.is_available
-                ? 'bg-white/20 border-white/40 shadow-emerald-950/20'
-                : 'bg-black/20 border-white/15 shadow-black/20'
-            } active:scale-[0.99]`}
+            className={`w-full flex items-center justify-between rounded-2xl border px-4 py-3.5 transition-colors active:scale-[0.99] ${
+              profile.is_available ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-gray-50'
+            }`}
           >
-            <div className="flex items-center gap-3.5">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${
-                profile.is_available ? 'bg-emerald-500 text-white' : 'bg-white/15 text-white/70'
-              }`}>
-                <Zap className="w-6 h-6" />
-              </div>
-              <div className="text-left">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-black text-lg text-white">
-                    {profile.is_available ? 'En ligne' : 'Hors ligne'}
-                  </h2>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    profile.is_available ? 'bg-emerald-400 text-emerald-950' : 'bg-white/20 text-white/80'
-                  }`}>
-                    {profile.is_available ? 'Actif' : 'Pause'}
-                  </span>
-                </div>
-                <p className="text-xs text-white/85 font-medium mt-0.5">
-                  {profile.is_available ? 'Prêt à recevoir des courses en direct' : 'Touchez pour recevoir des courses'}
-                </p>
-              </div>
+            <div className="text-left">
+              <p className={`font-bold ${profile.is_available ? 'text-emerald-800' : 'text-gray-900'}`}>
+                {profile.is_available ? 'En ligne' : 'Hors ligne'}
+              </p>
+              <p className="text-xs text-gray-600">
+                {profile.is_available ? 'Vous recevez les nouvelles courses' : 'Touchez pour recevoir des courses'}
+              </p>
             </div>
             {toggling ? (
-              <div className="w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-7 h-7 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
             ) : profile.is_available ? (
-              <ToggleRight className="w-14 h-14 text-white flex-shrink-0" />
+              <ToggleRight className="w-11 h-11 text-emerald-600 flex-shrink-0" />
             ) : (
-              <ToggleLeft className="w-14 h-14 text-white/50 flex-shrink-0" />
+              <ToggleLeft className="w-11 h-11 text-gray-400 flex-shrink-0" />
             )}
           </button>
         </div>
       </div>
 
-      <div className="px-4 -mt-5 relative z-20 space-y-4 max-w-4xl mx-auto">
-        {/* Payout Warning */}
+      <div className="px-4 pt-4 space-y-4 max-w-4xl mx-auto">
         {(!profile.payout_network || !profile.payout_number) && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 border border-amber-200 rounded-3xl p-4 flex gap-3.5 items-start shadow-sm"
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard/profil/payout')}
+            className="w-full flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
           >
-            <div className="w-9 h-9 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-700 mt-0.5">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-amber-950 text-sm mb-0.5">Mode de retrait non configuré</h3>
-              <p className="text-amber-800 text-xs mb-2.5 leading-relaxed">
-                Renseignez votre compte Wave ou MTN pour recevoir automatiquement vos gains de livraisons.
-              </p>
-              <button
-                onClick={() => navigate('/dashboard/profil/payout')}
-                className="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-black active:scale-95 transition-transform shadow-sm"
-              >
-                Configurer mon retrait Wave / MTN
-              </button>
-            </div>
-          </motion.div>
+            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+            <span className="flex-1 text-sm text-amber-900">Ajoutez votre compte Wave ou MTN pour être payé.</span>
+            <ChevronRight className="w-4 h-4 shrink-0 text-amber-700" />
+          </button>
         )}
 
-        {/* Earnings Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow"
-        >
-          <div>
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
-              Gains du jour (net de commission)
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <h2 className="text-3xl font-black text-gray-900 tracking-tight">{todayEarnings.toLocaleString('fr-FR')}</h2>
-              <span className="text-sm font-extrabold text-primary">FCFA</span>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowEarningsModal(true)}
-            className="h-11 px-4 bg-primary-50 hover:bg-primary-100/80 rounded-2xl flex items-center gap-1.5 text-primary text-xs font-bold active:scale-95 transition-all"
-          >
-            <span>Détails</span>
-            <ChevronRight className="w-4 h-4" />
+        {/* Gains, note et GPS sur une seule bande */}
+        <div className="grid grid-cols-3 divide-x divide-gray-100 rounded-2xl border border-gray-100 bg-white">
+          <button type="button" onClick={() => setShowEarningsModal(true)} className="px-3 py-3 text-left hover:bg-gray-50 rounded-l-2xl">
+            <p className="text-[11px] text-gray-500">Aujourd’hui</p>
+            <p className="text-base font-bold tabular-nums text-gray-900">{todayEarnings.toLocaleString('fr-FR')} F</p>
           </button>
-        </motion.div>
-
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-3 gap-3">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 text-center flex flex-col items-center justify-center"
-          >
-            <div className="w-9 h-9 bg-amber-50 rounded-2xl flex items-center justify-center mb-1.5">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-            </div>
-            <p className="text-xl font-black text-gray-900 leading-none">{profile.total_reviews > 0 ? profile.rating.toFixed(1) : '-'}</p>
-            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase">{profile.total_reviews > 0 ? `${profile.total_reviews} avis` : 'Nouveau'}</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 text-center flex flex-col items-center justify-center"
-          >
-            <div className="w-9 h-9 bg-primary-50 rounded-2xl flex items-center justify-center mb-1.5">
-              <VehicleIcon className="w-4 h-4 text-primary" />
-            </div>
-            <p className="text-sm font-black text-gray-900 leading-tight truncate max-w-[90px]">{profile.vehicle_type}</p>
-            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase">{profile.coverage_zones.length} zones</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            onClick={handleUpdateLocation}
-            className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 text-center cursor-pointer active:scale-95 transition-transform flex flex-col items-center justify-center"
-          >
-            <div className={`w-9 h-9 rounded-2xl flex items-center justify-center mb-1.5 ${
-              profile.current_location ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'
-            }`}>
-              <Navigation className={`w-4 h-4 ${locating ? 'animate-pulse' : ''}`} />
-            </div>
-            <p className="text-sm font-black text-gray-900 leading-tight">GPS</p>
-            <p className={`text-[10px] font-bold mt-1 uppercase ${
-              profile.current_location ? 'text-emerald-600' : 'text-gray-500'
-            }`}>
-              {locating ? 'En cours...' : profile.current_location ? 'À jour' : 'Activer'}
+          <div className="px-3 py-3">
+            <p className="text-[11px] text-gray-500">Note</p>
+            <p className="flex items-center gap-1 text-base font-bold text-gray-900">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              {profile.total_reviews > 0 ? profile.rating.toFixed(1) : 'Nouveau'}
             </p>
-          </motion.div>
+          </div>
+          <button type="button" onClick={handleUpdateLocation} className="px-3 py-3 text-left hover:bg-gray-50 rounded-r-2xl">
+            <p className="text-[11px] text-gray-500">GPS</p>
+            <p className={`flex items-center gap-1 text-base font-bold ${profile.current_location ? 'text-emerald-700' : 'text-gray-900'}`}>
+              <Navigation className={`w-3.5 h-3.5 ${locating ? 'animate-pulse' : ''}`} />
+              {locating ? '…' : profile.current_location ? 'À jour' : 'Activer'}
+            </p>
+          </button>
         </div>
 
         {/* Courses Section */}
