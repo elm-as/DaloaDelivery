@@ -32,6 +32,32 @@ const orderIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+/**
+ * `delivery_persons.current_location` est une colonne **text** qui contient du
+ * JSON. La carte y lisait directement `{ lat, lng }`, ce qui donnait `undefined`
+ * sur une chaîne : aucun marqueur livreur n'a donc jamais été affiché.
+ */
+function parseGeoPoint(value: unknown): { lat: number; lng: number } | null {
+  if (!value) return null;
+
+  let raw: any = value;
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      // Ancien format éventuel « lat,lng »
+      const parts = raw.split(',');
+      if (parts.length !== 2) return null;
+      raw = { lat: parts[0], lng: parts[1] };
+    }
+  }
+
+  const lat = Number(raw?.lat ?? raw?.latitude);
+  const lng = Number(raw?.lng ?? raw?.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+}
+
 interface DeliveryMapProps {
   livreurs: DeliveryPerson[];
   orders?: DeliveryRequest[];
@@ -46,16 +72,16 @@ function MapBounds({ livreurs, orders = [] }: { livreurs: DeliveryPerson[], orde
     const validPoints: [number, number][] = [];
 
     livreurs.forEach(l => {
-      if (l.current_location) {
-        const { lat, lng } = l.current_location;
-        if (!isNaN(lat) && !isNaN(lng)) validPoints.push([lat, lng]);
-      }
+      const point = parseGeoPoint(l.current_location);
+      if (point) validPoints.push([point.lat, point.lng]);
     });
 
     orders.forEach(o => {
-      if (o.pickup_location) {
-        const [lat, lng] = o.pickup_location.split(',').map(Number);
-        if (!isNaN(lat) && !isNaN(lng)) validPoints.push([lat, lng]);
+      // `pickup_location` est un libellé d'adresse (« Boutique (Tazibouo) »),
+      // pas un couple de coordonnées : le découpage sur la virgule ne produisait
+      // que des NaN. Les vraies coordonnées sont celles de la livraison.
+      if (o.dropoff_lat != null && o.dropoff_lng != null) {
+        validPoints.push([Number(o.dropoff_lat), Number(o.dropoff_lng)]);
       }
     });
 
@@ -116,10 +142,9 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
         />
 
         {livreurs.map((livreur) => {
-          if (!livreur.current_location) return null;
-
-          const { lat, lng } = livreur.current_location;
-          if (isNaN(lat) || isNaN(lng)) return null;
+          const point = parseGeoPoint(livreur.current_location);
+          if (!point) return null;
+          const { lat, lng } = point;
 
           return (
             <Marker key={livreur.id} position={[lat, lng]}>
@@ -138,15 +163,11 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
         })}
 
         {orders.map((order) => {
-          if (!order.pickup_location) return null;
+          if (order.dropoff_lat == null || order.dropoff_lng == null) return null;
 
-          const coords = order.pickup_location.split(',');
-          if (coords.length !== 2) return null;
-
-          const lat = parseFloat(coords[0]);
-          const lng = parseFloat(coords[1]);
-
-          if (isNaN(lat) || isNaN(lng)) return null;
+          const lat = Number(order.dropoff_lat);
+          const lng = Number(order.dropoff_lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
 
           return (
             <Marker key={order.id} position={[lat, lng]} icon={orderIcon}>
