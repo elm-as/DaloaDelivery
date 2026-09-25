@@ -30,11 +30,20 @@ export default function LoginPage() {
 
       if (signInData.user && redirectTo === '/dashboard') {
         try {
+          // Admin ET livreur : on ouvre le tableau de bord livreur ; la console
+          // reste accessible par le lien « Admin ». Admin sans fiche : console.
           const { data: userRow } = await supabase.from('users').select('role').eq('id', signInData.user.id).maybeSingle();
           if (userRow?.role === 'admin' || userRow?.role === 'superadmin') {
-            toast.success('Connexion admin réussie !');
-            navigate('/admin');
-            return;
+            const { data: dp } = await supabase
+              .from('delivery_persons')
+              .select('id')
+              .eq('user_id', signInData.user.id)
+              .maybeSingle();
+            if (!dp) {
+              toast.success('Connexion admin réussie !');
+              navigate('/admin');
+              return;
+            }
           }
         } catch {}
       }

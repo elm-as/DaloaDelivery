@@ -61,22 +61,17 @@ export default function DashboardLivreur() {
   const fetchData = useCallback(async () => {
     if (!user) return;
     try {
-      // 1. Rediriger immédiatement les admins vers leur panneau
-      if (userProfile?.role === 'admin' || userProfile?.role === 'superadmin') {
-        navigate('/admin', { replace: true });
-        return;
-      }
-      try {
-        const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle();
-        if (userData?.role === 'admin' || userData?.role === 'superadmin') {
+      // Un compte peut être admin ET livreur : la fiche livreur passe en premier.
+      // Seul un admin sans fiche est envoyé vers la console (il y garde l'accès
+      // par le lien « Admin » de la barre du haut).
+      const profileData = await deliveryPersonService.getDeliveryPersonByUserId(user.id);
+      if (!profileData) {
+        const role = userProfile?.role;
+        if (role === 'admin' || role === 'superadmin') {
           navigate('/admin', { replace: true });
           return;
         }
-      } catch (err) {
-        console.error("Error checking user role:", err);
       }
-
-      const profileData = await deliveryPersonService.getDeliveryPersonByUserId(user.id);
       if (!profileData || !profileData.name || !profileData.name.trim()) {
         navigate('/devenir-livreur', { replace: true });
         toast("Complétez votre profil de livreur d'abord", { icon: 'ℹ️' });

@@ -37,12 +37,7 @@ export default function InscriptionLivreur() {
   useEffect(() => {
     if (authLoading || !user) return;
 
-    // 1. Les administrateurs n'ont rien à faire sur l'onboarding livreur
-    if (userProfile?.role === 'admin' || userProfile?.role === 'superadmin') {
-      navigate('/admin', { replace: true });
-      return;
-    }
-
+    // Un admin peut aussi s'inscrire comme livreur : pas de renvoi vers la console.
     // 2. Si le livreur existe déjà, aller directement au tableau de bord
     deliveryPersonService
       .getDeliveryPersonByUserId(user.id)
