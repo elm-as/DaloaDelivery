@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, CheckCircle, XCircle, Clock, Eye, User, FileText,
-  RefreshCw, AlertTriangle, Search, Phone, MapPin,
-  Bike, Car, Truck, X, AlertCircle, ExternalLink
+  RefreshCw, AlertTriangle, Search, Phone,
+  Bike, Car, Truck, ExternalLink, Scale
 } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { supabase } from '../lib/supabase';
@@ -16,7 +16,6 @@ import { AdminVerificationModals } from '../components/admin/AdminVerificationMo
 // Access check is done against the public.users table (role = 'admin' or 'superadmin')
 
 type TabFilter = 'pending' | 'approved' | 'rejected' | 'all';
-type DeliveryTabFilter = 'all' | 'disputed' | 'active' | 'delivered';
 type ModalState = 'none' | 'review' | 'reject';
 
 const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -40,13 +39,6 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
-
-  // New states for delivery tracing & dispute resolution
-  const [viewMode, setViewMode] = useState<'drivers' | 'deliveries'>('drivers');
-  const [deliveries, setDeliveries] = useState<any[]>([]);
-  const [deliveryTab, setDeliveryTab] = useState<DeliveryTabFilter>('all');
-  const [deliverySignedUrls, setDeliverySignedUrls] = useState<Record<string, string>>({});
-  const [expandedDeliveryId, setExpandedDeliveryId] = useState<string | null>(null);
 
   const isSuperOrAdmin = userRole ? ['superadmin', 'admin'].includes(userRole) : false;
 
@@ -102,147 +94,13 @@ export default function AdminPage() {
     }
   }, [isAdmin]);
 
-  const extractDeliveryPhotoPath = (publicUrl: string | null): string | null => {
-    if (!publicUrl) return null;
-    const marker = '/storage/v1/object/public/delivery-photos/';
-    const idx = publicUrl.indexOf(marker);
-    if (idx === -1) return null;
-    return publicUrl.substring(idx + marker.length).split('#')[0].split('?')[0];
-  };
-
-  const fetchDeliveries = useCallback(async () => {
-    if (!isAdmin || !isSuperOrAdmin) return;
-    try {
-      // Étape 1 : récupérer les assignments avec le livreur
-      const { data: rawAssignments, error } = await supabase
-        .from('delivery_assignments')
-        .select('*, delivery_person:delivery_persons(*)')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      if (!rawAssignments || rawAssignments.length === 0) {
-        setDeliveries([]);
-        setLoading(false);
-        setRefreshing(false);
-        return;
-      }
-
-      // Étape 2 : récupérer les commandes associées
-      const orderIds = [...new Set(rawAssignments.map((a) => a.order_id).filter(Boolean))];
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('id, status, product_amount, delivery_fee, total_amount, delivery_address, buyer_id, seller_id')
-        .in('id', orderIds);
-
-      const orderMap = new Map((orders || []).map((o: any) => [o.id, o]));
-
-      // Étape 3 : récupérer noms + téléphones des acheteurs, vendeurs, livreurs et médiateurs
-      const driverUserIds = [...new Set(rawAssignments.map((a) => a.delivery_person?.user_id).filter(Boolean))];
-      const orderUserIds = [...new Set((orders || []).flatMap((o: any) => [o.buyer_id, o.seller_id]).filter(Boolean))];
-      const mediatorUserIds = [...new Set(rawAssignments.map((a) => a.resolved_by).filter(Boolean))];
-      const allUserIds = [...new Set([...orderUserIds, ...driverUserIds, ...mediatorUserIds])];
-
-      // Admin : fiches complètes via la vue users_private.
-      const { data: users } = await supabase
-        .from('users_private')
-        .select('id, full_name, phone')
-        .in('id', allUserIds);
-
-      const userMap = new Map((users || []).map((u: any) => [u.id, u]));
-
-      // Fusionner tout
-      const data = rawAssignments.map((a) => {
-        const order = orderMap.get(a.order_id) as any;
-        const dp = a.delivery_person as any;
-        // Nom livreur : priorité delivery_persons.name, sinon users.full_name via user_id
-        const driverName = dp?.name || (dp?.user_id ? userMap.get(dp.user_id)?.full_name : null) || 'Inconnu';
-        const driverPhone = dp?.phone || (dp?.user_id ? userMap.get(dp.user_id)?.phone : null) || null;
-        const mediator = a.resolved_by ? userMap.get(a.resolved_by) : null;
-        return {
-          ...a,
-          delivery_person: dp ? { ...dp, name: driverName, phone: driverPhone } : null,
-          mediator: mediator,
-          order: order
-            ? {
-                ...order,
-                buyer: userMap.get(order.buyer_id) ?? null,
-                seller: userMap.get(order.seller_id) ?? null,
-              }
-            : null,
-        };
-      });
-
-      setDeliveries(data);
-
-      // Generate signed URLs for delivery photos
-      const urls: Record<string, string> = {};
-      for (const item of (data || [])) {
-        if (item.delivery_photo_url) {
-          const path = extractDeliveryPhotoPath(item.delivery_photo_url);
-          if (path) {
-            const { data: signData, error: signError } = await supabase.storage
-              .from('delivery-photos')
-              .createSignedUrl(path, 3600);
-            if (signData?.signedUrl && !signError) {
-              urls[item.id] = signData.signedUrl;
-            }
-          }
-        }
-      }
-      setDeliverySignedUrls(urls);
-    } catch {
-      toast.error('Erreur de chargement des livraisons');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [isAdmin, isSuperOrAdmin]);
-
   useEffect(() => {
-    if (isAdmin) {
-      if (viewMode === 'drivers') {
-        fetchDrivers();
-      } else if (viewMode === 'deliveries' && isSuperOrAdmin) {
-        fetchDeliveries();
-      }
-    }
-  }, [isAdmin, isSuperOrAdmin, viewMode, fetchDrivers, fetchDeliveries]);
+    if (isAdmin) fetchDrivers();
+  }, [isAdmin, fetchDrivers]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    if (viewMode === 'drivers') {
-      fetchDrivers();
-    } else {
-      fetchDeliveries();
-    }
-  };
-  const handleResolveDispute = async (assignmentId: string, action: 'deliver' | 'cancel' | 'refund_complete' | 'refund_partial') => {
-    setProcessing(true);
-    try {
-      const { data, error } = await supabase.rpc('resolve_delivery_dispute', {
-        p_assignment_id: assignmentId,
-        p_action: action
-      });
-      if (error) throw error;
-      // La RPC signale un refus dans son corps : sans ce test, il passait pour un succès.
-      const result = data as { success?: boolean; reason?: string; message?: string } | null;
-      if (result && result.success === false) {
-        throw new Error(result.message || result.reason || 'Résolution refusée');
-      }
-      
-      let msg = '';
-      if (action === 'deliver') msg = 'Litige résolu : Commande livrée (tout le monde payé)';
-      else if (action === 'refund_complete') msg = 'Litige résolu : Commande annulée et acheteur remboursé à 100%';
-      else if (action === 'refund_partial') msg = 'Litige résolu : Commande annulée, acheteur remboursé du produit, livreur payé';
-      else msg = 'Litige résolu : Attribution annulée';
-      
-      toast.success(msg);
-      fetchDeliveries();
-    } catch (err: any) {
-      toast.error(err.message || 'Erreur de résolution');
-    } finally {
-      setProcessing(false);
-    }
+    fetchDrivers();
   };
   // Extraire le chemin du fichier depuis une URL publique Supabase
   const extractFilePath = (publicUrl: string | null): string | null => {
@@ -378,21 +236,6 @@ export default function AdminPage() {
     { key: 'all', label: 'Tous', count: drivers.length, color: 'text-grey-600' },
   ];
 
-  // Filter logic for deliveries
-  const filteredDeliveries = deliveries.filter((item) => {
-    const matchTab =
-      deliveryTab === 'all' ? true :
-      deliveryTab === 'disputed' ? item.status === 'disputed' :
-      deliveryTab === 'active' ? ['accepted', 'picked_up', 'in_transit'].includes(item.status) :
-      deliveryTab === 'delivered' ? item.status === 'delivered' : true;
-    const matchSearch = searchQuery
-      ? item.order_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.delivery_person?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.delivery_person?.phone || '').includes(searchQuery)
-      : true;
-    return matchTab && matchSearch;
-  });
-
   const getStatusBadge = (driver: DeliveryPerson) => {
     const status = driver.verification_status || (driver.cni_url ? 'pending' : 'none');
     switch (status) {
@@ -423,513 +266,208 @@ export default function AdminPage() {
     }
   };
 
+  // Arbitrage des litiges et suivi des courses : un seul endroit, l'admin
+  // DaloaMarket. Cette page en avait une copie avec ses propres boutons.
+  const MARKET_ADMIN = 'https://daloamarket.com/admin';
+
+  const stats = [
+    { key: 'pending' as TabFilter, label: 'En attente', value: pendingCount },
+    { key: 'approved' as TabFilter, label: 'Vérifiés', value: approvedCount },
+    { key: 'rejected' as TabFilter, label: 'Refusés', value: rejectedCount },
+  ];
+
   return (
-    <div className="pb-8 bg-grey-50 min-h-screen">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-grey-800 to-grey-900 px-4 pt-6 pb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
+    <div className="pb-10 bg-grey-50 min-h-screen">
+      {/* ── En-tête aux couleurs DaloaDelivery ── */}
+      <div className="relative overflow-hidden rounded-b-[32px] bg-gradient-to-br from-primary via-primary-600 to-primary-700 px-4 pt-6 pb-16">
+        <div className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative mx-auto flex max-w-4xl items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
             <div>
-              <p className="text-grey-400 text-sm font-medium">Panel Admin</p>
-              <h1 className="text-xl font-bold text-white">
-                {viewMode === 'drivers' ? 'Vérification des livreurs' : 'Suivi des Livraisons'}
-              </h1>
+              <p className="text-xs font-semibold text-white/80">Administration</p>
+              <h1 className="text-xl font-bold text-white">Vérification des livreurs</h1>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white active:scale-90 transition-transform border border-white/10"
-            >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
           </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            aria-label="Actualiser"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white hover:bg-white/25 active:scale-95"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
 
-          {/* Toggle pour Superadmin et Admin uniquement */}
-          {isSuperOrAdmin && (
-            <div className="flex bg-white/10 p-1 rounded-2xl mb-4 border border-white/5 max-w-sm mx-auto">
-              <button
-                onClick={() => {
-                  setViewMode('drivers');
-                  setSearchQuery('');
-                }}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all text-center ${
-                  viewMode === 'drivers' ? 'bg-white text-grey-900 shadow-sm' : 'text-white/80 hover:text-white'
-                }`}
-              >
-                Vérif. Livreurs
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode('deliveries');
-                  setSearchQuery('');
-                }}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all text-center ${
-                  viewMode === 'deliveries' ? 'bg-white text-grey-900 shadow-sm' : 'text-white/80 hover:text-white'
-                }`}
-              >
-                Livraisons & Litiges
-              </button>
-            </div>
-          )}
-
-          {/* Stats */}
-          {viewMode === 'drivers' ? (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
-                <p className="text-2xl font-black text-warning-400">{pendingCount}</p>
-                <p className="text-[10px] font-bold text-white/60 uppercase">En attente</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
-                <p className="text-2xl font-black text-success-400">{approvedCount}</p>
-                <p className="text-[10px] font-bold text-white/60 uppercase">Approuvés</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
-                <p className="text-2xl font-black text-red-400">{rejectedCount}</p>
-                <p className="text-[10px] font-bold text-white/60 uppercase">Refusés</p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
-                <p className="text-2xl font-black text-red-400">
-                  {deliveries.filter((d) => d.status === 'disputed').length}
-                </p>
-                <p className="text-[10px] font-bold text-white/60 uppercase text-red-300">Litiges</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
-                <p className="text-2xl font-black text-warning-400">
-                  {deliveries.filter((d) => ['accepted', 'picked_up', 'in_transit'].includes(d.status)).length}
-                </p>
-                <p className="text-[10px] font-bold text-white/60 uppercase">En cours</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
-                <p className="text-2xl font-black text-success-400">
-                  {deliveries.filter((d) => d.status === 'delivered').length}
-                </p>
-                <p className="text-[10px] font-bold text-white/60 uppercase">Livrées</p>
-              </div>
-            </div>
-          )}
+        <div className="relative mx-auto mt-5 grid max-w-4xl grid-cols-3 gap-2">
+          {stats.map((st) => (
+            <button
+              key={st.key}
+              onClick={() => setActiveTab(st.key)}
+              className={`rounded-2xl px-2 py-2.5 text-center transition-colors ${
+                activeTab === st.key ? 'bg-white/30' : 'bg-white/15 hover:bg-white/25'
+              }`}
+            >
+              <p className="text-lg font-bold leading-none text-white tabular-nums">{st.value}</p>
+              <p className="mt-1 text-[11px] font-medium text-white/85">{st.label}</p>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="px-4 -mt-3 relative z-20 space-y-4">
-        {/* Search */}
-        <div className="bg-white rounded-2xl shadow-sm border border-grey-100 flex items-center px-3 gap-2">
-          <Search className="w-4 h-4 text-grey-400 flex-shrink-0" />
+      <div className="relative z-10 -mt-10 mx-auto max-w-4xl space-y-3 px-4">
+        {/* Litiges et livraisons : gérés dans l'admin DaloaMarket */}
+        {isSuperOrAdmin && (
+          <div className="grid grid-cols-2 gap-2 rounded-3xl bg-white p-2 shadow-lg shadow-orange-900/5 ring-1 ring-grey-100">
+            <a
+              href={`${MARKET_ADMIN}/litiges`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 hover:bg-primary-50"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 text-primary">
+                <Scale className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 text-sm font-semibold text-grey-900">Litiges</span>
+              <ExternalLink className="h-3.5 w-3.5 text-grey-400" />
+            </a>
+            <a
+              href={`${MARKET_ADMIN}/livraisons`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 hover:bg-primary-50"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 text-primary">
+                <Truck className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 text-sm font-semibold text-grey-900">Livraisons</span>
+              <ExternalLink className="h-3.5 w-3.5 text-grey-400" />
+            </a>
+          </div>
+        )}
+
+        {/* Recherche */}
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-grey-400" />
           <input
             type="text"
-            placeholder={
-              viewMode === 'drivers'
-                ? 'Rechercher par nom ou téléphone...'
-                : 'Rechercher par ID Commande, nom de livreur...'
-            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 py-3 text-sm bg-transparent outline-none text-grey-900 placeholder:text-grey-400"
+            placeholder="Nom ou téléphone du livreur"
+            className="w-full rounded-2xl border border-grey-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="text-grey-400">
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
 
-        {/* Tab Filter */}
-        {viewMode === 'drivers' ? (
-          <div className="bg-grey-100 p-1 rounded-2xl flex items-center">
-            {tabs.map((tab) => (
+        {/* Onglets : 4 colonnes égales */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {tabs.map((tab) => {
+            const selected = activeTab === tab.key;
+            return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-center ${
-                  activeTab === tab.key
-                    ? 'bg-white text-grey-900 shadow-sm'
-                    : 'text-grey-500'
+                className={`relative flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold transition-colors ${
+                  selected ? 'bg-primary text-white shadow-md shadow-orange-500/20' : 'bg-white text-grey-600 ring-1 ring-grey-200'
                 }`}
               >
                 {tab.label}
                 {tab.count > 0 && (
-                  <span className={`ml-1 ${activeTab === tab.key ? tab.color : ''}`}>
-                    ({tab.count})
+                  <span
+                    className={`absolute -top-1.5 -right-1 min-w-[18px] rounded-full px-1 text-center text-[10px] font-bold leading-[18px] ring-2 ring-grey-50 ${
+                      selected ? 'bg-grey-900 text-white' : 'bg-primary text-white'
+                    }`}
+                  >
+                    {tab.count}
                   </span>
                 )}
               </button>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-grey-100 p-1 rounded-2xl flex items-center">
-            {(['all', 'disputed', 'active', 'delivered'] as const).map((key) => {
-              const count =
-                key === 'all' ? deliveries.length :
-                key === 'disputed' ? deliveries.filter((d) => d.status === 'disputed').length :
-                key === 'active' ? deliveries.filter((d) => ['accepted', 'picked_up', 'in_transit'].includes(d.status)).length :
-                deliveries.filter((d) => d.status === 'delivered').length;
+            );
+          })}
+        </div>
 
-              const label =
-                key === 'all' ? 'Toutes' :
-                key === 'disputed' ? 'Litiges' :
-                key === 'active' ? 'En cours' : 'Terminées';
-
-              const color =
-                key === 'disputed' ? 'text-red-600 font-black' :
-                key === 'active' ? 'text-warning-600' :
-                key === 'delivered' ? 'text-success' : 'text-grey-600';
-
-              return (
-                <button
-                  key={key}
-                  onClick={() => setDeliveryTab(key)}
-                  className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-center ${
-                    deliveryTab === key ? 'bg-white text-grey-900 shadow-sm' : 'text-grey-500'
-                  }`}
-                >
-                  {label}
-                  {count > 0 && (
-                    <span className={`ml-1 ${deliveryTab === key ? color : 'text-grey-400'}`}>
-                      ({count})
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Dynamic List */}
-        {viewMode === 'drivers' ? (
-          <div className="space-y-3">
-            <AnimatePresence mode="wait">
-              {filteredDrivers.length === 0 ? (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-16"
-                >
-                  <div className="w-16 h-16 bg-grey-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <Shield className="w-8 h-8 text-grey-300" />
-                  </div>
-                  <p className="font-bold text-grey-900">Aucun livreur</p>
-                  <p className="text-sm text-grey-500 mt-1">Aucun livreur ne correspond aux filtres.</p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="list"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4"
-                >
-                  {filteredDrivers.map((driver, idx) => {
-                    const VehicleIcon = VEHICLE_ICONS[driver.vehicle_type] || Bike;
-                    return (
-                      <motion.div
-                        key={driver.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.03 }}
-                        className="bg-white rounded-2xl shadow-sm border border-grey-100 overflow-hidden"
-                      >
-                        <div className="p-4">
-                          <div className="flex items-center gap-3">
-                            {/* Avatar */}
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-grey-100 flex items-center justify-center flex-shrink-0">
-                              {driver.photo_url ? (
-                                <img
-                                  src={driver.photo_url}
-                                  alt={driver.name}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.onerror = null;
-                                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=f3f4f6&color=374151&size=96`;
-                                  }}
-                                />
-                              ) : (
-                                <User className="w-6 h-6 text-grey-400" />
-                              )}
-                            </div>
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-grey-900 text-sm truncate">{driver.name}</h3>
-                                {getStatusBadge(driver)}
-                              </div>
-                              <div className="flex items-center gap-3 mt-1 text-[11px] text-grey-500">
-                                <span className="flex items-center gap-0.5">
-                                  <Phone className="w-3 h-3" /> {driver.phone}
-                                </span>
-                                <span className="flex items-center gap-0.5">
-                                  <VehicleIcon className="w-3 h-3" /> {driver.vehicle_type}
-                                </span>
-                              </div>
-                              {driver.verification_status === 'rejected' && driver.verification_rejection_reason && (
-                                <p className="text-[10px] text-danger-600 mt-1 flex items-center gap-1 font-medium">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  {driver.verification_rejection_reason}
-                                </p>
-                              )}
-                            </div>
-                            {/* Action */}
-                            {driver.cni_url && (
-                              <button
-                                onClick={() => openReview(driver)}
-                                className="w-9 h-9 bg-grey-50 rounded-xl flex items-center justify-center text-grey-600 active:scale-90 transition-transform flex-shrink-0"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <AnimatePresence mode="wait">
-              {filteredDeliveries.length === 0 ? (
-                <motion.div
-                  key="empty-del"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-16 bg-white rounded-3xl border border-grey-100"
-                >
-                  <div className="w-16 h-16 bg-grey-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <AlertCircle className="w-8 h-8 text-grey-300" />
-                  </div>
-                  <p className="font-bold text-grey-900">Aucune livraison</p>
-                  <p className="text-sm text-grey-500 mt-1">Aucune livraison trouvée pour ce filtre.</p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="list-del"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-3"
-                >
-                  {filteredDeliveries.map((item, idx) => {
-                    const isExpanded = expandedDeliveryId === item.id;
-                    const statusLabel =
-                      item.status === 'disputed' ? 'LITIGE' :
-                      item.status === 'delivered' ? 'LIVRÉ' :
-                      item.status === 'in_transit' || item.status === 'picked_up' ? 'EN ROUTE' :
-                      item.status === 'accepted' ? 'ACCEPTÉ' :
-                      item.status === 'awaiting_pickup' ? 'EN ATTENTE' :
-                      item.status.toUpperCase();
-                    const statusColors =
-                      item.status === 'disputed' ? 'bg-red-50 text-red-700 border-red-200' :
-                      item.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-200' :
-                      ['accepted', 'picked_up', 'in_transit'].includes(item.status) ? 'bg-warning-50 text-warning-700 border-warning-200' :
-                      'bg-grey-50 text-grey-600 border-grey-200';
-
-                    return (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.03 }}
-                        className="bg-white rounded-2xl shadow-sm border border-grey-100 overflow-hidden"
-                      >
-                        {/* Compact header — always visible, tap to expand */}
-                        <button
-                          onClick={() => setExpandedDeliveryId(isExpanded ? null : item.id)}
-                          className="w-full px-4 py-3 flex items-center gap-3 text-left active:bg-grey-50 transition-colors"
-                        >
-                          {/* Status dot */}
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            item.status === 'disputed' ? 'bg-red-500' :
-                            item.status === 'delivered' ? 'bg-green-500' :
-                            ['accepted', 'picked_up', 'in_transit'].includes(item.status) ? 'bg-warning-400' :
-                            'bg-grey-300'
-                          }`} />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-black text-grey-700">Course #{item.id.slice(0, 6)}</span>
-                              <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${statusColors}`}>
-                                {statusLabel}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-grey-400 mt-0.5 truncate">
-                              {item.delivery_person?.name || 'Sans livreur'}
-                              {' • '}
-                              {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                          <span className={`text-grey-300 transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
-                            ▾
-                          </span>
-                        </button>
-
-                        {/* Expanded details */}
-                        {isExpanded && (
-                          <div className="px-4 pb-4 space-y-4 border-t border-grey-50">
-
-                            {/* Acteurs */}
-                            <div className="pt-3 space-y-2">
-                              <p className="text-[10px] font-black text-grey-400 uppercase tracking-wider">Acteurs</p>
-                              <div className="space-y-1.5 text-xs">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-grey-500 font-semibold">Livreur</span>
-                                  <span className="font-bold text-grey-900 text-right">
-                                    {item.delivery_person?.name || 'Sans livreur'}
-                                    {item.delivery_person?.phone && (
-                                      <a href={`tel:${item.delivery_person.phone}`} className="ml-2 text-primary underline">
-                                        {item.delivery_person.phone}
-                                      </a>
-                                    )}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-grey-500 font-semibold">Acheteur</span>
-                                  <span className="font-bold text-grey-900 text-right">
-                                    {item.order?.buyer?.full_name || 'Inconnu'}
-                                    {item.order?.buyer?.phone && (
-                                      <a href={`tel:${item.order.buyer.phone}`} className="ml-2 text-primary underline">
-                                        {item.order.buyer.phone}
-                                      </a>
-                                    )}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-grey-500 font-semibold">Vendeur</span>
-                                  <span className="font-bold text-grey-900 text-right">
-                                    {item.order?.seller?.full_name || 'Inconnu'}
-                                    {item.order?.seller?.phone && (
-                                      <a href={`tel:${item.order.seller.phone}`} className="ml-2 text-primary underline">
-                                        {item.order.seller.phone}
-                                      </a>
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Trajet */}
-                            <div className="space-y-1.5 text-xs">
-                              <p className="text-[10px] font-black text-grey-400 uppercase tracking-wider">Trajet</p>
-                              <div className="flex items-start gap-2">
-                                <MapPin className="w-3 h-3 text-grey-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-grey-700"><span className="font-bold text-grey-400">De :</span> {item.pickup_location}</span>
-                              </div>
-                              <div className="flex items-start gap-2">
-                                <MapPin className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
-                                <span className="text-grey-700"><span className="font-bold text-grey-400">À :</span> {item.dropoff_location}</span>
-                              </div>
-                            </div>
-
-                            {/* Finances */}
-                            <div className="bg-grey-50 rounded-xl p-3 space-y-1.5 text-xs">
-                              <p className="text-[10px] font-black text-grey-400 uppercase tracking-wider mb-2">Finances</p>
-                              <div className="flex justify-between">
-                                <span className="text-grey-500">Produit</span>
-                                <span className="font-bold text-grey-800">{item.order?.product_amount || 0} FCFA</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-grey-500">Livraison</span>
-                                <span className="font-bold text-grey-800">{item.order?.delivery_fee || item.delivery_price} FCFA</span>
-                              </div>
-                              <div className="flex justify-between border-t border-grey-200 pt-1.5 mt-1">
-                                <span className="font-black text-grey-700">Total</span>
-                                <span className="font-black text-green-600">{item.order?.total_amount || 0} FCFA</span>
-                              </div>
-                              {item.delivery_gps_distance_m !== null && (
-                                <p className="text-grey-400 text-[10px] pt-1">Distance GPS : {Math.round(item.delivery_gps_distance_m)} m</p>
-                              )}
-                            </div>
-
-                            {/* Motif litige */}
-                            {item.dispute_reason && (
-                              <div className="p-3 bg-red-50 text-red-700 rounded-xl flex items-start gap-2 text-xs">
-                                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <p className="text-[9px] uppercase tracking-wider opacity-75 font-black">Motif du litige</p>
-                                  <p className="font-bold mt-0.5">{item.dispute_reason}</p>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Médiateur de résolution */}
-                            {item.resolved_by && (
-                              <div className="p-3 bg-grey-50 text-grey-600 rounded-xl flex items-start gap-2 text-xs border border-grey-100">
-                                <User className="w-4 h-4 flex-shrink-0 mt-0.5 text-grey-500" />
-                                <div>
-                                  <p className="text-[9px] uppercase tracking-wider opacity-75 font-black">Résolution Litige</p>
-                                  <p className="font-bold mt-0.5 text-grey-800">
-                                    Médiateur : {item.mediator?.full_name || 'Admin'}
-                                  </p>
-                                  {item.resolved_at && (
-                                    <p className="text-[10px] text-grey-400 mt-0.5">
-                                      Le {new Date(item.resolved_at).toLocaleString('fr-FR')}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Photo de livraison */}
-                            {item.delivery_photo_url && (
-                              <div className="space-y-2">
-                                <p className="text-[10px] font-black text-grey-400 uppercase tracking-wider">Preuve livraison</p>
-                                {deliverySignedUrls[item.id] ? (
-                                  <div className="relative rounded-xl overflow-hidden border border-grey-100">
-                                    <img
-                                      src={deliverySignedUrls[item.id]}
-                                      alt="Preuve livraison"
-                                      className="w-full h-36 object-cover cursor-pointer"
-                                      onClick={() => window.open(deliverySignedUrls[item.id], '_blank')}
-                                    />
-                                    <div className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-lg">
-                                      <ExternalLink className="w-3 h-3" />
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-grey-400 italic">Chargement...</p>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Actions résolution litige */}
-                            {item.status === 'disputed' && (
-                              <div className="flex flex-col gap-2 pt-1">
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => handleResolveDispute(item.id, 'refund_complete')}
-                                    disabled={processing}
-                                    className="flex-1 py-3 bg-red-600 text-white rounded-xl text-xs font-black active:scale-[0.97] transition-all disabled:opacity-50"
-                                  >
-                                    Remb. Complet
-                                  </button>
-                                  <button
-                                    onClick={() => handleResolveDispute(item.id, 'refund_partial')}
-                                    disabled={processing}
-                                    className="flex-1 py-3 bg-warning-500 text-white rounded-xl text-xs font-black active:scale-[0.97] transition-all disabled:opacity-50"
-                                  >
-                                    Remb. Partiel
-                                  </button>
-                                </div>
-                                <button
-                                  onClick={() => handleResolveDispute(item.id, 'deliver')}
-                                  disabled={processing}
-                                  className="w-full py-3 bg-success text-white rounded-xl text-xs font-black active:scale-[0.97] transition-all disabled:opacity-50"
-                                >
-                                  Forcer Livraison (tous payés)
-                                </button>
-                              </div>
-                            )}
-                          </div>
+        {/* Liste des livreurs */}
+        <AnimatePresence mode="wait">
+          {filteredDrivers.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="rounded-3xl bg-white py-14 text-center ring-1 ring-grey-100"
+            >
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-grey-100">
+                <Shield className="h-7 w-7 text-grey-300" />
+              </div>
+              <p className="font-bold text-grey-900">Aucun livreur</p>
+              <p className="mt-1 text-sm text-grey-500">Aucun livreur ne correspond à ce filtre.</p>
+            </motion.div>
+          ) : (
+            <motion.ul
+              key="list"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0"
+            >
+              {filteredDrivers.map((driver) => {
+                const VehicleIcon = VEHICLE_ICONS[driver.vehicle_type] || Bike;
+                const canReview = Boolean(driver.cni_url);
+                return (
+                  <li key={driver.id}>
+                    <button
+                      type="button"
+                      onClick={() => canReview && openReview(driver)}
+                      disabled={!canReview}
+                      className="flex w-full items-center gap-3 rounded-2xl bg-white p-3.5 text-left ring-1 ring-grey-100 transition-colors hover:bg-grey-50 disabled:cursor-default disabled:hover:bg-white"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-grey-100">
+                        {driver.photo_url ? (
+                          <img
+                            src={driver.photo_url}
+                            alt={driver.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(driver.name)}&background=f3f4f6&color=374151&size=96`;
+                            }}
+                          />
+                        ) : (
+                          <User className="h-6 w-6 text-grey-400" />
                         )}
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-bold text-grey-900">{driver.name}</p>
+                          {getStatusBadge(driver)}
+                        </div>
+                        <div className="mt-1 flex items-center gap-3 text-[11px] text-grey-500">
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" /> {driver.phone}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <VehicleIcon className="h-3 w-3" /> {driver.vehicle_type}
+                          </span>
+                        </div>
+                        {driver.verification_status === 'rejected' && driver.verification_rejection_reason && (
+                          <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-danger-600">
+                            <AlertTriangle className="h-3 w-3" /> {driver.verification_rejection_reason}
+                          </p>
+                        )}
+                      </div>
+                      {canReview ? (
+                        <span className="flex shrink-0 items-center gap-1 rounded-xl bg-primary-50 px-3 py-2 text-xs font-semibold text-primary">
+                          <Eye className="h-3.5 w-3.5" /> Examiner
+                        </span>
+                      ) : (
+                        <span className="shrink-0 text-[11px] text-grey-400">Pièces non envoyées</span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </motion.ul>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Verifications Modals */}

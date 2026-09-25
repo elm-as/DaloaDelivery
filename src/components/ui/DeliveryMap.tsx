@@ -13,6 +13,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 // @ts-ignore
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { getNetAmount } from '../../lib/formatUtils';
 
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
@@ -173,7 +174,7 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
             <Marker key={order.id} position={[lat, lng]} icon={orderIcon}>
               <Popup>
                 <div className="p-1">
-                  <div className="font-semibold text-grey-900">Commande {Math.round(order.proposed_price * 0.9)} FCFA net</div>
+                  <div className="font-semibold text-grey-900">Commande {getNetAmount(order.proposed_price)} FCFA net</div>
                   <div className="text-xs text-grey-600 mb-1">De: {order.pickup_location}</div>
                   <div className="text-xs text-grey-600">À: {order.dropoff_location}</div>
                 </div>

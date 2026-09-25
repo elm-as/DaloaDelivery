@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 
 import type { DeliveryPerson } from '../types/livreur';
 import toast from 'react-hot-toast';
+import { getNetAmount } from '../lib/formatUtils';
 
 const VEHICLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Moto: Bike,
@@ -78,7 +79,7 @@ export default function DashboardProfil() {
       const delivered = myOrders.filter(o => o.status === 'delivered');
       setDeliveredOrders(delivered);
       
-      const earnings = delivered.reduce((sum, o) => sum + (o.proposed_price || 0) * 0.9, 0); // 10% frais plateforme déduits
+      const earnings = delivered.reduce((sum, o) => sum + getNetAmount(o.proposed_price || 0), 0); // part livreur, comme le versement
       setTotalEarnings(Math.round(earnings));
     } catch (err) {
       console.error(err);

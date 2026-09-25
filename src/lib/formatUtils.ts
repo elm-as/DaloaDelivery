@@ -59,14 +59,15 @@ export function formatPrice(amount: number): string {
   return Math.round(amount).toLocaleString('fr-FR') + ' FCFA';
 }
 
-// Prix net après commission (par défaut 10%)
-export function formatPriceNet(amount: number, rate: number = 0.10): string {
-  return formatPrice(Math.round(amount * (1 - rate)));
+// Part du livreur : prix − arrondi(prix × 10 %), exactement comme le versement
+// réel (create_delivery_payout). `arrondi(prix × 0,9)` donnait parfois 1 F d'écart.
+export function getNetAmount(amount: number, rate: number = 0.10): number {
+  return amount - Math.round(amount * rate);
 }
 
-// Prix net (number) après commission
-export function getNetAmount(amount: number, rate: number = 0.10): number {
-  return Math.round(amount * (1 - rate));
+// Prix net après commission (par défaut 10%)
+export function formatPriceNet(amount: number, rate: number = 0.10): string {
+  return formatPrice(getNetAmount(amount, rate));
 }
 
 // Date relative en français

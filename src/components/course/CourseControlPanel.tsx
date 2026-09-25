@@ -3,6 +3,7 @@ import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, MapPin } from 'luc
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { isCurfewActive } from '../../utils/security';
 import type { DeliveryRequest } from '../../services/deliveryOrderService';
+import { getNetAmount } from '../../lib/formatUtils';
 
 export const COURSE_STATUS_LABELS: Record<string, string> = {
   pending_seller_confirmation: 'En attente du vendeur',
@@ -35,7 +36,7 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
   onReportDispute,
   onOpenNavigation,
 }) => {
-  const netEarnings = Math.round(order.proposed_price * 0.9);
+  const netEarnings = getNetAmount(order.proposed_price);
   const isAwaitingPickup = order.status === 'awaiting_pickup';
   const isAccepted = order.status === 'accepted';
   const isInTransit = order.status === 'picked_up' || order.status === 'in_transit';

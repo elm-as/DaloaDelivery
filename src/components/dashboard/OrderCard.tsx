@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, ChevronRight, CheckCircle2, Phone, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getStatusColor, getStatusIcon, getStatusLabel, formatPrice, formatRelativeDate } from '../../lib/formatUtils';
+import { getStatusColor, getStatusIcon, getStatusLabel, formatPrice, formatRelativeDate, getNetAmount } from '../../lib/formatUtils';
 
 const STATUS_ACTIONS: Record<string, { label: string; action: string; variant: 'primary' | 'secondary' }> = {
   awaiting_pickup: { label: 'Accepter la course', action: 'accept', variant: 'primary' },
@@ -78,7 +78,7 @@ export const OrderCard = ({ order, idx, handleAcceptOrder, handlePickupVerificat
             </div>
           </div>
           <div className="bg-gradient-to-br from-primary to-primary-600 text-white px-3.5 py-1.5 rounded-2xl text-center shadow-sm">
-            <span className="text-base font-black leading-none block">{formatPrice(Math.round(order.delivery_price * 0.9))}</span>
+            <span className="text-base font-black leading-none block">{formatPrice(getNetAmount(order.delivery_price))}</span>
             <span className="text-[9px] font-bold opacity-90 mt-0.5 uppercase tracking-wider leading-none">Net</span>
           </div>
         </div>

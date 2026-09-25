@@ -19,6 +19,7 @@ import type { DeliveryPerson } from '../types/livreur';
 import toast from 'react-hot-toast';
 import { isCurfewActive } from '../utils/security';
 import { friendlyError } from '../lib/messages';
+import { getNetAmount } from '../lib/formatUtils';
 
 export default function DashboardLivreur() {
   const navigate = useNavigate();
@@ -141,7 +142,7 @@ export default function DashboardLivreur() {
       today.setHours(0, 0, 0, 0);
       const earnings = delivered
         .filter(o => new Date(o.delivered_at || o.created_at) >= today)
-        .reduce((sum, o) => sum + (o.proposed_price || 0) * 0.9, 0); // 10% de commission de la plateforme déduite
+        .reduce((sum, o) => sum + getNetAmount(o.proposed_price || 0), 0); // part livreur, comme le versement
       setTodayEarnings(Math.round(earnings));
     } catch {
       toast.error('Erreur de chargement');
@@ -552,7 +553,7 @@ export default function DashboardLivreur() {
                                   </div>
                                 </div>
                                 <div className="bg-gradient-to-br from-primary to-primary-600 text-white px-3.5 py-2 rounded-2xl text-center shadow-sm">
-                                  <span className="text-lg font-black leading-none block">{Math.round(order.proposed_price * 0.9)}</span>
+                                  <span className="text-lg font-black leading-none block">{getNetAmount(order.proposed_price)}</span>
                                   <span className="text-[9px] font-bold opacity-90 uppercase">FCFA net</span>
                                 </div>
                               </div>
@@ -585,7 +586,7 @@ export default function DashboardLivreur() {
                                 onClick={(e) => { e.stopPropagation(); handleAcceptOrder(order.id); }}
                                 className="w-full py-3 bg-primary hover:bg-primary-600 text-white rounded-2xl text-xs sm:text-sm font-black active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm"
                               >
-                                Accepter pour {Math.round(order.proposed_price * 0.9)} FCFA net
+                                Accepter pour {getNetAmount(order.proposed_price)} FCFA net
                                 <ChevronRight className="w-4 h-4" />
                               </button>
                             </div>
