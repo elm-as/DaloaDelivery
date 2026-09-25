@@ -52,13 +52,18 @@ const TILE_URL_STREET = MAPBOX_TOKEN
 
 function MapBounds({ coords }: { coords: [number, number][] }) {
   const map = useMap();
+  // Recadrage seulement quand les points changent vraiment (~1 km) : la
+  // position du livreur arrive toutes les quelques secondes et chaque recadrage
+  // effaçait le zoom choisi.
+  const key = coords.map(([a, b]) => `${a.toFixed(2)},${b.toFixed(2)}`).join('|');
   useEffect(() => {
     if (coords.length === 0) return;
     const bounds = L.latLngBounds(coords);
     if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     }
-  }, [coords, map]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, map]);
   return null;
 }
 

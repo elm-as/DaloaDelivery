@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -68,6 +68,7 @@ interface DeliveryMapProps {
 // Composant pour recentrer la carte automatiquement pour inclure tous les marqueurs
 function MapBounds({ livreurs, orders = [] }: { livreurs: DeliveryPerson[], orders?: DeliveryRequest[] }) {
   const map = useMap();
+  const lastKeyRef = useRef('');
 
   useEffect(() => {
     const validPoints: [number, number][] = [];
@@ -92,10 +93,17 @@ function MapBounds({ livreurs, orders = [] }: { livreurs: DeliveryPerson[], orde
       return;
     }
 
+    // Recadrage seulement si l'ensemble des points change vraiment (~1 km) :
+    // livreurs et courses sont resondés en permanence et chaque recadrage
+    // effaçait le zoom choisi.
+    const key = validPoints.map(([a, b]) => `${a.toFixed(2)},${b.toFixed(2)}`).sort().join('|');
+    if (key === lastKeyRef.current) return;
+    lastKeyRef.current = key;
+
     const bounds = L.latLngBounds(validPoints);
 
     if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     }
   }, [livreurs, orders, map]);
 
