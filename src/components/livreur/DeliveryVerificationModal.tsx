@@ -71,6 +71,18 @@ export default function DeliveryVerificationModal({
 
     setUploading(true);
     setStep('verifying');
+    // Position GPS en parallèle de l'envoi, précision standard et position
+    // récente acceptée : l'ancienne attente haute précision (jusqu'à 10 s,
+    // avant même l'envoi) bloquait l'écran sur « Vérification en cours ».
+    // Le serveur ne l'exige plus : sans GPS, on valide quand même.
+    const positionPromise = new Promise<GeolocationPosition | null>((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), {
+        enableHighAccuracy: false,
+        maximumAge: 120000,
+        timeout: 4000,
+      });
+    });
     try {
       // Upload vers Supabase Storage
       const ext = photoFile.name.split('.').pop() || 'jpg';
@@ -87,23 +99,13 @@ export default function DeliveryVerificationModal({
 
       const photoUrl = urlData.publicUrl;
 
-      // Obtenir la position GPS réelle du livreur
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('Géolocalisation non supportée'));
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-        });
-      });
+      const position = await positionPromise;
 
-      // Vérification finale avec OTP + photo + GPS
+      // Vérification finale avec OTP + photo (+ GPS s'il est disponible, archivé pour l'audit)
       await deliveryAssignmentService.verifyDelivery(
         assignmentId, otp, photoUrl,
-        position.coords.latitude,
-        position.coords.longitude
+        position?.coords.latitude ?? null,
+        position?.coords.longitude ?? null
       );
 
       toast.success(cashAmount != null ? 'Livraison et encaissement validés !' : 'Livraison validée avec succès !');

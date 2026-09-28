@@ -185,13 +185,14 @@ export const deliveryAssignmentService = {
   /**
    * Vérifier la delivery avec OTP + photo + GPS
    */
-  async verifyDelivery(assignmentId: string, otp: string, photo_url: string, gps_lat: number, gps_lng: number) {
+  async verifyDelivery(assignmentId: string, otp: string, photo_url: string, gps_lat: number | null, gps_lng: number | null) {
     const { data, error } = await supabase.rpc('verify_delivery', {
       p_assignment_id: assignmentId,
       p_otp: otp,
       p_photo_url: photo_url,
-      p_gps_lat: gps_lat,
-      p_gps_lng: gps_lng
+      // Types générés trop stricts : verify_delivery accepte bien NULL (GPS indisponible).
+      p_gps_lat: gps_lat as unknown as number,
+      p_gps_lng: gps_lng as unknown as number
     });
 
     if (error) throw error;
