@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Shield, X, Check, Phone } from 'lucide-react';
 import { deliveryAssignmentService } from '../../services/deliveryAssignmentService';
@@ -28,6 +28,32 @@ export default function DeliveryVerificationModal({
   const [uploading, setUploading] = useState(false);
   const [step, setStep] = useState<'otp' | 'photo' | 'verifying'>('otp');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Course payée en espèces (livreur affilié) : l'acheteur paie à la réception
+  // et n'a pas de code ; on passe directement à la photo, montant rappelé.
+  const [cashAmount, setCashAmount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from('delivery_assignments')
+        .select('orders:order_id(payment_method, total_amount)')
+        .eq('id', assignmentId)
+        .maybeSingle();
+      const order = (data as any)?.orders;
+      if (!active) return;
+      if (order && order.payment_method && order.payment_method !== 'online') {
+        setCashAmount(Number(order.total_amount) || 0);
+        setStep('photo');
+      } else {
+        setCashAmount(null);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [isOpen, assignmentId]);
 
   const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,7 +106,7 @@ export default function DeliveryVerificationModal({
         position.coords.longitude
       );
 
-      toast.success('Livraison validée avec succès !');
+      toast.success(cashAmount != null ? 'Livraison et encaissement validés !' : 'Livraison validée avec succès !');
       onSuccess();
       onClose();
       // Reset
@@ -212,6 +238,14 @@ export default function DeliveryVerificationModal({
 
             {step === 'photo' && (
               <div>
+                {cashAmount != null && (
+                  <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                    <p className="font-bold">Paiement à la livraison</p>
+                    <p className="mt-0.5">
+                      Encaissez {cashAmount.toLocaleString('fr-FR')} FCFA auprès du client. Aucun code n'est demandé.
+                    </p>
+                  </div>
+                )}
                 <div className="mb-4">
                   <label className="block text-sm font-bold text-grey-900 mb-2">
                     Photo de livraison (obligatoire)
