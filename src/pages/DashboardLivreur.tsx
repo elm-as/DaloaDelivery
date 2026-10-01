@@ -7,7 +7,6 @@ import {
   Navigation, RefreshCw, LogOut
 } from 'lucide-react';
 import { EarningsModal } from '../components/dashboard/EarningsModal';
-import { CodDebtBanner } from '../components/dashboard/CodDebtBanner';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { DeliveryMap } from '../components/ui/DeliveryMap';
 import { supabase } from '../lib/supabase';
@@ -390,7 +389,6 @@ export default function DashboardLivreur() {
           </button>
         )}
 
-        <CodDebtBanner userId={user?.id} role="delivery" />
 
         {/* Gains, note et GPS sur une seule bande */}
         <div className="grid grid-cols-3 divide-x divide-gray-100 rounded-2xl border border-gray-100 bg-white">
