@@ -4,6 +4,7 @@ import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { isCurfewActive } from '../../utils/security';
 import type { DeliveryRequest } from '../../services/deliveryOrderService';
 import { getNetAmount } from '../../lib/formatUtils';
+import { CourseV2Sections } from './CourseV2Sections';
 
 export const COURSE_STATUS_LABELS: Record<string, string> = {
   pending_seller_confirmation: 'En attente du vendeur',
@@ -20,21 +21,25 @@ export const COURSE_STATUS_LABELS: Record<string, string> = {
 interface CourseControlPanelProps {
   order: DeliveryRequest;
   actionLoading: boolean;
+  isLiveTracking?: boolean;
   onAccept: () => void;
   onPickupClick: () => void;
   onDeliveryClick: () => void;
   onReportDispute: () => void;
   onOpenNavigation: () => void;
+  onOrderUpdated?: () => void;
 }
 
 export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
   order,
   actionLoading,
+  isLiveTracking,
   onAccept,
   onPickupClick,
   onDeliveryClick,
   onReportDispute,
   onOpenNavigation,
+  onOrderUpdated,
 }) => {
   const netEarnings = getNetAmount(order.proposed_price);
   const isAwaitingPickup = order.status === 'awaiting_pickup';
@@ -65,6 +70,13 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Sections V2 : GPS Live, Express, Livraison Groupée & Anti-Lapin COD */}
+      <CourseV2Sections
+        order={order}
+        isLiveTracking={isLiveTracking}
+        onOrderUpdated={onOrderUpdated || (() => {})}
+      />
 
       {/* Trajet & Coordonnées (Stepper) */}
       <div className="relative pl-6 border-l-2 border-grey-200 space-y-7 py-2">

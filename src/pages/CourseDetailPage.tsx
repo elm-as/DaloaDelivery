@@ -23,6 +23,7 @@ export default function CourseDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [pickupModalOpen, setPickupModalOpen] = useState(false);
   const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
+  const [isLiveTracking, setIsLiveTracking] = useState(false);
 
   const fetchOrder = useCallback(async () => {
     if (!id) return;
@@ -40,6 +41,55 @@ export default function CourseDetailPage() {
   useEffect(() => {
     fetchOrder();
   }, [fetchOrder]);
+
+  // Suivi GPS en temps réel (F01) dès que la course est acceptée ou en transit
+  useEffect(() => {
+    if (!order?.id || !['accepted', 'picked_up', 'in_transit'].includes(order.status)) {
+      setIsLiveTracking(false);
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+    let lastSentMs = 0;
+    const channel = supabase.channel(`run-tracking:${order.id}`);
+    channel.subscribe();
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const now = Date.now();
+        if (now - lastSentMs < 5000) return;
+        lastSentMs = now;
+        setIsLiveTracking(true);
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const heading = pos.coords.heading;
+        const speedKmh = pos.coords.speed != null ? Math.round(pos.coords.speed * 3.6) : null;
+
+        channel
+          .send({
+            type: 'broadcast',
+            event: 'location',
+            payload: { assignmentId: order.id, lat, lng, heading, speedKmh, timestamp: now },
+          })
+          .catch(() => {});
+
+        deliveryOrderService
+          .publishDriverLiveLocation(order.id, lat, lng, heading, speedKmh)
+          .catch(() => {});
+      },
+      () => {
+        setIsLiveTracking(false);
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+      supabase.removeChannel(channel);
+      setIsLiveTracking(false);
+    };
+  }, [order?.id, order?.status]);
 
   if (loading) {
     return (
@@ -154,11 +204,13 @@ export default function CourseDetailPage() {
             <CourseControlPanel
               order={order}
               actionLoading={actionLoading}
+              isLiveTracking={isLiveTracking}
               onAccept={handleAccept}
               onPickupClick={() => setPickupModalOpen(true)}
               onDeliveryClick={() => setDeliveryModalOpen(true)}
               onReportDispute={handleReportDispute}
               onOpenNavigation={openNavigation}
+              onOrderUpdated={fetchOrder}
             />
           </section>
         </main>
@@ -188,11 +240,13 @@ export default function CourseDetailPage() {
             <CourseControlPanel
               order={order}
               actionLoading={actionLoading}
+              isLiveTracking={isLiveTracking}
               onAccept={handleAccept}
               onPickupClick={() => setPickupModalOpen(true)}
               onDeliveryClick={() => setDeliveryModalOpen(true)}
               onReportDispute={handleReportDispute}
               onOpenNavigation={openNavigation}
+              onOrderUpdated={fetchOrder}
             />
           </div>
         </div>

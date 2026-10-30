@@ -534,8 +534,18 @@ export default function DashboardLivreur() {
                                     <Package className="w-5 h-5" />
                                   </div>
                                   <div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-1.5">
                                       <p className="font-black text-gray-900 text-sm">Course #{order.id.slice(0, 6)}</p>
+                                      {order.is_express && (
+                                        <span className="inline-flex items-center gap-1 bg-orange-500 text-white px-2 py-0.5 rounded-full text-[10px] font-black uppercase">
+                                          ⚡ Express
+                                        </span>
+                                      )}
+                                      {order.is_grouped && (
+                                        <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full text-[10px] font-black border border-indigo-200">
+                                          📦 Groupée ({order.group_total_stops || 2} arrêts)
+                                        </span>
+                                      )}
                                       {inDriverZone && (
                                         <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-[10px] font-black border border-amber-200">
                                           ★ Prioritaire
