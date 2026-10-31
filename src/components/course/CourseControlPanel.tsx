@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, MapPin } from 'lucide-react';
+import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, MapPin, Package } from 'lucide-react';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { isCurfewActive } from '../../utils/security';
 import type { DeliveryRequest } from '../../services/deliveryOrderService';
@@ -47,10 +47,15 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
   const isInTransit = order.status === 'picked_up' || order.status === 'in_transit';
   const isActive = ['accepted', 'picked_up', 'in_transit'].includes(order.status);
   const curfew = isCurfewActive();
+  const hasPendingGroupedStops = Boolean(
+    order.is_grouped &&
+      order.grouped_stops &&
+      order.grouped_stops.length > 0 &&
+      (order.group_completed_stops || 0) < (order.group_total_stops || order.grouped_stops.length)
+  );
 
   return (
     <div className="space-y-6">
-      {/* En-tête Statut & Rémunération nette */}
       <div className="flex items-center justify-between pb-4 border-b border-grey-100">
         <div>
           <span className="text-xs font-bold text-grey-400 uppercase tracking-wider block mb-1">
@@ -71,16 +76,25 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
         </div>
       </div>
 
-      {/* Sections V2 : GPS Live, Express, Livraison Groupée & Anti-Lapin COD */}
+      {order.items_summary && !order.is_express && (
+        <div className="flex items-start gap-2.5 rounded-2xl border border-grey-200 bg-grey-50 px-3.5 py-2.5 text-xs text-grey-800">
+          <Package className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-grey-500 uppercase tracking-wider block text-[10px]">
+              Contenu de la commande
+            </span>
+            <span className="font-semibold text-grey-900">{order.items_summary}</span>
+          </div>
+        </div>
+      )}
+
       <CourseV2Sections
         order={order}
         isLiveTracking={isLiveTracking}
         onOrderUpdated={onOrderUpdated || (() => {})}
       />
 
-      {/* Trajet & Coordonnées (Stepper) */}
       <div className="relative pl-6 border-l-2 border-grey-200 space-y-7 py-2">
-        {/* Point de Ramassage (Vendeur) */}
         <div className="relative">
           <div
             className={`absolute -left-[31px] w-5 h-5 rounded-full border-4 border-white ${
@@ -104,7 +118,9 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
               <span className="text-xs font-bold text-grey-900 block">
                 {order.seller_name || order.shop_name || 'Boutique Partenaire'}
               </span>
-              <span className="text-[10px] text-grey-400 block font-medium">Point de retrait marchand</span>
+              <span className="text-[10px] text-grey-400 block font-medium">
+                {order.is_express ? "Point de départ expéditeur" : 'Point de retrait marchand'}
+              </span>
             </div>
 
             {order.seller_phone && (
@@ -120,12 +136,11 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
 
           <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-0.5 mt-2 flex items-center gap-1">
             <MapPin className="w-3 h-3 text-grey-400" />
-            Adresse vendeur
+            {order.is_express ? 'Adresse expéditeur' : 'Adresse vendeur'}
           </p>
           <p className="font-bold text-grey-900 text-sm">{order.pickup_location}</p>
         </div>
 
-        {/* Point de Livraison (Client) */}
         <div className="relative">
           <div
             className={`absolute -left-[31px] w-5 h-5 rounded-full border-4 border-white ${
@@ -135,17 +150,16 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
 
           <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-0.5 flex items-center gap-1">
             <MapPin className="w-3 h-3 text-grey-400" />
-            Destination acheteur
+            Destination destinataire
           </p>
           <p className="font-bold text-grey-900 text-sm">{order.dropoff_location}</p>
           <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" />
-            Remise sécurisée sous code OTP à l'acheteur
+            Remise sécurisée au destinataire
           </div>
         </div>
       </div>
 
-      {/* Actions Métier selon le statut */}
       <div className="pt-2 space-y-3">
         {isAwaitingPickup && (
           curfew ? (
@@ -176,15 +190,17 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
               className="w-full h-13 bg-grey-900 hover:bg-grey-800 text-white rounded-2xl font-bold text-sm active:scale-98 transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               <Navigation className="w-4 h-4 text-primary" />
-              Naviguer vers le vendeur (GPS)
+              Naviguer vers le point de retrait (GPS)
             </button>
-            <button
-              onClick={onPickupClick}
-              disabled={actionLoading}
-              className="w-full h-14 bg-primary hover:bg-primary-600 text-white rounded-2xl font-black text-base active:scale-98 transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {actionLoading ? <LoadingSpinner size="sm" /> : "J'ai récupéré le colis (OTP Vendeur)"}
-            </button>
+            {!hasPendingGroupedStops && (
+              <button
+                onClick={onPickupClick}
+                disabled={actionLoading}
+                className="w-full h-14 bg-primary hover:bg-primary-600 text-white rounded-2xl font-black text-base active:scale-98 transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {actionLoading ? <LoadingSpinner size="sm" /> : "J'ai récupéré le colis (OTP Retrait)"}
+              </button>
+            )}
           </>
         )}
 
@@ -202,7 +218,7 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
               disabled={actionLoading}
               className="w-full h-14 bg-secondary hover:bg-secondary-600 text-white rounded-2xl font-black text-base active:scale-98 transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
-              {actionLoading ? <LoadingSpinner size="sm" /> : 'Confirmer la livraison (OTP Client)'}
+              {actionLoading ? <LoadingSpinner size="sm" /> : 'Confirmer la livraison'}
             </button>
           </>
         )}

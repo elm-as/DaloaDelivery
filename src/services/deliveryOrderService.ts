@@ -2,10 +2,13 @@ import { supabase } from '../lib/supabase';
 import { fetchContactPhones } from '../lib/contacts';
 
 export interface GroupedSellerStop {
+  stop_index?: number;
   seller_id: string;
-  seller_name: string;
+  shop_name?: string;
+  seller_name?: string;
   seller_phone?: string | null;
   district?: string | null;
+  address?: string | null;
   pickup_address?: string | null;
   status: 'pending' | 'picked_up';
   picked_up_at?: string | null;
@@ -25,11 +28,12 @@ export interface DeliveryRequest {
   buyer_phone?: string;
   payment_method?: string;
   total_amount?: number;
+  items_summary?: string;
   is_private?: boolean;
   pickup_location: string;
   dropoff_location: string;
   proposed_price: number;
-  status: 'awaiting_pickup' | 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
+  status: 'awaiting_pickup' | 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'disputed' | 'cancelled';
   assigned_driver_id: string | null;
   created_at: string;
   accepted_at: string | null;
@@ -38,7 +42,6 @@ export interface DeliveryRequest {
   pickup_lng?: number;
   dropoff_lat?: number;
   dropoff_lng?: number;
-  // V2 : Course Express (F05)
   is_express?: boolean;
   package_description?: string | null;
   package_type?: string | null;
@@ -47,13 +50,11 @@ export interface DeliveryRequest {
   recipient_name?: string | null;
   recipient_phone?: string | null;
   payer_role?: 'sender' | 'recipient' | null;
-  // V2 : Livraison Groupée Multi-Marchands (F06)
   is_grouped?: boolean;
   delivery_group_id?: string | null;
   group_total_stops?: number;
   group_completed_stops?: number;
   grouped_stops?: GroupedSellerStop[];
-  // V2 : Indice Anti-Lapin COD acheteur (F02)
   buyer_cod_score?: number;
   buyer_cod_orders_count?: number;
   buyer_cod_delivered_count?: number;
@@ -80,45 +81,33 @@ interface BuyerInfo {
 }
 
 const ASSIGNMENT_WITH_ORDER_SELECT = `
-  id,
-  order_id,
-  delivery_person_id,
-  status,
-  pickup_location,
-  dropoff_location,
-  delivery_price,
-  is_private,
-  is_express,
-  package_description,
-  package_type,
-  sender_name,
-  sender_phone,
-  recipient_name,
-  recipient_phone,
-  payer_role,
-  is_grouped,
-  delivery_group_id,
-  group_total_stops,
-  group_completed_stops,
-  grouped_stops,
-  created_at,
-  accepted_at,
-  delivered_at,
+  id, order_id, delivery_person_id, status, pickup_location, dropoff_location,
+  delivery_price, is_private, is_express, package_description, package_type,
+  sender_name, sender_phone, recipient_name, recipient_phone, payer_role,
+  is_grouped, delivery_group_id, group_total_stops, group_completed_stops,
+  grouped_stops, created_at, accepted_at, delivered_at,
   orders (
-    buyer_id,
-    listing_id,
-    seller_id,
-    delivery_address,
-    delivery_fee,
-    delivery_lat,
-    delivery_lng,
-    payment_method,
-    total_amount
+    buyer_id, listing_id, seller_id, delivery_address, delivery_fee,
+    delivery_lat, delivery_lng, payment_method, total_amount, quantity,
+    listings:listing_id(title, photos),
+    order_items(id, quantity, listings:listing_id(title))
   )
 `;
 
 function getOrder(assignment: any) {
   return Array.isArray(assignment.orders) ? (assignment.orders[0] || {}) : (assignment.orders || {});
+}
+
+function buildItemsSummary(order: any): string | undefined {
+  if (Array.isArray(order.order_items) && order.order_items.length > 0) {
+    return order.order_items
+      .map((it: any) => `${it.quantity || 1}x ${it.listings?.title || order.listings?.title || 'Article'}`)
+      .join(' • ');
+  }
+  if (order.listings?.title) {
+    return `${order.quantity || 1}x ${order.listings.title}`;
+  }
+  return undefined;
 }
 
 function mapAssignmentToRequest(
@@ -145,6 +134,7 @@ function mapAssignmentToRequest(
     buyer_phone: isExpress ? (assignment.recipient_phone || buyerInfo?.phone) : buyerInfo?.phone,
     payment_method: order.payment_method,
     total_amount: order.total_amount,
+    items_summary: buildItemsSummary(order),
     is_private: assignment.is_private ?? false,
     pickup_location: assignment.pickup_location || sellerInfo?.address || 'Adresse du vendeur',
     dropoff_location: assignment.dropoff_location || order.delivery_address || 'Adresse de livraison',
@@ -296,17 +286,30 @@ export const deliveryOrderService = {
     });
   },
 
-  async confirmGroupedPickupStop(groupId: string, sellerId: string, otpCode?: string) {
+  async confirmGroupedPickupStop(
+    assignmentId: string,
+    stopIndex: number,
+    sellerId: string,
+    otpCode?: string
+  ) {
     const { data, error } = await (supabase as any).rpc('confirm_grouped_pickup_stop', {
-      p_group_id: groupId,
+      p_assignment_id: assignmentId,
+      p_stop_index: stopIndex,
       p_seller_id: sellerId,
+      p_notes: null,
       p_otp_code: otpCode?.trim() || null,
     });
     if (error) throw error;
     if (!data?.success) {
-      throw new Error(data?.reason || 'Impossible de valider cet arrêt marchand');
+      throw new Error(data?.message || data?.reason || 'Impossible de valider cet arrêt marchand');
     }
-    return data as { success: boolean; completed_stops: number; total_stops: number; all_picked_up: boolean };
+    return data as {
+      success: boolean;
+      completed_stops: number;
+      total_stops: number;
+      all_picked_up?: boolean;
+      all_completed?: boolean;
+    };
   },
 
   async reportCodRefusal(orderId: string, reason: string, notes?: string) {
@@ -329,12 +332,12 @@ export const deliveryOrderService = {
     heading?: number | null,
     speedKmh?: number | null
   ) {
-    await (supabase as any).rpc('upsert_driver_live_location', {
+    await (supabase as any).rpc('update_driver_run_location', {
       p_assignment_id: assignmentId,
       p_lat: lat,
       p_lng: lng,
       p_heading: heading ?? null,
-      p_speed_kmh: speedKmh ?? null,
+      p_speed: speedKmh ?? null,
     });
   },
 };

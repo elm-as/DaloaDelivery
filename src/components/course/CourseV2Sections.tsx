@@ -43,18 +43,19 @@ export const CourseV2Sections: React.FC<CourseV2SectionsProps> = ({
   const isRiskyBuyer =
     (order.buyer_cod_refused_count || 0) > 0 || (order.buyer_cod_score ?? 100) < 75;
 
-  const handleConfirmStop = async (sellerId: string) => {
-    if (!order.delivery_group_id) return;
+  const handleConfirmStop = async (sellerId: string, stopIndex: number) => {
     setConfirmingSellerId(sellerId);
     try {
       const otp = stopOtpBySeller[sellerId] || '';
       const res = await deliveryOrderService.confirmGroupedPickupStop(
-        order.delivery_group_id,
+        order.id,
+        stopIndex,
         sellerId,
         otp
       );
+      const allDone = Boolean(res.all_picked_up || res.all_completed);
       toast.success(
-        res.all_picked_up
+        allDone
           ? 'Tous les arrêts marchands sont récupérés ! En route vers le client.'
           : `Arrêt validé (${res.completed_stops}/${res.total_stops}) !`
       );
@@ -148,19 +149,20 @@ export const CourseV2Sections: React.FC<CourseV2SectionsProps> = ({
           <div className="space-y-2">
             {order.grouped_stops.map((stop, idx) => {
               const isPicked = stop.status === 'picked_up';
+              const stopNumber = stop.stop_index ?? idx + 1;
+              const sellerLabel = stop.shop_name || stop.seller_name || 'Marchand';
+              const addressLabel = stop.address || stop.pickup_address || stop.district || 'Daloa';
               return (
                 <div
-                  key={`${stop.seller_id}-${idx}`}
+                  key={`${stop.seller_id}-${stopNumber}`}
                   className="rounded-xl border border-indigo-100 bg-white p-2.5 space-y-2"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-gray-900 truncate">
-                        Arrêt {idx + 1} · {stop.seller_name || 'Marchand'}
+                        Arrêt {stopNumber} · {sellerLabel}
                       </p>
-                      <p className="text-[11px] text-gray-500 truncate">
-                        {stop.pickup_address || stop.district || 'Daloa'}
-                      </p>
+                      <p className="text-[11px] text-gray-500 truncate">{addressLabel}</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       {stop.seller_phone && (
@@ -198,7 +200,7 @@ export const CourseV2Sections: React.FC<CourseV2SectionsProps> = ({
                       <button
                         type="button"
                         disabled={confirmingSellerId === stop.seller_id}
-                        onClick={() => handleConfirmStop(stop.seller_id)}
+                        onClick={() => handleConfirmStop(stop.seller_id, stopNumber)}
                         className="h-8 rounded-lg bg-indigo-600 px-3 text-[11px] font-extrabold text-white hover:bg-indigo-700 disabled:opacity-50"
                       >
                         {confirmingSellerId === stop.seller_id ? '...' : 'Valider retrait'}
@@ -228,9 +230,7 @@ export const CourseV2Sections: React.FC<CourseV2SectionsProps> = ({
               ) : (
                 <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
               )}
-              <span>
-                Indice Anti-Lapin Client : {order.buyer_cod_score ?? 100}% fiable
-              </span>
+              <span>Indice Anti-Lapin Client : {order.buyer_cod_score ?? 100}% fiable</span>
             </div>
             <span className="font-mono text-[11px] font-bold tabular-nums">
               {order.buyer_cod_delivered_count ?? 0} liv. · {order.buyer_cod_refused_count ?? 0} lapin(s)
