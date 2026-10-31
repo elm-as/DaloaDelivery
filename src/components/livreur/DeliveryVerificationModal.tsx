@@ -24,13 +24,11 @@ export default function DeliveryVerificationModal({
   const [otp, setOtp] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState('');
-  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [step, setStep] = useState<'otp' | 'photo' | 'verifying'>('otp');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Course payée en espèces (livreur affilié) : l'acheteur paie à la réception
-  // et n'a pas de code ; on passe directement à la photo, montant rappelé.
   const [cashAmount, setCashAmount] = useState<number | null>(null);
+  const [requiresOtp, setRequiresOtp] = useState<boolean>(true);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -41,13 +39,19 @@ export default function DeliveryVerificationModal({
         .select('orders:order_id(payment_method, total_amount)')
         .eq('id', assignmentId)
         .maybeSingle();
-      const order = (data as any)?.orders;
       if (!active) return;
+
+      const row = data as any;
+      const order = Array.isArray(row?.orders) ? row?.orders[0] : row?.orders;
+
       if (order && order.payment_method && order.payment_method !== 'online') {
+        setRequiresOtp(false);
         setCashAmount(Number(order.total_amount) || 0);
         setStep('photo');
       } else {
+        setRequiresOtp(true);
         setCashAmount(null);
+        setStep('otp');
       }
     })();
     return () => {
@@ -71,10 +75,6 @@ export default function DeliveryVerificationModal({
 
     setUploading(true);
     setStep('verifying');
-    // Position GPS en parallèle de l'envoi, précision standard et position
-    // récente acceptée : l'ancienne attente haute précision (jusqu'à 10 s,
-    // avant même l'envoi) bloquait l'écran sur « Vérification en cours ».
-    // Le serveur ne l'exige plus : sans GPS, on valide quand même.
     const positionPromise = new Promise<GeolocationPosition | null>((resolve) => {
       if (!navigator.geolocation) return resolve(null);
       navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), {
@@ -84,7 +84,6 @@ export default function DeliveryVerificationModal({
       });
     });
     try {
-      // Upload vers Supabase Storage
       const ext = photoFile.name.split('.').pop() || 'jpg';
       const filePath = `${assignmentId}_${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
@@ -98,28 +97,32 @@ export default function DeliveryVerificationModal({
         .getPublicUrl(filePath);
 
       const photoUrl = urlData.publicUrl;
-
       const position = await positionPromise;
 
-      // Vérification finale avec OTP + photo (+ GPS s'il est disponible, archivé pour l'audit)
       await deliveryAssignmentService.verifyDelivery(
-        assignmentId, otp, photoUrl,
+        assignmentId,
+        otp,
+        photoUrl,
         position?.coords.latitude ?? null,
         position?.coords.longitude ?? null
       );
 
-      toast.success(cashAmount != null ? 'Livraison et encaissement validés !' : 'Livraison validée avec succès !');
+      toast.success(
+        cashAmount != null
+          ? 'Livraison et encaissement validés !'
+          : 'Livraison validée avec succès !'
+      );
       onSuccess();
       onClose();
-      // Reset
       setOtp('');
       setPhotoFile(null);
       setPhotoPreviewUrl('');
       setStep('otp');
     } catch (error: any) {
-      if (error instanceof GeolocationPositionError || error.message?.includes('géolocalisation') || error.message?.includes('Geolocation')) {
-        toast.error('Impossible d\'obtenir votre position GPS. Vérifiez vos paramètres de localisation.');
-        setStep('photo');
+      const msg = error?.message || '';
+      if (msg.includes('OTP incorrect') || msg.includes('invalid_otp')) {
+        toast.error(friendlyError(error, 'Code OTP incorrect'));
+        setStep('otp');
       } else {
         toast.error(friendlyError(error, 'Erreur lors de la validation de livraison'));
         setStep('photo');
@@ -129,19 +132,10 @@ export default function DeliveryVerificationModal({
     }
   };
 
-  const handleOtpSubmit = async (e: React.FormEvent) => {
+  const handleOtpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length === 6) {
-      setLoading(true);
-      try {
-        const assignment = await deliveryAssignmentService.getById(assignmentId);
-        await deliveryAssignmentService.verifyDeliveryOtp(assignment.order_id, otp);
-        setStep('photo');
-      } catch (error: any) {
-        toast.error(friendlyError(error, 'Code OTP incorrect ou expiré'));
-      } finally {
-        setLoading(false);
-      }
+      setStep('photo');
     } else {
       toast.error("L'OTP doit contenir 6 chiffres");
     }
@@ -164,7 +158,6 @@ export default function DeliveryVerificationModal({
             className="bg-white rounded-3xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-grey-900">Vérification Livraison</h2>
@@ -178,24 +171,22 @@ export default function DeliveryVerificationModal({
               </button>
             </div>
 
-            {/* Progress Steps — 2 étapes */}
             <div className="flex items-center justify-between mb-6">
               <div className={`flex items-center gap-2 ${step === 'otp' || step === 'photo' || step === 'verifying' ? 'text-primary' : 'text-grey-300'}`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 'otp' ? 'bg-primary text-white' : step === 'photo' || step === 'verifying' ? 'bg-primary text-white' : 'bg-grey-200'}`}>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-white">
                   {step === 'otp' ? '1' : <Check className="w-3 h-3" />}
                 </div>
-                <span className="text-xs font-bold">OTP</span>
+                <span className="text-xs font-bold">{requiresOtp ? 'OTP' : 'Espèces'}</span>
               </div>
               <div className={`flex-1 h-0.5 mx-2 ${step === 'photo' || step === 'verifying' ? 'bg-primary' : 'bg-grey-200'}`} />
               <div className={`flex items-center gap-2 ${step === 'photo' || step === 'verifying' ? 'text-primary' : 'text-grey-300'}`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 'photo' ? 'bg-primary text-white' : step === 'verifying' ? 'bg-primary text-white' : 'bg-grey-200'}`}>
-                  {step === 'photo' ? '2' : step === 'verifying' ? <Check className="w-3 h-3" /> : '2'}
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 'photo' || step === 'verifying' ? 'bg-primary text-white' : 'bg-grey-200'}`}>
+                  {step === 'verifying' ? <Check className="w-3 h-3" /> : '2'}
                 </div>
                 <span className="text-xs font-bold">Photo</span>
               </div>
             </div>
 
-            {/* Step Content */}
             {step === 'otp' && (
               <form onSubmit={handleOtpSubmit}>
                 {buyerPhone && (
@@ -230,10 +221,9 @@ export default function DeliveryVerificationModal({
                 </div>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-primary text-white rounded-xl text-sm font-bold active:scale-[0.97] transition-transform disabled:opacity-50"
+                  className="w-full py-3 bg-primary text-white rounded-xl text-sm font-bold active:scale-[0.97] transition-transform"
                 >
-                  {loading ? 'Vérification...' : 'Continuer'}
+                  Continuer
                 </button>
               </form>
             )}

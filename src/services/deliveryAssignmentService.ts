@@ -1,6 +1,36 @@
 import { supabase } from '../lib/supabase';
 import { fetchContactPhones } from '../lib/contacts';
 
+const SAFE_ASSIGNMENT_COLUMNS = [
+  'id',
+  'order_id',
+  'delivery_person_id',
+  'status',
+  'pickup_location',
+  'dropoff_location',
+  'pickup_address',
+  'dropoff_address',
+  'delivery_price',
+  'pickup_otp_attempts',
+  'delivery_otp_attempts',
+  'accepted_at',
+  'pickup_confirmed_at',
+  'pickup_confirmed_by_seller',
+  'delivered_at',
+  'buyer_confirmed_at',
+  'auto_released_at',
+  'pickup_photo_url',
+  'delivery_photo_url',
+  'pickup_gps',
+  'delivery_gps',
+  'pickup_gps_distance_m',
+  'delivery_gps_distance_m',
+  'disputed_at',
+  'dispute_reason',
+  'created_at',
+  'updated_at',
+].join(', ');
+
 export interface DeliveryAssignment {
   id: string;
   order_id: string;
@@ -11,8 +41,8 @@ export interface DeliveryAssignment {
   pickup_address: { lat: number; lng: number; address: string } | null;
   dropoff_address: { lat: number; lng: number; address: string } | null;
   delivery_price: number;
-  pickup_otp: string;
-  delivery_otp: string;
+  pickup_otp?: string;
+  delivery_otp?: string;
   pickup_otp_attempts: number;
   delivery_otp_attempts: number;
   accepted_at: string | null;
@@ -31,12 +61,9 @@ export interface DeliveryAssignment {
   dispute_reason: string | null;
   created_at: string;
   updated_at: string;
-  // Téléphones des parties (récupérés via jointure orders→users)
   seller_phone?: string | null;
   buyer_phone?: string | null;
 }
-
-
 
 interface VerificationResult {
   success: boolean;
@@ -58,25 +85,16 @@ function assertRpcSuccess(result: VerificationResult, context?: 'pickup' | 'deli
     throw new Error('Photo obligatoire');
   }
   if (result.reason === 'gps_distance_exceeded') {
-    if (context === 'pickup') {
-      // GPS ignoré au pickup — on laisse passer
-      return;
-    }
+    if (context === 'pickup') return;
     throw new Error('Vous êtes trop loin du point de livraison. Rapprochez-vous du client.');
   }
   throw new Error(result.reason || 'Action refusée');
 }
 
-/**
- * Enrichit les assignments avec les téléphones du vendeur et de l'acheteur
- * via une jointure orders -> users en deux étapes.
- */
 async function enrichWithPhones(assignments: any[]): Promise<any[]> {
   if (!assignments || assignments.length === 0) return assignments || [];
 
   const orderIds = [...new Set(assignments.map((a) => a.order_id))];
-
-  // Étape 1 : récupérer seller_id/buyer_id depuis orders
   const { data: orders } = await supabase
     .from('orders')
     .select('id, seller_id, buyer_id')
@@ -92,10 +110,8 @@ async function enrichWithPhones(assignments: any[]): Promise<any[]> {
     userIds.add(o.buyer_id);
   }
 
-  // Étape 2 : téléphones via get_contact_phones (réservés au livreur de la course)
   const phoneMap = await fetchContactPhones(Array.from(userIds));
 
-  // Fusion
   return assignments.map((a) => {
     const order = orderMap.get(a.order_id);
     return {
@@ -107,60 +123,47 @@ async function enrichWithPhones(assignments: any[]): Promise<any[]> {
 }
 
 export const deliveryAssignmentService = {
-  /**
-   * Récupérer les assignments disponibles pour le livreur
-   * (statut awaiting_pickup, pickup_confirmed_by_seller = true, pas de livreur assigné)
-   */
   async getAvailableAssignments() {
     const { data, error } = await supabase
       .from('delivery_assignments')
-      .select('*')
+      .select(SAFE_ASSIGNMENT_COLUMNS)
       .eq('status', 'awaiting_pickup')
       .eq('pickup_confirmed_by_seller', true)
       .is('delivery_person_id', null);
-    
+
     if (error) throw error;
     return (await enrichWithPhones(data)) as DeliveryAssignment[];
   },
 
-  /**
-   * Récupérer les assignments du livreur connecté
-   */
   async getMyAssignments(deliveryPersonId: string) {
     const { data, error } = await supabase
       .from('delivery_assignments')
-      .select('*')
+      .select(SAFE_ASSIGNMENT_COLUMNS)
       .eq('delivery_person_id', deliveryPersonId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return (await enrichWithPhones(data)) as DeliveryAssignment[];
   },
 
-  /**
-   * Accepter une assignment (changement de statut à 'accepted')
-   */
   async acceptAssignment(assignmentId: string, deliveryPersonId: string) {
     const { data, error } = await supabase.rpc('accept_delivery_assignment', {
       p_assignment_id: assignmentId,
-      p_delivery_person_id: deliveryPersonId
+      p_delivery_person_id: deliveryPersonId,
     });
-    
+
     if (error) throw error;
     assertRpcSuccess(data as unknown as VerificationResult);
     return this.getById(assignmentId);
   },
 
-  /**
-   * Vérifier le pickup avec OTP uniquement (GPS et photo neutralisés côté RPC)
-   */
   async verifyPickup(assignmentId: string, otp: string) {
     const { data, error } = await supabase.rpc('verify_pickup', {
       p_assignment_id: assignmentId,
       p_otp: otp,
       p_photo_url: 'pickup-verified',
       p_gps_lat: 0,
-      p_gps_lng: 0
+      p_gps_lng: 0,
     });
 
     if (error) throw error;
@@ -168,13 +171,10 @@ export const deliveryAssignmentService = {
     return this.getById(assignmentId);
   },
 
-  /**
-   * Vérifier uniquement le code OTP pour la livraison (avant la photo/GPS)
-   */
   async verifyDeliveryOtp(orderId: string, otp: string) {
     const { data, error } = await supabase.rpc('verify_delivery_otp', {
       p_order_id: orderId,
-      p_code: otp
+      p_code: otp,
     });
 
     if (error) throw error;
@@ -182,17 +182,13 @@ export const deliveryAssignmentService = {
     return true;
   },
 
-  /**
-   * Vérifier la delivery avec OTP + photo + GPS
-   */
   async verifyDelivery(assignmentId: string, otp: string, photo_url: string, gps_lat: number | null, gps_lng: number | null) {
     const { data, error } = await supabase.rpc('verify_delivery', {
       p_assignment_id: assignmentId,
       p_otp: otp,
       p_photo_url: photo_url,
-      // Types générés trop stricts : verify_delivery accepte bien NULL (GPS indisponible).
       p_gps_lat: gps_lat as unknown as number,
-      p_gps_lng: gps_lng as unknown as number
+      p_gps_lng: gps_lng as unknown as number,
     });
 
     if (error) throw error;
@@ -200,32 +196,26 @@ export const deliveryAssignmentService = {
     return this.getById(assignmentId);
   },
 
-  /**
-   * Mettre à jour le statut (pour les transitions simples)
-   */
   async updateStatus(assignmentId: string, status: DeliveryAssignment['status']) {
     const { data, error } = await supabase
       .from('delivery_assignments')
       .update({ status })
       .eq('id', assignmentId)
-      .select()
+      .select(SAFE_ASSIGNMENT_COLUMNS)
       .single();
-    
+
     if (error) throw error;
-    return data as DeliveryAssignment;
+    return data as unknown as DeliveryAssignment;
   },
 
-  /**
-   * Récupérer un assignment par ID
-   */
   async getById(assignmentId: string) {
     const { data, error } = await supabase
       .from('delivery_assignments')
-      .select('*')
+      .select(SAFE_ASSIGNMENT_COLUMNS)
       .eq('id', assignmentId)
       .single();
-    
+
     if (error) throw error;
-    return data as DeliveryAssignment;
-  }
+    return data as unknown as DeliveryAssignment;
+  },
 };

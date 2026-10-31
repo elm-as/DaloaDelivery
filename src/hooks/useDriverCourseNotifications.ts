@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getNetAmount } from '../lib/formatUtils';
 
 interface DriverNotificationsProps {
   isAvailable: boolean;
@@ -9,9 +10,7 @@ interface DriverNotificationsProps {
 export function useDriverCourseNotifications({ isAvailable, driverZone }: DriverNotificationsProps) {
   const realtimeSubscribed = useRef(false);
 
-  // Play synth audio beep and trigger intense vibration pattern
   const playCourseAlert = useCallback(async (title: string, body: string, url: string = '/dashboard') => {
-    // 1. Audio Synth Beep (HTML5 AudioContext)
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = ctx.createOscillator();
@@ -29,7 +28,6 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
       console.warn('Audio synth failed:', e);
     }
 
-    // 2. Mobile Device Prolonged Vibration Pattern [500ms vibrer, 200ms pause, 500ms vibrer, 200ms pause, 500ms vibrer]
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate([500, 200, 500, 200, 500]);
@@ -38,12 +36,9 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
       }
     }
 
-    // 3. System SW PWA Push Notification
     if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
       try {
         const registration = await navigator.serviceWorker.ready;
-        // `vibrate` et `renotify` sont reconnus par Chrome Android mais absents
-        // du type DOM standard.
         registration.showNotification(title, {
           body,
           icon: '/android-chrome-192x192.png',
@@ -59,14 +54,12 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
     }
   }, []);
 
-  // Request notification permission if needed
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
-  // Listen to Supabase Realtime for new pending orders / courses when driver is available
   useEffect(() => {
     if (!isAvailable || realtimeSubscribed.current) return;
 
@@ -79,18 +72,17 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'orders',
+        table: 'delivery_assignments',
       },
       (payload) => {
-        const order = payload.new;
-        if (order && (order.status === 'paid' || order.status === 'pending')) {
-          const pickup = order.pickup_district || 'Daloa';
-          const amount = order.delivery_fee || order.total_amount || 0;
-
+        const assignment = payload.new as any;
+        if (assignment && assignment.status === 'awaiting_pickup' && !assignment.delivery_person_id) {
+          const pickup = assignment.pickup_location || 'Daloa';
+          const netFee = getNetAmount(Number(assignment.delivery_price) || 500);
           playCourseAlert(
             '🛵 NOUVELLE COURSE DISPONIBLE !',
-            `Nouvelle livraison à ${pickup} (${amount} FCFA). Touchez pour accepter.`,
-            '/dashboard'
+            `Retrait à ${pickup} (Gain net : ${netFee} FCFA). Touchez pour accepter.`,
+            `/course/${assignment.id}`
           );
         }
       }
@@ -101,19 +93,24 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'orders',
+        table: 'delivery_assignments',
       },
       (payload) => {
-        const order = payload.new;
-        const oldOrder = payload.old;
-
-        // If order status changed to paid (waiting for pickup)
-        if (order && oldOrder && oldOrder.status !== 'paid' && order.status === 'paid') {
-          const pickup = order.pickup_district || 'Daloa';
+        const assignment = payload.new as any;
+        const oldAssignment = payload.old as any;
+        if (
+          assignment &&
+          oldAssignment &&
+          oldAssignment.status !== 'awaiting_pickup' &&
+          assignment.status === 'awaiting_pickup' &&
+          !assignment.delivery_person_id
+        ) {
+          const pickup = assignment.pickup_location || 'Daloa';
+          const netFee = getNetAmount(Number(assignment.delivery_price) || 500);
           playCourseAlert(
-            '⚡ ALERTE COURSE EN ATTENTE !',
-            `Une commande vient d'être payée à ${pickup}. Course prête à être récupérée !`,
-            '/dashboard'
+            '⚡ COURSE PRÊTE AU RETRAIT !',
+            `Le vendeur a confirmé le colis à ${pickup} (Gain net : ${netFee} FCFA).`,
+            `/course/${assignment.id}`
           );
         }
       }
@@ -127,10 +124,10 @@ export function useDriverCourseNotifications({ isAvailable, driverZone }: Driver
         table: 'seller_delivery_affiliations',
       },
       (payload) => {
-        const aff = payload.new;
+        const aff = payload.new as any;
         if (aff && aff.status === 'pending') {
           playCourseAlert(
-            '🤝 NOUVELLE DEMANDE D\'AFFILIATION !',
+            "🤝 NOUVELLE DEMANDE D'AFFILIATION !",
             'Un vendeur souhaite vous affilier comme livreur dédié. Touchez pour voir la demande.',
             '/affiliations'
           );

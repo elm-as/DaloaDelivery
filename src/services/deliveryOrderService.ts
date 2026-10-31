@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import { fetchContactPhones } from '../lib/contacts';
 
 export interface DeliveryRequest {
-  id: string; // assignment id
+  id: string;
   order_id: string;
   client_id: string;
   listing_id: string;
@@ -11,14 +11,16 @@ export interface DeliveryRequest {
   seller_phone?: string;
   seller_avatar?: string;
   shop_name?: string;
+  buyer_name?: string;
+  buyer_phone?: string;
+  items_summary?: string;
   is_private?: boolean;
   pickup_location: string;
   dropoff_location: string;
   proposed_price: number;
-  status: 'awaiting_pickup' | 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
+  status: 'awaiting_pickup' | 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'disputed' | 'cancelled';
   assigned_driver_id: string | null;
   created_at: string;
-  /** Renseignés depuis `delivery_assignments` : le calcul des gains du jour filtre dessus. */
   accepted_at: string | null;
   delivered_at: string | null;
   pickup_lat?: number;
@@ -45,10 +47,39 @@ export interface SellerInfo {
   lng?: number;
 }
 
-function mapAssignmentToRequest(assignment: any, sellerInfo?: SellerInfo): DeliveryRequest {
-  const order = Array.isArray(assignment.orders) 
-    ? assignment.orders[0] || {}
-    : assignment.orders || {};
+const ASSIGNMENT_WITH_ORDER_SELECT = `
+  id, order_id, delivery_person_id, status, pickup_location, dropoff_location,
+  delivery_price, is_private, created_at, accepted_at, delivered_at,
+  orders (
+    buyer_id, listing_id, seller_id, delivery_address, delivery_fee,
+    delivery_lat, delivery_lng, payment_method, total_amount, quantity,
+    listings:listing_id(title, photos),
+    order_items(id, quantity, listings:listing_id(title))
+  )
+`;
+
+function getOrder(assignment: any) {
+  return Array.isArray(assignment.orders) ? (assignment.orders[0] || {}) : (assignment.orders || {});
+}
+
+function buildItemsSummary(order: any): string | undefined {
+  if (Array.isArray(order.order_items) && order.order_items.length > 0) {
+    return order.order_items
+      .map((it: any) => `${it.quantity || 1}x ${it.listings?.title || order.listings?.title || 'Article'}`)
+      .join(' • ');
+  }
+  if (order.listings?.title) {
+    return `${order.quantity || 1}x ${order.listings.title}`;
+  }
+  return undefined;
+}
+
+function mapAssignmentToRequest(
+  assignment: any,
+  sellerInfo?: SellerInfo,
+  buyerInfo?: { name?: string; phone?: string }
+): DeliveryRequest {
+  const order = getOrder(assignment);
 
   return {
     id: assignment.id,
@@ -60,6 +91,9 @@ function mapAssignmentToRequest(assignment: any, sellerInfo?: SellerInfo): Deliv
     seller_phone: sellerInfo?.phone,
     seller_avatar: sellerInfo?.avatarUrl,
     shop_name: sellerInfo?.shopName,
+    buyer_name: buyerInfo?.name,
+    buyer_phone: buyerInfo?.phone,
+    items_summary: buildItemsSummary(order),
     is_private: assignment.is_private ?? false,
     pickup_location: assignment.pickup_location || sellerInfo?.address || 'Adresse du vendeur',
     dropoff_location: assignment.dropoff_location || order.delivery_address || 'Adresse de livraison',
@@ -76,117 +110,115 @@ function mapAssignmentToRequest(assignment: any, sellerInfo?: SellerInfo): Deliv
   };
 }
 
-// Helper to fetch seller addresses and coordinates for a list of assignments
-async function fetchSellerAddresses(assignments: any[]): Promise<Record<string, SellerInfo>> {
-  const sellerIds = assignments
-    .map(a => {
-      const order = Array.isArray(a.orders) ? a.orders[0] : a.orders;
-      return order?.seller_id;
-    })
-    .filter(Boolean);
-  
-  if (sellerIds.length === 0) return {};
+async function fetchPartiesAddresses(assignments: any[]): Promise<{
+  sellers: Record<string, SellerInfo>;
+  buyers: Record<string, { name?: string; phone?: string }>;
+}> {
+  const sellerIds = new Set<string>();
+  const buyerIds = new Set<string>();
 
-  const { data } = await supabase
-    .from('users')
-    .select('id, district, shop_latitude, shop_longitude, full_name, avatar_url, shop_name, shop_logo_url')
-    .in('id', sellerIds);
-  // Téléphone du vendeur : public tant qu'il a une annonce en ligne, sinon réservé au livreur.
-  const phones = await fetchContactPhones(sellerIds);
-    
-  const addressMap: Record<string, SellerInfo> = {};
+  assignments.forEach((a) => {
+    const order = getOrder(a);
+    if (order?.seller_id) sellerIds.add(order.seller_id);
+    if (order?.buyer_id) buyerIds.add(order.buyer_id);
+  });
+
+  const allUserIds = Array.from(new Set([...sellerIds, ...buyerIds]));
+  if (allUserIds.length === 0) return { sellers: {}, buyers: {} };
+
+  const [{ data }, phones] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id, district, shop_latitude, shop_longitude, full_name, avatar_url, shop_name, shop_logo_url')
+      .in('id', allUserIds),
+    fetchContactPhones(allUserIds),
+  ]);
+
+  const sellers: Record<string, SellerInfo> = {};
+  const buyers: Record<string, { name?: string; phone?: string }> = {};
   if (data) {
     data.forEach((u: any) => {
-      addressMap[u.id] = {
+      sellers[u.id] = {
         name: u.full_name || u.shop_name || 'Vendeur',
         phone: phones.get(u.id),
         avatarUrl: u.avatar_url || u.shop_logo_url || null,
         shopName: u.shop_name,
         address: u.district || 'Adresse du vendeur',
         lat: u.shop_latitude ?? undefined,
-        lng: u.shop_longitude ?? undefined
+        lng: u.shop_longitude ?? undefined,
+      };
+      buyers[u.id] = {
+        name: u.full_name || 'Client',
+        phone: phones.get(u.id),
       };
     });
   }
-  return addressMap;
-}
-
-function getOrder(assignment: any) {
-  return Array.isArray(assignment.orders) ? (assignment.orders[0] || {}) : (assignment.orders || {});
+  return { sellers, buyers };
 }
 
 export const deliveryOrderService = {
   async getPendingRequests() {
     const { data, error } = await supabase
       .from('delivery_assignments')
-      .select(`
-        *,
-        orders (
-          buyer_id, listing_id, seller_id, delivery_address, delivery_fee, delivery_lat, delivery_lng
-        )
-      `)
+      .select(ASSIGNMENT_WITH_ORDER_SELECT)
       .eq('status', 'awaiting_pickup');
-    
+
     if (error) throw error;
-    
-    const addressMap = await fetchSellerAddresses(data || []);
-    return (data || []).map(a => mapAssignmentToRequest(a, addressMap[getOrder(a).seller_id]));
+
+    const { sellers, buyers } = await fetchPartiesAddresses(data || []);
+    return (data || []).map((a) => {
+      const o = getOrder(a);
+      return mapAssignmentToRequest(a, sellers[o.seller_id], buyers[o.buyer_id]);
+    });
   },
 
   async getRequestById(id: string) {
     const { data, error } = await supabase
       .from('delivery_assignments')
-      .select(`
-        *,
-        orders (
-          buyer_id, listing_id, seller_id, delivery_address, delivery_fee, delivery_lat, delivery_lng
-        )
-      `)
+      .select(ASSIGNMENT_WITH_ORDER_SELECT)
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
-    
-    const addressMap = await fetchSellerAddresses([data]);
-    return mapAssignmentToRequest(data, addressMap[getOrder(data).seller_id]);
+
+    const { sellers, buyers } = await fetchPartiesAddresses([data]);
+    const o = getOrder(data);
+    return mapAssignmentToRequest(data, sellers[o.seller_id], buyers[o.buyer_id]);
   },
 
   async acceptRequest(assignmentId: string, driverId: string) {
     const { data: rpcData, error: rpcError } = await supabase.rpc('accept_delivery_assignment', {
       p_assignment_id: assignmentId,
-      p_delivery_person_id: driverId
+      p_delivery_person_id: driverId,
     });
-    
+
     if (rpcError) throw rpcError;
     const accepted = rpcData as { success?: boolean; reason?: string } | null;
     if (accepted?.success === false) {
-      throw new Error(accepted.reason || 'Erreur lors de l\'acceptation de la course');
+      throw new Error(accepted.reason || "Erreur lors de l'acceptation de la course");
     }
-    
+
     return this.getRequestById(assignmentId);
   },
 
   async makeCounterOffer(_requestId: string, _driverId: string, _price: number) {
-    // Keep this as is for now, using the old table if it exists, or mock it.
     throw new Error('Négociation non supportée dans cette version');
   },
 
   async getMyOrders(driverId: string) {
     const { data, error } = await supabase
       .from('delivery_assignments')
-      .select(`
-        *,
-        orders (
-          buyer_id, listing_id, seller_id, delivery_address, delivery_fee, delivery_lat, delivery_lng
-        )
-      `)
+      .select(ASSIGNMENT_WITH_ORDER_SELECT)
       .eq('delivery_person_id', driverId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
-    
-    const addressMap = await fetchSellerAddresses(data || []);
-    return (data || []).map(a => mapAssignmentToRequest(a, addressMap[getOrder(a).seller_id]));
+
+    const { sellers, buyers } = await fetchPartiesAddresses(data || []);
+    return (data || []).map((a) => {
+      const o = getOrder(a);
+      return mapAssignmentToRequest(a, sellers[o.seller_id], buyers[o.buyer_id]);
+    });
   },
 
   async updateOrderStatus(assignmentId: string, status: string) {
@@ -194,17 +226,13 @@ export const deliveryOrderService = {
       .from('delivery_assignments')
       .update({ status })
       .eq('id', assignmentId)
-      .select(`
-        *,
-        orders (
-          buyer_id, listing_id, seller_id, delivery_address, delivery_fee, delivery_lat, delivery_lng
-        )
-      `)
+      .select(ASSIGNMENT_WITH_ORDER_SELECT)
       .single();
-    
+
     if (error) throw error;
-    
-    const addressMap = await fetchSellerAddresses([data]);
-    return mapAssignmentToRequest(data, addressMap[getOrder(data).seller_id]);
-  }
+
+    const { sellers, buyers } = await fetchPartiesAddresses([data]);
+    const o = getOrder(data);
+    return mapAssignmentToRequest(data, sellers[o.seller_id], buyers[o.buyer_id]);
+  },
 };

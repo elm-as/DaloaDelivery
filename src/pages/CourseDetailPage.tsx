@@ -41,6 +41,30 @@ export default function CourseDetailPage() {
     fetchOrder();
   }, [fetchOrder]);
 
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`course-status-${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'delivery_assignments', filter: `id=eq.${id}` },
+        (payload) => {
+          const next = payload.new as any;
+          if (next.status === 'cancelled') {
+            toast.error('Cette course a été annulée. Ne vous déplacez plus.');
+          } else if (next.status === 'disputed') {
+            toast.error('Un litige a été ouvert sur cette course.');
+          }
+          fetchOrder();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, fetchOrder]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-grey-50">
@@ -101,12 +125,9 @@ export default function CourseDetailPage() {
     const lng = isPickup ? order.pickup_lng : order.dropoff_lng;
     const locationName = isPickup ? order.pickup_location : order.dropoff_location;
 
-    let destParam = '';
-    if (lat && lng) {
-      destParam = `${lat},${lng}`;
-    } else {
-      destParam = encodeURIComponent(`${locationName}, Daloa, Côte d'Ivoire`);
-    }
+    const destParam = lat && lng
+      ? `${lat},${lng}`
+      : encodeURIComponent(`${locationName}, Daloa, Côte d'Ivoire`);
 
     const url = `https://www.google.com/maps/dir/?api=1&destination=${destParam}&travelmode=two_wheeler`;
     window.open(url, '_blank');
@@ -114,9 +135,7 @@ export default function CourseDetailPage() {
 
   return (
     <div className="w-full min-h-[100dvh] bg-grey-50">
-      {/* ─── VUE DESKTOP (Split-Screen 2 colonnes) ─── */}
       <div className="hidden lg:flex flex-col h-[100dvh]">
-        {/* Barre de navigation supérieure Desktop */}
         <header className="h-16 px-8 border-b border-grey-200 bg-white flex items-center justify-between shrink-0 shadow-xs">
           <div className="flex items-center gap-3">
             <button
@@ -142,14 +161,11 @@ export default function CourseDetailPage() {
           </div>
         </header>
 
-        {/* Grille Principale 2 Colonnes */}
         <main className="flex-1 grid grid-cols-12 gap-6 p-6 overflow-hidden max-w-7xl mx-auto w-full">
-          {/* Colonne Gauche (Carte GPS 60%) */}
           <section className="col-span-7 h-full rounded-3xl overflow-hidden border border-grey-200 shadow-sm relative bg-white">
             <CourseMap order={order} onOpenNavigation={openNavigation} className="h-full w-full" />
           </section>
 
-          {/* Colonne Droite (Pupitre de contrôle 40%) */}
           <section className="col-span-5 h-full overflow-y-auto bg-white border border-grey-200 rounded-3xl p-6 shadow-sm">
             <CourseControlPanel
               order={order}
@@ -164,9 +180,7 @@ export default function CourseDetailPage() {
         </main>
       </div>
 
-      {/* ─── VUE MOBILE (< 1024px, Carte Plein Écran + Tiroir) ─── */}
       <div className="lg:hidden h-[100dvh] w-full relative overflow-hidden">
-        {/* Bouton Retour Flottant */}
         <div className="absolute top-4 left-4 z-[400]">
           <button
             onClick={() => navigate(-1)}
@@ -176,12 +190,10 @@ export default function CourseDetailPage() {
           </button>
         </div>
 
-        {/* Carte Plein Écran */}
         <div className="absolute inset-0 z-0">
           <CourseMap order={order} onOpenNavigation={openNavigation} showNavButton={false} />
         </div>
 
-        {/* Tiroir d'action bas */}
         <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[400] max-h-[55vh] overflow-y-auto pb-safe">
           <div className="w-12 h-1.5 bg-grey-200 rounded-full mx-auto my-3" />
           <div className="px-5 pb-6">
@@ -198,7 +210,6 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
-      {/* Modales de vérification OTP */}
       <PickupVerificationModal
         assignmentId={order.id}
         sellerPhone={order.seller_phone}
@@ -212,6 +223,7 @@ export default function CourseDetailPage() {
 
       <DeliveryVerificationModal
         assignmentId={order.id}
+        buyerPhone={order.buyer_phone}
         isOpen={deliveryModalOpen}
         onClose={() => setDeliveryModalOpen(false)}
         onSuccess={() => {
