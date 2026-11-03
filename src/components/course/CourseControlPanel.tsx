@@ -1,8 +1,9 @@
 import React from 'react';
-import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, MapPin, Package } from 'lucide-react';
+import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, Package } from 'lucide-react';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { isCurfewActive } from '../../utils/security';
 import type { DeliveryRequest } from '../../services/deliveryOrderService';
+import { StopAddress } from './StopAddress';
 import { getNetAmount } from '../../lib/formatUtils';
 
 export const COURSE_STATUS_LABELS: Record<string, string> = {
@@ -118,18 +119,11 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
             )}
           </div>
 
-          <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-1 mt-2 flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-grey-400" />
-            Adresse vendeur
-          </p>
-          {order.seller_district && (
-            <div className="mb-1.5">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-orange-100 text-orange-900 border border-orange-200">
-                📍 Quartier {order.seller_district}
-              </span>
-            </div>
-          )}
-          <p className="font-bold text-grey-900 text-sm">{order.pickup_location}</p>
+          <StopAddress
+            label="Retrait"
+            district={order.seller_district}
+            location={order.pickup_location}
+          />
         </div>
 
         <div className="relative">
@@ -139,18 +133,11 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
             }`}
           />
 
-          <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-grey-400" />
-            Destination acheteur
-          </p>
-          {order.buyer_district && (
-            <div className="mb-1.5">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-200">
-                📍 Quartier {order.buyer_district}
-              </span>
-            </div>
-          )}
-          <p className="font-bold text-grey-900 text-sm">{order.dropoff_location}</p>
+          <StopAddress
+            label="Livraison"
+            district={order.buyer_district}
+            location={order.dropoff_location}
+          />
           <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" />
             Remise sécurisée sous code OTP à l'acheteur
