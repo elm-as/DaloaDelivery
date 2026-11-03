@@ -114,7 +114,7 @@ const MAPBOX_TOKEN = (import.meta as any).env?.VITE_MAPBOX_TOKEN || '';
 
 const TILE_URL_STREET = MAPBOX_TOKEN
   ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`
-  : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 const TILE_URL_SATELLITE = MAPBOX_TOKEN
   ? `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`
@@ -144,9 +144,9 @@ export function DeliveryMap({ livreurs, orders = [], className = '' }: DeliveryM
       >
         <TileLayer
           key={mapMode}
-          attribution={MAPBOX_TOKEN ? '&copy; Mapbox' : '&copy; CARTO'}
+          attribution={MAPBOX_TOKEN ? '&copy; Mapbox' : '&copy; OpenStreetMap contributors'}
           url={mapMode === 'street' ? TILE_URL_STREET : TILE_URL_SATELLITE}
-          subdomains="abcd"
+          subdomains={mapMode === 'street' && !MAPBOX_TOKEN ? 'abc' : 'abcd'}
           maxZoom={20}
         />
 

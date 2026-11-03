@@ -48,44 +48,47 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
       <div className="flex items-center justify-between pb-4 border-b border-grey-100">
         <div>
           <span className="text-xs font-bold text-grey-400 uppercase tracking-wider block mb-1">
-            Statut de la course
+            Gains nets de la course
           </span>
-          <h2 className="text-xl font-black text-grey-900">
-            {COURSE_STATUS_LABELS[order.status] ?? 'Course en attente'}
-          </h2>
+          <span className="text-3xl font-black text-secondary tracking-tight">
+            {netEarnings.toLocaleString('fr-FR')}{' '}
+            <span className="text-sm font-bold text-grey-500">FCFA</span>
+          </span>
         </div>
-
         <div className="text-right">
-          <span className="text-xs font-bold text-grey-400 uppercase tracking-wider block mb-1">
-            Gains livreur
+          <span className="text-[10px] font-bold text-grey-400 uppercase tracking-wider block">
+            Prix client
           </span>
-          <div className="px-3.5 py-1.5 bg-primary-50 text-primary border border-primary-100 rounded-xl font-mono font-extrabold text-base tabular-nums">
-            {netEarnings.toLocaleString('fr-FR')} FCFA <span className="text-xs font-bold font-sans">net</span>
-          </div>
+          <span className="text-xs font-bold text-grey-600">
+            {order.proposed_price.toLocaleString('fr-FR')} FCFA
+          </span>
         </div>
       </div>
 
       {order.items_summary && (
-        <div className="flex items-start gap-2.5 rounded-2xl border border-grey-200 bg-grey-50 px-3.5 py-2.5 text-xs text-grey-800">
-          <Package className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-grey-500 uppercase tracking-wider block text-[10px]">
-              Contenu de la commande
+        <div className="flex items-center gap-2 p-3 bg-grey-50 rounded-2xl border border-grey-200/60">
+          <Package className="w-4 h-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold text-grey-500 block uppercase tracking-wider">
+              Colis à transporter
             </span>
-            <span className="font-semibold text-grey-900">{order.items_summary}</span>
+            <p className="text-xs font-extrabold text-grey-900 truncate">
+              {order.items_summary}
+            </p>
           </div>
         </div>
       )}
 
-      <div className="relative pl-6 border-l-2 border-grey-200 space-y-7 py-2">
+      {/* Trajet & Adresses */}
+      <div className="space-y-6 relative pl-6 border-l-2 border-grey-200">
         <div className="relative">
           <div
             className={`absolute -left-[31px] w-5 h-5 rounded-full border-4 border-white ${
-              isAccepted ? 'bg-primary ring-4 ring-primary-100' : 'bg-grey-300'
+              isAwaitingPickup || isAccepted ? 'bg-primary ring-4 ring-primary-100' : 'bg-grey-300'
             }`}
           />
 
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-2">
             {order.seller_avatar ? (
               <img
                 src={order.seller_avatar}
@@ -115,10 +118,17 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
             )}
           </div>
 
-          <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-0.5 mt-2 flex items-center gap-1">
+          <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-1 mt-2 flex items-center gap-1">
             <MapPin className="w-3 h-3 text-grey-400" />
             Adresse vendeur
           </p>
+          {order.seller_district && (
+            <div className="mb-1.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-orange-100 text-orange-900 border border-orange-200">
+                📍 Quartier {order.seller_district}
+              </span>
+            </div>
+          )}
           <p className="font-bold text-grey-900 text-sm">{order.pickup_location}</p>
         </div>
 
@@ -129,10 +139,17 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
             }`}
           />
 
-          <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+          <p className="text-xs font-bold text-grey-500 uppercase tracking-wider mb-1 flex items-center gap-1">
             <MapPin className="w-3 h-3 text-grey-400" />
             Destination acheteur
           </p>
+          {order.buyer_district && (
+            <div className="mb-1.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-200">
+                📍 Quartier {order.buyer_district}
+              </span>
+            </div>
+          )}
           <p className="font-bold text-grey-900 text-sm">{order.dropoff_location}</p>
           <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" />

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { fetchContactPhones } from '../lib/contacts';
+import { findNearestDistrict, detectDistrictInText } from '../lib/daloaDistricts';
 
 export interface DeliveryRequest {
   id: string;
@@ -17,6 +18,8 @@ export interface DeliveryRequest {
   is_private?: boolean;
   pickup_location: string;
   dropoff_location: string;
+  seller_district?: string | null;
+  buyer_district?: string | null;
   proposed_price: number;
   status: 'awaiting_pickup' | 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'disputed' | 'cancelled';
   assigned_driver_id: string | null;
@@ -42,6 +45,7 @@ export interface SellerInfo {
   phone?: string;
   avatarUrl?: string;
   shopName?: string;
+  district?: string | null;
   address: string;
   lat?: number;
   lng?: number;
@@ -53,7 +57,7 @@ const ASSIGNMENT_WITH_ORDER_SELECT = `
   orders (
     buyer_id, listing_id, seller_id, delivery_address, delivery_fee,
     delivery_lat, delivery_lng, payment_method, total_amount, quantity,
-    listings:listing_id(title, photos),
+    listings:listing_id(title, photos, district),
     order_items(id, quantity, listings:listing_id(title))
   )
 `;
@@ -77,9 +81,36 @@ function buildItemsSummary(order: any): string | undefined {
 function mapAssignmentToRequest(
   assignment: any,
   sellerInfo?: SellerInfo,
-  buyerInfo?: { name?: string; phone?: string }
+  buyerInfo?: { name?: string; phone?: string; district?: string }
 ): DeliveryRequest {
   const order = getOrder(assignment);
+
+  const rawPickup = (assignment.pickup_location || '').trim();
+  const isGenericPickup =
+    !rawPickup ||
+    rawPickup.toLowerCase() === 'boutique du vendeur' ||
+    rawPickup.toLowerCase() === 'boutique' ||
+    rawPickup.toLowerCase() === 'adresse du vendeur';
+
+  const sellerDistrict =
+    sellerInfo?.district ||
+    order.listings?.district ||
+    detectDistrictInText(rawPickup) ||
+    findNearestDistrict(sellerInfo?.lat, sellerInfo?.lng) ||
+    null;
+
+  let resolvedPickup = rawPickup;
+  if (isGenericPickup) {
+    const shop = sellerInfo?.shopName || sellerInfo?.name || 'Boutique';
+    resolvedPickup = sellerDistrict ? `${shop} (${sellerDistrict})` : shop;
+  }
+
+  const rawDropoff = (assignment.dropoff_location || order.delivery_address || 'Adresse de livraison').trim();
+  const buyerDistrict =
+    buyerInfo?.district ||
+    detectDistrictInText(rawDropoff) ||
+    findNearestDistrict(order.delivery_lat, order.delivery_lng) ||
+    null;
 
   return {
     id: assignment.id,
@@ -95,8 +126,10 @@ function mapAssignmentToRequest(
     buyer_phone: buyerInfo?.phone,
     items_summary: buildItemsSummary(order),
     is_private: assignment.is_private ?? false,
-    pickup_location: assignment.pickup_location || sellerInfo?.address || 'Adresse du vendeur',
-    dropoff_location: assignment.dropoff_location || order.delivery_address || 'Adresse de livraison',
+    pickup_location: resolvedPickup,
+    dropoff_location: rawDropoff,
+    seller_district: sellerDistrict,
+    buyer_district: buyerDistrict,
     proposed_price: assignment.delivery_price || order.delivery_fee || 0,
     status: assignment.status,
     assigned_driver_id: assignment.delivery_person_id,
@@ -112,7 +145,7 @@ function mapAssignmentToRequest(
 
 async function fetchPartiesAddresses(assignments: any[]): Promise<{
   sellers: Record<string, SellerInfo>;
-  buyers: Record<string, { name?: string; phone?: string }>;
+  buyers: Record<string, { name?: string; phone?: string; district?: string }>;
 }> {
   const sellerIds = new Set<string>();
   const buyerIds = new Set<string>();
@@ -135,7 +168,7 @@ async function fetchPartiesAddresses(assignments: any[]): Promise<{
   ]);
 
   const sellers: Record<string, SellerInfo> = {};
-  const buyers: Record<string, { name?: string; phone?: string }> = {};
+  const buyers: Record<string, { name?: string; phone?: string; district?: string }> = {};
   if (data) {
     data.forEach((u: any) => {
       sellers[u.id] = {
@@ -143,13 +176,15 @@ async function fetchPartiesAddresses(assignments: any[]): Promise<{
         phone: phones.get(u.id),
         avatarUrl: u.avatar_url || u.shop_logo_url || null,
         shopName: u.shop_name,
-        address: u.district || 'Adresse du vendeur',
+        district: u.district || null,
+        address: u.district ? `Quartier ${u.district}` : 'Daloa',
         lat: u.shop_latitude ?? undefined,
         lng: u.shop_longitude ?? undefined,
       };
       buyers[u.id] = {
         name: u.full_name || 'Client',
         phone: phones.get(u.id),
+        district: u.district || undefined,
       };
     });
   }

@@ -46,9 +46,10 @@ const buyerIcon = new L.Icon({
 });
 
 const MAPBOX_TOKEN = (import.meta as any).env?.VITE_MAPBOX_TOKEN || '';
+
 const TILE_URL_STREET = MAPBOX_TOKEN
   ? `https://api.mapbox.com/styles/v1/mapbox/navigation-day-v1/tiles/256/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`
-  : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 function MapBounds({ coords }: { coords: [number, number][] }) {
   const map = useMap();
@@ -115,9 +116,9 @@ export const CourseMap: React.FC<CourseMapProps> = ({
         zoomControl={false}
       >
         <TileLayer
-          attribution={MAPBOX_TOKEN ? '&copy; Mapbox' : '&copy; CARTO'}
+          attribution={MAPBOX_TOKEN ? '&copy; Mapbox &copy; OpenStreetMap' : '&copy; OpenStreetMap contributors'}
           url={TILE_URL_STREET}
-          subdomains="abcd"
+          subdomains={MAPBOX_TOKEN ? 'abcd' : 'abc'}
           maxZoom={20}
         />
         <MapBounds coords={boundsCoords} />
