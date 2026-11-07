@@ -191,8 +191,23 @@ async function fetchPartiesAddresses(assignments: any[]): Promise<{
   return { sellers, buyers };
 }
 
+let lastWebStaleSweepAt = 0;
+
+async function sweepStaleAcceptedRequestsIfNeeded() {
+  const now = Date.now();
+  if (now - lastWebStaleSweepAt < 60_000) return;
+  lastWebStaleSweepAt = now;
+  try {
+    await supabase.rpc('release_stale_accepted_assignments', { p_timeout_minutes: 210 });
+  } catch {
+    // Non-bloquant
+  }
+}
+
 export const deliveryOrderService = {
   async getPendingRequests() {
+    await sweepStaleAcceptedRequestsIfNeeded();
+
     const { data, error } = await supabase
       .from('delivery_assignments')
       .select(ASSIGNMENT_WITH_ORDER_SELECT)
@@ -228,12 +243,27 @@ export const deliveryOrderService = {
     });
 
     if (rpcError) throw rpcError;
-    const accepted = rpcData as { success?: boolean; reason?: string } | null;
+    const accepted = rpcData as { success?: boolean; reason?: string; message?: string } | null;
     if (accepted?.success === false) {
-      throw new Error(accepted.reason || "Erreur lors de l'acceptation de la course");
+      throw new Error(accepted.message || accepted.reason || "Erreur lors de l'acceptation de la course");
     }
 
     return this.getRequestById(assignmentId);
+  },
+
+  async releaseRequest(assignmentId: string, reason = 'driver_released') {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('release_delivery_assignment', {
+      p_assignment_id: assignmentId,
+      p_reason: reason,
+    });
+
+    if (rpcError) throw rpcError;
+    const released = rpcData as { success?: boolean; reason?: string; message?: string } | null;
+    if (released?.success === false) {
+      throw new Error(released.message || released.reason || 'Impossible de libérer cette course');
+    }
+
+    return released;
   },
 
   async makeCounterOffer(_requestId: string, _driverId: string, _price: number) {

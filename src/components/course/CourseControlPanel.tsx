@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, Package } from 'lucide-react';
+import { Phone, Navigation, AlertTriangle, Moon, ShieldCheck, Package, RotateCcw, Clock } from 'lucide-react';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { isCurfewActive } from '../../utils/security';
 import type { DeliveryRequest } from '../../services/deliveryOrderService';
@@ -26,6 +26,7 @@ interface CourseControlPanelProps {
   onDeliveryClick: () => void;
   onReportDispute: () => void;
   onOpenNavigation: () => void;
+  onReleaseCourse?: () => void;
 }
 
 export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
@@ -36,6 +37,7 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
   onDeliveryClick,
   onReportDispute,
   onOpenNavigation,
+  onReleaseCourse,
 }) => {
   const netEarnings = getNetAmount(order.proposed_price);
   const isAwaitingPickup = order.status === 'awaiting_pickup';
@@ -170,6 +172,10 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
 
         {isAccepted && (
           <>
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-[11px] font-bold text-amber-800">
+              <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span>Retrait chez le vendeur sous 3h30 max (remise en ligne auto au-delà)</span>
+            </div>
             <button
               onClick={onOpenNavigation}
               className="w-full h-13 bg-grey-900 hover:bg-grey-800 text-white rounded-2xl font-bold text-sm active:scale-98 transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
@@ -184,6 +190,16 @@ export const CourseControlPanel: React.FC<CourseControlPanelProps> = ({
             >
               {actionLoading ? <LoadingSpinner size="sm" /> : "J'ai récupéré le colis (OTP Vendeur)"}
             </button>
+            {onReleaseCourse && (
+              <button
+                onClick={onReleaseCourse}
+                disabled={actionLoading}
+                className="w-full py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-2xl font-bold text-xs active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                Se désister / Remettre la course en ligne
+              </button>
+            )}
           </>
         )}
 

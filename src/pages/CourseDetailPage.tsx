@@ -54,6 +54,8 @@ export default function CourseDetailPage() {
             toast.error('Cette course a été annulée. Ne vous déplacez plus.');
           } else if (next.status === 'disputed') {
             toast.error('Un litige a été ouvert sur cette course.');
+          } else if (next.status === 'awaiting_pickup' && !next.delivery_person_id) {
+            toast('Course remise en ligne pour les autres livreurs.');
           }
           fetchOrder();
         }
@@ -89,6 +91,23 @@ export default function CourseDetailPage() {
       toast.success('Course acceptée ! Bonne route.');
     } catch (err: any) {
       toast.error(friendlyError(err, "Impossible d'accepter cette course"));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReleaseCourse = async () => {
+    if (!window.confirm('Voulez-vous remettre cette course en ligne pour les autres livreurs ?')) {
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await deliveryOrderService.releaseRequest(order.id);
+      toast.success('Course remise en ligne.');
+      navigate('/dashboard');
+    } catch (err: any) {
+      toast.error(friendlyError(err, 'Impossible de libérer cette course'));
     } finally {
       setActionLoading(false);
     }
@@ -175,6 +194,7 @@ export default function CourseDetailPage() {
               onDeliveryClick={() => setDeliveryModalOpen(true)}
               onReportDispute={handleReportDispute}
               onOpenNavigation={openNavigation}
+              onReleaseCourse={handleReleaseCourse}
             />
           </section>
         </main>
@@ -205,6 +225,7 @@ export default function CourseDetailPage() {
               onDeliveryClick={() => setDeliveryModalOpen(true)}
               onReportDispute={handleReportDispute}
               onOpenNavigation={openNavigation}
+              onReleaseCourse={handleReleaseCourse}
             />
           </div>
         </div>
