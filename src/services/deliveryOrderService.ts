@@ -198,7 +198,7 @@ async function sweepStaleAcceptedRequestsIfNeeded() {
   if (now - lastWebStaleSweepAt < 60_000) return;
   lastWebStaleSweepAt = now;
   try {
-    await supabase.rpc('release_stale_accepted_assignments', { p_timeout_minutes: 210 });
+    await (supabase as any).rpc('release_stale_accepted_assignments', { p_timeout_minutes: 210 });
   } catch {
     // Non-bloquant
   }
@@ -252,7 +252,7 @@ export const deliveryOrderService = {
   },
 
   async releaseRequest(assignmentId: string, reason = 'driver_released') {
-    const { data: rpcData, error: rpcError } = await supabase.rpc('release_delivery_assignment', {
+    const { data: rpcData, error: rpcError } = await (supabase as any).rpc('release_delivery_assignment', {
       p_assignment_id: assignmentId,
       p_reason: reason,
     });
